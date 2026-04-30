@@ -99,6 +99,12 @@ Name every hit. Do not propose fixes here — that's impeccable's job.
 - Gray text on colored background
 - Pure `#000` / `#fff` as large surfaces
 
+**Accessibility (design layer)**
+- Contrast — body text < 4.5:1 against background (WCAG AA); large text/UI components < 3:1
+- Color as sole state indicator — error, disabled, active states communicated only by color (no icon, no text label, no pattern)
+- Focus ring — `:focus-visible` invisible or contrast < 3:1 against adjacent background; technically present but visually imperceptible
+- Touch targets — interactive elements visually < 44×44px; buttons/links cramped with < 8px spacing between them
+
 **Code-level**
 - `outline-none` without `:focus-visible` replacement
 - `transition: all`
