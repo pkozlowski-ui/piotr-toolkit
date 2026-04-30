@@ -1,0 +1,13 @@
+{
+  "name": "design-toolkit",
+  "version": "1.0.0",
+  "description": "UI design quality skills: diagnostic layer for existing interfaces, mobile audit, and focused design audits. Works alongside impeccable and taste-skill — diagnoses and routes, does not duplicate execution.",
+  "author": {
+    "name": "pkozlowski-ui",
+    "email": "piotr.kozlowski@sunscrapers.com",
+    "url": "https://github.com/pkozlowski-ui"
+  },
+  "repository": "https://github.com/pkozlowski-ui/skills",
+  "license": "MIT",
+  "keywords": ["design", "ui-audit", "ux", "layout-diagnosis", "mobile-audit", "anti-patterns"]
+}
