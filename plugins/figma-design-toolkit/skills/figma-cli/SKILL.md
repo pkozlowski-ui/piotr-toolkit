@@ -1,30 +1,41 @@
 ---
 name: figma-cli
-description: Custom Figma Desktop CLI (`figma-ds-cli`) at /Users/piotr/figma-cli. Use when creating components with JSX syntax, adding design tokens (shadcn/tailwind), building pre-made UI blocks, or using var: variable binding syntax. Faster than MCP because it connects directly to Figma Desktop via daemon.
+description: Custom Figma Desktop CLI (`figma-ds-cli`). Use when creating components with JSX syntax, adding design tokens (shadcn/tailwind), building pre-made UI blocks, or using `var:` variable binding syntax. Faster than MCP because it connects directly to Figma Desktop via daemon.
 ---
 
 # figma-cli — figma-ds-cli
 
 CLI that controls Figma Desktop directly. Faster than MCP, runs via a local daemon.
 
-**Path:** `/Users/piotr/figma-cli`
-**Base command:** `node /Users/piotr/figma-cli/src/index.js <command>`
+## When to load
+- User wants to render JSX directly into Figma
+- Need shadcn/tailwind tokens preset
+- Building pre-made UI blocks (`blocks create`)
+- Variable binding via `var:` syntax
 
----
+## Setup
 
-## Pre-flight checklist (before each session)
+The CLI lives outside this plugin. Resolve its path in this order:
 
-- [ ] Figma Desktop is open
-- [ ] Daemon is running: `node src/index.js daemon status` — if not, run `node src/index.js connect`
-- [ ] Check what's on the canvas before creating: `node src/index.js canvas info`
-- [ ] Never delete existing nodes
+1. `$FIGMA_CLI_PATH` environment variable (preferred — set per machine)
+2. Project's `CLAUDE.md` may declare the path
+3. Common locations: `~/figma-cli`, `~/code/figma-cli`, `~/Documents/figma-cli`
 
----
+Once resolved, the base command is `node $FIGMA_CLI_PATH/src/index.js <command>`. All examples below use `figma-cli` as shorthand — substitute the real path.
+
+If you can't find the CLI — tell the user and ask for the path. Don't guess.
+
+## Pre-flight (each session)
+
+- Figma Desktop is open
+- Daemon is running: `figma-cli daemon status` — if not, run `figma-cli connect`
+- Check canvas before creating: `figma-cli canvas info`
+- Never delete existing nodes
 
 ## When to use figma-cli vs figma-console
 
 | Task | Tool |
-|---------|-----------|
+|---|---|
 | Creating components via JSX | **figma-cli** (`render`) |
 | Design tokens shadcn/tailwind | **figma-cli** (`tokens preset shadcn`) |
 | Pre-made UI blocks (dashboard etc.) | **figma-cli** (`blocks create`) |
@@ -32,57 +43,53 @@ CLI that controls Figma Desktop directly. Faster than MCP, runs via a local daem
 | Binding variables to existing nodes | figma-console or figma-cli (`set fill "var:x"`) |
 | Operations across multiple pages | figma-console |
 
----
-
 ## Key commands
 
 ### Connection
 ```bash
-node src/index.js connect          # Yolo mode (recommended) — patch + daemon
-node src/index.js connect --safe   # Safe mode — requires manual plugin launch
-node src/index.js daemon status    # Check if daemon is running
+figma-cli connect          # Yolo mode (recommended) — patch + daemon
+figma-cli connect --safe   # Safe mode — requires manual plugin launch
+figma-cli daemon status    # Check daemon
 ```
 
-### Creating (render)
+### Render
 ```bash
 # Simple frame
-node src/index.js render '<Frame name="Card" w={320} flex="col" bg="#18181b" rounded={12} p={24} gap={12}>
+figma-cli render '<Frame name="Card" w={320} flex="col" bg="#18181b" rounded={12} p={24} gap={12}>
   <Text size={18} weight="bold" color="#fff" w="fill">Title</Text>
   <Text size={14} color="#a1a1aa" w="fill">Description</Text>
 </Frame>'
 
 # With design tokens (shadcn)
-node src/index.js render '<Frame bg="var:card" stroke="var:border" rounded={12} p={24}>
+figma-cli render '<Frame bg="var:card" stroke="var:border" rounded={12} p={24}>
   <Text color="var:foreground" size={18} w="fill">Title</Text>
 </Frame>'
 ```
 
 ### Tokens
 ```bash
-node src/index.js tokens preset shadcn   # 244 primitives + 32 semantic (Light/Dark)
-node src/index.js tokens tailwind        # 242 primitive colors
-node src/index.js var list               # Show existing variables
-node src/index.js var visualize          # Swatch on canvas
+figma-cli tokens preset shadcn   # 244 primitives + 32 semantic (Light/Dark)
+figma-cli tokens tailwind        # 242 primitive colors
+figma-cli var list               # Show existing variables
+figma-cli var visualize          # Swatch on canvas
 ```
 
 ### UI Blocks
 ```bash
-node src/index.js blocks list            # Available blocks
-node src/index.js blocks create dashboard-01  # Dashboard with sidebar, stats, chart
+figma-cli blocks list                   # Available blocks
+figma-cli blocks create dashboard-01    # Dashboard with sidebar, stats, chart
 ```
 
 ### Verification (REQUIRED after every create)
 ```bash
-node src/index.js verify                 # Screenshot of selected node
-node src/index.js verify "123:456"       # Screenshot of specific node
+figma-cli verify                 # Screenshot of selected node
+figma-cli verify "123:456"       # Screenshot of specific node
 ```
 
 ### Convert to component
 ```bash
-node src/index.js node to-component "NODE_ID"
+figma-cli node to-component "NODE_ID"
 ```
-
----
 
 ## JSX syntax — key rules
 
@@ -94,16 +101,11 @@ node src/index.js node to-component "NODE_ID"
 // GOOD — text wraps properly
 <Text size={16} color="#fff" w="fill">Long title that wraps properly</Text>
 ```
-**Rule:** EVERY `<Text>` element inside an auto-layout frame must have `w="fill"`. No exceptions.
+EVERY `<Text>` inside an auto-layout frame needs `w="fill"`. No exceptions.
 
-### Layout attribute order matters
+### Layout — `justify="between"` doesn't work
+Use `grow={1}` spacer instead:
 ```jsx
-// Correct frame with auto-layout
-<Frame w={320} flex="col" gap={16} p={24}>
-  ...
-</Frame>
-
-// justify="between" DOES NOT WORK — use grow={1} as spacer
 <Frame flex="row" items="center">
   <Frame>Logo</Frame>
   <Frame grow={1} />   {/* spacer */}
@@ -111,13 +113,13 @@ node src/index.js node to-component "NODE_ID"
 </Frame>
 ```
 
-### var: syntax for variables (shadcn)
+### `var:` syntax for variables (shadcn)
 ```jsx
 bg="var:card"              // background fill
 stroke="var:border"        // stroke
 color="var:foreground"     // text color (in <Text>)
-bg="var:primary"           // primary color
-bg="var:muted"             // muted background
+bg="var:primary"
+bg="var:muted"
 ```
 
 ### Icons (Lucide, real SVG)
@@ -126,9 +128,7 @@ bg="var:muted"             // muted background
 <Icon name="lucide:chevron-right" size={16} color="var:muted-foreground" />
 ```
 
----
-
-## Common errors (silently fail — no error thrown!)
+## Common errors (silently fail — no error thrown)
 
 | You wrote | Should be |
 |-----------|-------------|
@@ -140,15 +140,16 @@ bg="var:muted"             // muted background
 | `fontWeight="bold"` | `weight="bold"` |
 | `justify="between"` | `grow={1}` spacer |
 
----
+## Yolo Mode vs Safe Mode
 
-## Safe Mode — critical difference
+`figma-cli connect` (Yolo): patches Figma Desktop and starts the daemon. Faster, single command, works for everything below.
 
-In Safe Mode: **`render-batch` does NOT render text correctly.**
-For components with text in Safe Mode, use `eval` with native Figma Plugin API.
+`figma-cli connect --safe` (Safe): no patching — you launch the Desktop Bridge plugin manually each session. Use when Yolo mode breaks (Figma update incompatibility, restricted environment).
+
+**Critical Safe Mode limitation:** `render-batch` does NOT render text correctly. For text-heavy components in Safe Mode, fall back to `eval` with native Figma Plugin API:
 
 ```bash
-node src/index.js eval "(async () => {
+figma-cli eval "(async () => {
   await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
   const frame = figma.createFrame();
   // ... rest of the code
@@ -156,20 +157,10 @@ node src/index.js eval "(async () => {
 })()"
 ```
 
----
+## Workflow methodology
 
-## Workflow: creating a component step by step
-
-1. **Check canvas** — `node src/index.js canvas info` (find free space)
-2. **Check variables** — `node src/index.js var list` (are tokens available?)
-3. **Render** — `node src/index.js render '<Frame ...>'`
-4. **Verify** — `node src/index.js verify "NODE_ID"` (ALWAYS)
-5. **Convert** — `node src/index.js node to-component "NODE_ID"` (if needed)
-6. **Visual validation** — check screenshot, fix if anything looks off
-
----
+For component-first decision tree, pre-flight audit, and binding tokens — see `figma-design-workflow` skill. This skill is just the CLI reference.
 
 ## Full documentation
 
-Full CLI docs: `/Users/piotr/figma-cli/CLAUDE.md`
-Command reference: `/Users/piotr/figma-cli/REFERENCE.md` (if exists)
+Find `CLAUDE.md` and `REFERENCE.md` in the figma-cli repo (resolved via `$FIGMA_CLI_PATH`).
