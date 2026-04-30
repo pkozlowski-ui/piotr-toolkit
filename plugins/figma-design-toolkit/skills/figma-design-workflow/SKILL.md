@@ -8,6 +8,25 @@ description: Universal methodology for building screens in Figma with any design
 Methodological rules for building screens in Figma, independent of file and design system.
 Use together with `figma-console` (MCP mechanics) or `figma-cli` (JSX render).
 
+## When to load
+- Designing a new screen, layout, or UI element in Figma
+- Starting work on a new Figma file (cataloging components, tokens, conventions)
+- Need a decision framework for "build new vs reuse existing"
+- Always load this alongside `figma-console` or `figma-cli` when designing
+
+## First decision — which tool to use
+
+Before doing anything, pick the execution path:
+
+| Signal | Tool | Skill |
+|---|---|---|
+| Render a frame/component from JSX, apply shadcn/tailwind tokens, create UI block | **figma-cli** | `figma-design-toolkit:figma-cli` |
+| Need component variants, programmatic variable binding, multi-page operations | **figma-console** | `figma-design-toolkit:figma-console` |
+| Read design context / screenshot for code generation | Figma desktop MCP read tools | n/a |
+| Desktop Bridge unavailable (no Figma Desktop, restricted env) | claude.ai Figma MCP | `figma:figma-use` (external) |
+
+Default: **figma-cli** for new screens, **figma-console** when JSX falls short.
+
 ---
 
 ## Decision tree — BEFORE building anything
