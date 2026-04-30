@@ -79,12 +79,23 @@ Jeśli NIE (specyficzne dla tego projektu) → memory projektu wystarczy.
 
 ### Krok 5 — Sprawdź git i zaproponuj commit
 
-Uruchom `git status` (read-only, auto-allowed).
+Uruchom `git status` i `git branch --show-current` (read-only, auto-allowed).
 
 - **Są niezacommitowane zmiany** → zaproponuj commit: "Mamy X zmienionych plików. Zacommitować? Sugerowany message: '...'"
 - **Brak zmian** → "Wszystko już zacommitowane."
 
 Nie commituj automatycznie. Czekaj na potwierdzenie użytkownika.
+
+### Krok 6 — Worktree check (WAŻNE)
+
+Sprawdź czy jesteśmy w worktree: `git branch --show-current` — jeśli branch zaczyna się od `claude/`, jesteśmy w worktree.
+
+Jeśli tak — **zawsze** powiedz użytkownikowi:
+> "⚠️ Jesteśmy na branchu `claude/XXX` (worktree). Nowa sesja otworzy się na `main` i NIE zobaczy tych zmian dopóki nie zmergujemy PR. Czy zmergować teraz?"
+
+Jeśli użytkownik potwierdzi — utwórz PR (`gh pr create`) lub przypomnij URL istniejącego, i poproś o merge w GitHub. Nie merguj samodzielnie.
+
+Jeśli nie ma otwartego PR — zaproponuj: "Mogę stworzyć PR żebyś mógł go zmergować przed zamknięciem."
 
 ## Zasady
 
