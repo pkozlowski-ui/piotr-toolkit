@@ -57,6 +57,53 @@ Every UI element must go through this process:
 
 ---
 
+## Variable collection architecture — plan before building
+
+Designing variable structure *after* components are built means retroactive rebinding — 3× more work.
+Define collections, modes, and naming **before creating the first component**.
+
+### Source-of-truth cascade pattern
+
+```
+brand (EduVista / ACME modes)   ← the single switcher
+  ├── colors (navy, sky, orange, surface, tint, …)
+  ├── font-sans / font-mono  (STRING → binds to Text Style fontFamily)
+  ├── radius/*               (FLOAT → radius collection aliases these)
+  └── spacing/*              (FLOAT → spacing collection aliases these)
+
+radius collection  → all vars = VARIABLE_ALIAS → brand/radius/*  (1 mode only)
+spacing collection → all vars = VARIABLE_ALIAS → brand/spacing/*  (1 mode only)
+shadcn/semantic    → 6 tokens = VARIABLE_ALIAS → brand/*
+
+// Switch everything at once:
+figma.currentPage.setExplicitVariableModeForCollection(brandColl, acmeModeId)
+// → cascades to radius + spacing + semantic automatically
+```
+
+### Rules
+
+- **Alias, don't duplicate modes**: `radius` and `spacing` don't need their own brand modes — they alias `brand/*`. Adding modes per collection = manual sync debt.
+- **STRING variable → fontFamily**: bind Text Style fontFamily to a STRING variable (`brand/font-sans`) via `style.setBoundVariable('fontFamily', stringVar)` — font switches with brand mode.
+- **WCAG first**: check palette contrast ratios before building screens, not after. Lime/neon colors often fail on white (`#C8FF00` = 1.7:1 on white → WCAG fail).
+- **Figma hard limit**: variables **cannot** drive component variant switches. Workaround for logo/wordmark: use a **boolean component property** + layer visibility, then bind that boolean property to a boolean variable — boolean component props *can* be bound, variant props *cannot*.
+
+---
+
+## Text Styles — rules
+
+- Create Text Styles **simultaneously** with the first components — not retroactively.
+- Bind `fontFamily` to `brand/font-sans` STRING variable for 1-click font theming.
+- Pre-flight: audit existing styles before building a screen:
+
+```javascript
+const styles = await figma.getLocalTextStylesAsync();
+return styles.map(s => ({ id: s.id, name: s.name, size: s.fontSize, weight: s.fontName.style }));
+```
+
+- Bind text nodes: **always async** — `await node.setTextStyleIdAsync(style.id)`.
+
+---
+
 ## Pre-flight — before every new screen
 
 ### Step 1: Discover components used in similar screens
@@ -233,6 +280,11 @@ return { instanceId: inst.id, newY: currentY };
 | Wrong frame width (e.g. 1440 vs 1563) | Check `frame.width` on an existing page |
 | Text in instance via direct edit | `setProperties({ 'Label#123': 'Text' })` |
 | `getLocalVariables()` instead of async | `getLocalVariablesAsync()` |
+| Hardcoded `node.cornerRadius = 8` instead of token | `node.setBoundVariable('cornerRadius', radiusVar)` using `getVariableByIdAsync` |
+| `node.cornerRadius` without typeof check | Returns `figma.mixed` (Symbol) on nodes with per-corner radii — check `typeof node.cornerRadius === 'number'` before binding |
+| `node.setTextStyleId(id)` sync call | `await node.setTextStyleIdAsync(id)` — sync throws in dynamic-page context |
+| `vectorPaths` with arc (A) SVG command | Plugin API rejects arc — use `figma.createEllipse()` or `figma.createRectangle()` instead |
+| New variant property added to COMPONENT_SET | Existing instances don't update automatically — run `inst.setProperties({ 'NewProp': 'DefaultValue' })` on all instances |
 
 ---
 
