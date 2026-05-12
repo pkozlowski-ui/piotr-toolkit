@@ -86,16 +86,27 @@ Uruchom `git status` i `git branch --show-current` (read-only, auto-allowed).
 
 Nie commituj automatycznie. Czekaj na potwierdzenie użytkownika.
 
-### Krok 6 — Worktree check (WAŻNE)
+### Krok 6 — Worktree check + automatyczny merge (WAŻNE)
 
 Sprawdź czy jesteśmy w worktree: `git branch --show-current` — jeśli branch zaczyna się od `claude/`, jesteśmy w worktree.
 
-Jeśli tak — **zawsze** powiedz użytkownikowi:
-> "⚠️ Jesteśmy na branchu `claude/XXX` (worktree). Nowa sesja otworzy się na `main` i NIE zobaczy tych zmian dopóki nie zmergujemy PR. Czy zmergować teraz?"
+Jeśli tak:
 
-Jeśli użytkownik potwierdzi — utwórz PR (`gh pr create`) lub przypomnij URL istniejącego, i poproś o merge w GitHub. Nie merguj samodzielnie.
+1. Sprawdź `git log main..HEAD --oneline` — czy są commity do zmergowania.
 
-Jeśli nie ma otwartego PR — zaproponuj: "Mogę stworzyć PR żebyś mógł go zmergować przed zamknięciem."
+2. **Jeśli brak commitów** → powiedz "Branch zsynchronizowany z main, nic do mergowania."
+
+3. **Jeśli są commity** → **wykonaj merge automatycznie** (bez pytania):
+   - Sprawdź czy istnieje PR: `gh pr list --head <branch>`
+   - Jeśli nie ma PR → utwórz: `gh pr create --title "..." --body "..." --base main`
+   - Zmerguj: `gh pr merge --squash --delete-branch`
+   - Potwierdź użytkownikowi że merge się udał i branch jest usunięty.
+
+4. **Oddzielna kwestia — push zmian do GitHub repo projektu** (jeśli projekt ma remote):
+   Zapytaj użytkownika: "Czy wgrać zmiany do GitHub (`git push`)?"
+   Nie pushuj automatycznie — czekaj na potwierdzenie.
+
+**Kolejność:** merge worktree (automatyczny) → pytanie o push do GitHub (jeśli dotyczy).
 
 ## Zasady
 
