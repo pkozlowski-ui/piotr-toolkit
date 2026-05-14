@@ -238,6 +238,7 @@ Step 7: Final validation of the whole screen
 - Colors in range 0–1
 - `layoutSizingH/V = 'FILL'` set AFTER `appendChild`
 - `loadFontAsync()` called BEFORE text operations
+- **Every `createText()` → `await node.setTextStyleIdAsync(id)` from `getLocalTextStylesAsync()`** (never set fontSize/fontFamily/fontWeight manually)
 - Page switch via `await figma.setCurrentPageAsync(page)`
 - Instances: text via `setProperties()`, not direct edit
 - New nodes created inside Section/Frame (not on bare canvas)
