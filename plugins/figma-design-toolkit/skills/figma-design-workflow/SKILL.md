@@ -29,6 +29,17 @@ Default: **figma-cli** for new screens, **figma-console** when JSX falls short.
 
 ---
 
+## ABSOLUTE RULE: Never detach component instances
+
+> **`detachInstance()` is forbidden.** No exceptions.
+>
+> Detach destroys the link to the DS component — variants, variable binding, and future
+> updates stop working. There is no scenario where detach is "the only option" — there is
+> always an alternative. If something seems impossible without detach, read the
+> "Text and overrides on instances" section below.
+
+---
+
 ## Decision tree — BEFORE building anything
 
 Every UI element must go through this process:
@@ -36,19 +47,21 @@ Every UI element must go through this process:
 ```
 1. Does a component exist in the file that FITS this element?
    → YES → importComponentByKeyAsync(key) + createInstance()
+            [if local/unpublished → getNodeByIdAsync(nodeId).createInstance()]
 
 2. Does a component exist that ALMOST fits?
    (different context, similar look, different content)
-   → YES → createInstance() + setProperties() for available variant props
-            Check componentProperties — if text is not a property, accept
-            fixed content or pick another variant
+   → YES → createInstance()
+            + setProperties() for variants / icon visibility
+            + findOne(TEXT).characters for content (see section below)
+            NEVER: detachInstance() — preserve the component link
 
 3. No component fits?
    → Build ONLY with design tokens:
       - colors: bind variables (setBoundVariableForPaint), NOT hardcoded hex/RGB
-      - typography: values from the system (check existing components for patterns)
-      - spacing: multiples of 4px or 8px
-      - radius: values from the library (typically 4/6/8/12/16px)
+      - typography: text styles via setTextStyleIdAsync, NOT manual font+size
+      - spacing: bind FLOAT variables via setBoundVariable, NOT hardcoded px
+      - radius: bind FLOAT variables via setBoundVariable, NOT hardcoded px
 ```
 
 > Never start with `createRectangle()` + `createText()` without going through the tree above.
@@ -182,6 +195,52 @@ return props;
 
 ---
 
+## Text and overrides on instances — without detach
+
+### Hierarchy of approaches (most correct first):
+
+**Step 1: setProperties — when TEXT component property exists**
+```javascript
+const inst = comp.createInstance();
+const props = Object.keys(inst.componentProperties);
+const labelKey = props.find(k => inst.componentProperties[k].type === 'TEXT');
+if (labelKey) inst.setProperties({ [labelKey]: 'New text' });
+```
+
+**Step 2: findOne(TEXT).characters — when no TEXT property (ghost prop)**
+
+When a component doesn't expose text via `componentProperties`, set it directly on the
+text node inside the instance. The instance **remains an instance** — component link is preserved.
+
+```javascript
+const inst = comp.createInstance();
+parent.appendChild(inst);
+const textNode = inst.findOne(n => n.type === 'TEXT');
+if (textNode) {
+  await figma.loadFontAsync(textNode.fontName); // ALWAYS before text edit
+  textNode.characters = 'New text';
+}
+// inst.type === 'INSTANCE' ← still true, link preserved
+```
+
+**Step 3: Fill override on instance — when variant color doesn't fit**
+
+Fills can be overridden on an instance without detaching. Instance stays an instance:
+```javascript
+const v = await figma.variables.getVariableByIdAsync('VariableID:4:283');
+const paint = figma.variables.setBoundVariableForPaint(
+  { type: 'SOLID', color: { r: 0.09, g: 0.20, b: 0.36 } }, 'color', v
+);
+inst.fills = [paint]; // fill override — does not detach
+// inst.type === 'INSTANCE' ← still true
+```
+
+**There is no Step 4.** If Steps 1–3 don't work, the cause is an error in the approach,
+not a lack of options. Inspect component structure (`inst.findAll(n => n.type === 'TEXT')`),
+ensure `loadFontAsync` is called before editing, and check that the node isn't hidden.
+
+---
+
 ## Binding color variables
 
 When the file has design tokens, **always** bind instead of hardcoded values:
@@ -194,16 +253,23 @@ const v = await figma.variables.getVariableByIdAsync('VariableID:XXXX:YYYY');
 const vars = await figma.variables.getLocalVariablesAsync();
 const v = vars.find(x => x.name === 'colors/background/bg-brand');
 
-// Apply to fills
+// Apply to fills — CRITICAL: base color must be the REAL color of the variable.
+// Screenshots (exportAsync) render the base color, NOT the variable value.
+// { r:0, g:0, b:0 } as base → screenshot shows black node despite correct binding.
+// Always pass the approximate hex of the token as base:
 const paint = figma.variables.setBoundVariableForPaint(
-  { type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', v
+  { type: 'SOLID', color: { r: 0.09, g: 0.20, b: 0.36 } }, // ← actual token color
+  'color', v
 );
 node.fills = [paint];
 
 // Apply to strokes
 node.strokes = [figma.variables.setBoundVariableForPaint(
-  { type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', borderVar
+  { type: 'SOLID', color: { r: 0.89, g: 0.88, b: 0.87 } }, 'color', borderVar
 )];
+
+// Opacity via spread (setBoundVariableForPaint ignores opacity in input paint):
+node.fills = [{ ...paint, opacity: 0.12 }]; // spread AFTER the call
 ```
 
 ---
@@ -278,7 +344,8 @@ return { instanceId: inst.id, newY: currentY };
 | Importing local component by key | Local components: `getNodeByIdAsync(nodeId)` |
 | One giant `figma_execute` for the whole screen | Split into sections, screenshot after each |
 | Wrong frame width (e.g. 1440 vs 1563) | Check `frame.width` on an existing page |
-| Text in instance via direct edit | `setProperties({ 'Label#123': 'Text' })` |
+| Text in instance — no TEXT prop | `setProperties` if prop exists; `findOne(TEXT).characters` after `loadFontAsync` if not. NEVER detach. |
+| `detachInstance()` to change text or color | Use: (1) `setProperties` for TEXT props, (2) `findOne(TEXT).characters`, (3) fill override on instance |
 | `getLocalVariables()` instead of async | `getLocalVariablesAsync()` |
 | Hardcoded `node.cornerRadius = 8` instead of token | `node.setBoundVariable('cornerRadius', radiusVar)` using `getVariableByIdAsync` |
 | `node.cornerRadius` without typeof check | Returns `figma.mixed` (Symbol) on nodes with per-corner radii — check `typeof node.cornerRadius === 'number'` before binding |
