@@ -108,6 +108,37 @@ Jeśli tak:
 
 **Kolejność:** merge worktree (automatyczny) → pytanie o push do GitHub (jeśli dotyczy).
 
+### Krok 7 — Handoff (automatyczny)
+
+Po zakończeniu wszystkich kroków retro, zawsze twórz plik handoff:
+
+```
+$TMPDIR/claude-handoff-<YYYYMMDD-HHMMSS>.md
+```
+
+Format minimalny (szybki, nie wymaga osobnego wywołania skilla):
+```markdown
+# Handoff — <data>
+
+## Projekt
+<nazwa, ścieżka>
+
+## Co zrobiono w tej sesji
+<1-5 punktów z retro>
+
+## Ostatni stan / co niedokończone
+<jeśli jest>
+
+## Referencje
+- Memory: ~/.claude/projects/.../memory/MEMORY.md
+- Zmienione pliki: <lista z git status>
+
+## Suggested skills dla następnej sesji
+<na podstawie kontekstu>
+```
+
+Podaj użytkownikowi ścieżkę do pliku na końcu retro (jedna linia, bez ceremonii).
+
 ## Zasady
 
 - **Nie przedłużaj sesji.** Jeśli użytkownik mówi "kończymy" to znaczy że chce kończyć. Retro ma być szybkie (1-2 minuty dialogu), nie nową fazą pracy.
