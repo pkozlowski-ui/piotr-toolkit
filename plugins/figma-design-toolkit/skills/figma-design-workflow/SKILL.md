@@ -40,6 +40,52 @@ Default: **figma-cli** for new screens, **figma-console** when JSX falls short.
 
 ---
 
+## Before creating a new component — mandatory pre-flight
+
+Run this pipeline BEFORE building any new component. Skip = risk of duplicate.
+
+### Step 0: Mobbin research (for any new component type)
+
+```
+mcp__mobbin__search_screens(query="[UX problem, not component name]", mode="deep", limit=12)
+```
+- Query describes the problem the component solves: "multi-step progress indicator with labels" not "ProgressSteps"
+- Pick 2-3 references from mature products
+- Show user briefly ("I see X at Linear, Y at Notion") → agree on direction BEFORE building
+
+### Step 1: Broad semantic search in DS
+
+```javascript
+figma_search_components({ query: "semantic term", limit: 20 })
+figma_search_components({ query: "synonym / variant term", limit: 20 })
+figma_search_components({ category: "category", limit: 20 })
+```
+Search by MEANING, not exact name. "steps" finds "ProgressSteps". "stepper" and "wizard" also find it.
+
+### Step 2: Screenshot candidates
+
+```
+figma_capture_screenshot({ nodeId: "CANDIDATE_NODE_ID" })
+```
+For each candidate: does modifying it cover ≥70% of the new use case?
+
+### Step 3: Decision
+
+```
+≥70% visual/functional overlap → EXTEND existing (add variant, prop, mode)
+                                  NEVER create a separate component
+
+<70% overlap, no semantic match → Create new, BUT:
+  a) Place inside the correct DS section (see "DS page canonical structure" below)
+  b) Resize the section after adding
+  c) Never place on bare canvas
+```
+
+> Anti-pattern: creating `ProgressStepsWizard` when `ProgressSteps` exists and needed only a new variant/prop.
+> New components create DS debt. Always prefer extension.
+
+---
+
 ## Decision tree — BEFORE building anything
 
 Every UI element must go through this process:
@@ -55,6 +101,8 @@ Every UI element must go through this process:
             + setProperties() for variants / icon visibility
             + findOne(TEXT).characters for content (see section below)
             NEVER: detachInstance() — preserve the component link
+            CONSIDER: adding a variant/prop to the existing component
+                      instead of building a parallel one
 
 3. No component fits?
    → Build ONLY with design tokens:
@@ -323,12 +371,90 @@ return { pageId: page.id, frameId: frame.id };
 const comp = await figma.importComponentByKeyAsync('COMPONENT_KEY');
 const inst = comp.createInstance();
 frame.appendChild(inst);
+
+// CRITICAL: set sizing AFTER appendChild — before has no effect in auto-layout
+inst.layoutSizingHorizontal = 'FILL';
+inst.layoutSizingVertical = 'FIXED'; // or HUG depending on component
+
 inst.x = 0;
 inst.y = currentY; // track accumulated height
-inst.resize(W, inst.height); // stretch to full width
+
+// Verify actual size after layout — auto-layout parent can change it
+const actualH = inst.height;
+const expectedH = EXPECTED_HEIGHT; // from design spec
+if (Math.abs(actualH - expectedH) > 2) {
+  inst.resize(inst.width, expectedH); // force if auto-layout crushes/stretches it
+}
 
 currentY += inst.height;
-return { instanceId: inst.id, newY: currentY };
+return { instanceId: inst.id, actualH: inst.height, newY: currentY };
+```
+
+---
+
+## DS page — canonical structure
+
+Every DS page should use named SECTION nodes in this order (200px gap between sections):
+
+```
+01 – Foundations        Typography, Colors, Spacing, Icons, Radius/Border
+02 – Core               Buttons, Badges, Chips, Dividers
+03 – Forms              Input, Select, Checkbox, Radio, Switch, FieldInfo, SelectionCard
+04 – Navigation         TopBar, AppBar, ProgressSteps, Breadcrumbs, Tabs
+05 – Layout             SplitLayout, Cards, Panels
+06 – Feedback           Toasts, Alerts, Empty states, Loading
+07 – Patterns           Composite / multi-component patterns
+```
+
+Rules:
+- New component → always placed inside the correct section, never on bare canvas
+- After adding → `section.resizeWithoutConstraints(newW, newH)` to fit content
+- Sections are Figma `SECTION` type (not frames) for proper canvas organization
+
+### Create/find a section
+
+```javascript
+await figma.loadAllPagesAsync();
+const dsPage = figma.root.children.find(p => p.name.includes('Design System') || p.id === 'DS_PAGE_ID');
+await figma.setCurrentPageAsync(dsPage);
+
+const sectionName = '02 – Core';
+let section = dsPage.children.find(n => n.type === 'SECTION' && n.name === sectionName);
+if (!section) {
+  section = figma.createSection();
+  section.name = sectionName;
+  // Position below all existing content
+  const maxY = Math.max(0, ...dsPage.children.map(n => (n.y || 0) + (n.height || 0))) + 200;
+  section.y = maxY;
+}
+// Place component inside section
+section.appendChild(newComponent);
+```
+
+---
+
+## Post-build quality checklist
+
+Run after completing every screen or component. Check each item before declaring done.
+
+```
+STRUCTURE
+□ Every visible UI element = INSTANCE of DS component (not raw FRAME/RECT/GROUP)
+  Audit: figma.currentPage.findAll(n => ['FRAME','RECTANGLE','GROUP'].includes(n.type)
+         && n.parent?.type !== 'INSTANCE' && n.parent?.type !== 'SECTION')
+□ All auto-layout frames have descriptive names (not "Frame 123", "Group 7")
+□ No orphan nodes outside sections (DS page) or outside screen frames (screen pages)
+□ New DS components placed in correct section; section resized after adding
+
+TOKENS
+□ Zero hardcoded fills — only setBoundVariableForPaint()
+□ Zero hardcoded typography — only setTextStyleIdAsync() (never fontSize/fontFamily/fontWeight manually)
+□ Spacing/padding/gap/radius bound to FLOAT variables via setBoundVariable()
+
+SIZING
+□ Each instance: verify inst.width/inst.height after appendChild matches design spec
+  (if different → set layoutSizingVertical + resize explicitly)
+□ layoutSizingH/V = 'FILL'/'HUG' set AFTER appendChild (not before)
 ```
 
 ---
@@ -352,6 +478,10 @@ return { instanceId: inst.id, newY: currentY };
 | `node.setTextStyleId(id)` sync call | `await node.setTextStyleIdAsync(id)` — sync throws in dynamic-page context |
 | `vectorPaths` with arc (A) SVG command | Plugin API rejects arc — use `figma.createEllipse()` or `figma.createRectangle()` instead |
 | New variant property added to COMPONENT_SET | Existing instances don't update automatically — run `inst.setProperties({ 'NewProp': 'DefaultValue' })` on all instances |
+| Component has correct height standalone but wrong height in screen | `layoutSizingVertical` set before `appendChild`, or parent auto-layout overrides it | Always `appendChild` first, then set sizing; verify `inst.height` after and call `inst.resize()` if needed |
+| New component created when existing one could be extended | Skipped semantic search / searched by exact name only | Run `figma_search_components` with synonyms; if ≥70% overlap → add variant/prop, don't create new |
+| New component placed on bare canvas | Skipped DS page structure check | Always find/create the correct section first (`01–07`), `section.appendChild(component)` |
+| Icon embedded as Unicode character in text node (e.g. "SCHOOL ↕") | Saves time short-term, breaks DS — no variable binding, no swap, no resize | Always use a separate INSTANCE of an icon component. If the icon doesn't exist in the iconset → create it from Lucide SVG first, then instantiate. |
 
 ---
 
