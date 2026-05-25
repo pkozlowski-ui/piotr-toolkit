@@ -118,11 +118,41 @@ Every UI element must go through this process:
       - typography: text styles via setTextStyleIdAsync, NOT manual font+size
       - spacing: bind FLOAT variables via setBoundVariable, NOT hardcoded px
       - radius: bind FLOAT variables via setBoundVariable, NOT hardcoded px
+      - content areas: use `createSlot()` NOT `createFrame()` — see below
 ```
 
 > Never start with `createRectangle()` + `createText()` without going through the tree above.
 > Building from raw shapes bypasses the entire design system — hardcoded colors, inconsistent typography,
 > token changes don't propagate.
+
+### Content slots in new components — use `createSlot()` not `createFrame()`
+
+When a new DS component has a **flexible content area** (Accordion body, Card body, Modal content, list container), the area **must be a `SLOT` node**, not a plain frame.
+
+**Why it matters:** `appendChild()` on a plain `FRAME` inside an instance throws `"Cannot move node. New parent is an instance or is inside of an instance"`. A `SLOT` node allows free-form `appendChild()` in instances — that's the entire point of the API.
+
+```javascript
+// In the component (DS):
+const slot = componentNode.createSlot();   // returns SlotNode (type === 'SLOT')
+slot.name = 'Content';
+slot.layoutMode = 'VERTICAL';
+slot.layoutSizingHorizontal = 'FILL';
+slot.layoutSizingVertical = 'HUG';
+slot.fills = [];
+// For a variant where the slot should be hidden (e.g. Closed state):
+slot.visible = false;
+
+// In an instance (screen):
+const slot = instance.findOne(n => n.type === 'SLOT');
+const child = someVariant.createInstance();
+slot.appendChild(child);          // works — SLOT accepts appendChild in instances
+child.layoutSizingHorizontal = 'FILL';
+
+// Reset to component default:
+slot.resetSlot();
+```
+
+`createSlot()` is available on `ComponentNode` (individual variants), not on `ComponentSet`. Each variant in a set gets its own slot.
 
 ---
 
@@ -485,6 +515,8 @@ DOCUMENTATION
 | Wrong frame width (e.g. 1440 vs 1563) | Check `frame.width` on an existing page |
 | Text in instance — no TEXT prop | `setProperties` if prop exists; `findOne(TEXT).characters` after `loadFontAsync` if not. NEVER detach. |
 | `detachInstance()` to change text or color | Use: (1) `setProperties` for TEXT props, (2) `findOne(TEXT).characters`, (3) fill override on instance |
+| Content area built with `createFrame()` in a DS component | Use `createSlot()` instead — only SLOT nodes accept `appendChild` in instances; FRAME inside instance throws "Cannot move node" |
+| Trying to `appendChild` to a FRAME inside an instance | Find a SLOT node: `instance.findOne(n => n.type === 'SLOT').appendChild(newChild)` |
 | `getLocalVariables()` instead of async | `getLocalVariablesAsync()` |
 | Hardcoded `node.cornerRadius = 8` instead of token | `node.setBoundVariable('cornerRadius', radiusVar)` using `getVariableByIdAsync` |
 | `node.cornerRadius` without typeof check | Returns `figma.mixed` (Symbol) on nodes with per-corner radii — check `typeof node.cornerRadius === 'number'` before binding |

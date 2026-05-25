@@ -230,6 +230,7 @@ Step 7: Final validation of the whole screen
 | Empty array in result | Silent fail — node doesn't exist | Check ID, check page |
 | FILL before appendChild | Crash on layoutSizing | Move FILL after appendChild |
 | Font error | Missing loadFontAsync | Add `await figma.loadFontAsync(...)` before text ops |
+| `"Cannot move node. New parent is an instance or is inside of an instance"` | Appending to a plain FRAME inside an instance | The target frame must be a SLOT node. In the DS component use `componentNode.createSlot()` instead of `createFrame()`. Then in instances: `instance.findOne(n => n.type === 'SLOT').appendChild(newChild)` |
 
 ## Pre-flight checklist (before figma_execute)
 
