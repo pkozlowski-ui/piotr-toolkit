@@ -44,7 +44,15 @@ Default: **figma-cli** for new screens, **figma-console** when JSX falls short.
 
 Run this pipeline BEFORE building any new component. Skip = risk of duplicate.
 
-### Step 0: Mobbin research (for any new component type)
+### Step 0a: Check the component catalog
+
+If `docs/design-system/components.md` exists in the project → **read the relevant section before any Figma search.**
+
+The catalog answers "which component for this use case" without API calls. If the component is listed there: use its Figma search query to find it (skip to Step 1 with that exact query), or skip directly to building if you already know the nodeId.
+
+If not in catalog: continue with Step 0b.
+
+### Step 0b: Mobbin research (for any new component type)
 
 ```
 mcp__mobbin__search_screens(query="[UX problem, not component name]", mode="deep", limit=12)
@@ -455,6 +463,11 @@ SIZING
 □ Each instance: verify inst.width/inst.height after appendChild matches design spec
   (if different → set layoutSizingVertical + resize explicitly)
 □ layoutSizingH/V = 'FILL'/'HUG' set AFTER appendChild (not before)
+
+DOCUMENTATION
+□ New DS component created → add entry to docs/design-system/components.md immediately
+□ Discovered new usage nuance → update the relevant entry ("Kiedy"/"Nie używaj gdy")
+□ Component renamed or restructured → sync the entry
 ```
 
 ---

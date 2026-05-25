@@ -16,6 +16,20 @@ Before writing any new UI code — check what already exists. Reuse > extend > c
 
 ## Protocol
 
+### 0 — Check the component catalog first
+
+If `docs/design-system/components.md` exists → **read it before any grep or Figma search.**
+
+This file is the source of truth for "when to use which component" — semantic context that filesystem search can't provide. It answers:
+- Which component covers this use case?
+- When NOT to use a component (and what to use instead)?
+- Which variants/props are available?
+
+If you found the component: jump to step 3 (decide). Skip steps 1–2.  
+If the component isn't in the catalog or the catalog doesn't exist: continue with steps 1–2.
+
+**After using a component:** if you discover a new nuance not in the catalog (a gotcha, a "don't use when", a project-specific pattern) → add it to the entry.
+
 ### 1 — Locate the design system
 
 Check in order until you find something:
