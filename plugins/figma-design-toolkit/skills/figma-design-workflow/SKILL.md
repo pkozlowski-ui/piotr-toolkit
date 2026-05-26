@@ -29,6 +29,27 @@ Default: **figma-cli** for new screens, **figma-console** when JSX falls short.
 
 ---
 
+## Session start — before first figma_execute
+
+Every script must start with `await figma.loadAllPagesAsync()`. Without it, `getNodeByIdAsync`
+returns `null` for nodes on non-first pages — silent failure with no error.
+
+Node IDs are **stale between conversations** — always re-search at session start:
+- `figma_search_components({ query: 'Button', limit: 10 })` before referencing any component
+- Never reuse IDs from memory/previous sessions without re-querying
+
+**For new projects:** Before the first design session, check what's new in the Plugin API:
+```
+WebFetch("https://developers.figma.com/docs/plugins/api/")
+```
+Known additions since 2024 not in training data:
+- `SlotNode` + `componentNode.createSlot()` — flexible content areas in components
+- `TableNode` + `figma.createTable(rows, cols)` — native tables (avoid frame-grid workarounds)
+- Variables API v2 — `figma.variables.*` COLOR/FLOAT/STRING/BOOLEAN with `setBoundVariable`
+- `figma.getLocalTextStylesAsync()` / `getLocalPaintStylesAsync()` — prefer async over sync
+
+---
+
 ## ABSOLUTE RULE: Never detach component instances
 
 > **`detachInstance()` is forbidden.** No exceptions.
@@ -154,6 +175,64 @@ slot.resetSlot();
 
 `createSlot()` is available on `ComponentNode` (individual variants), not on `ComponentSet`. Each variant in a set gets its own slot.
 
+⚠️ **Side effect when adding defaults to SLOT at component level:** Figma may silently remove
+children from OTHER slots in existing instances of that component. Mechanism: Figma "re-resolves"
+slot overrides when the component's default content changes.
+
+**Rule:** Before adding defaults to any SLOT in a component, snapshot all instances:
+```javascript
+const instances = figma.currentPage.findAll(n => n.type === 'INSTANCE');
+const before = instances
+  .filter(i => i.mainComponent?.parent?.id === 'YOUR_COMPSET_ID')
+  .map(inst => ({
+    instId: inst.id,
+    slots: inst.findAll(n => n.type === 'SLOT').map(s => ({
+      slotId: s.id, children: s.children.map(c => c.id)
+    }))
+  }));
+return before; // Save, then do component modification, then compare
+```
+
+---
+
+## Creating missing icons
+
+When `figma_search_components({ query: 'icon-name' })` returns nothing:
+
+1. Fetch SVG from the project's icon library (Lucide for most projects):
+   `WebFetch("https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/<name>.svg")`
+2. Extract the `d` attribute from the `<path>` element.
+   ⚠️ Lucide uses lowercase arc commands (`a`) — Plugin API only supports uppercase commands.
+   Arcs must be converted to cubic beziers or replaced with `figma.createEllipse()`.
+3. Create a COMPONENT (not raw vector) in the correct DS icons section:
+
+```javascript
+const iconComp = figma.createComponent();
+iconComp.name = 'Icon/name';
+iconComp.resize(24, 24);
+iconComp.fills = [];
+
+const vector = figma.createVector();
+vector.vectorPaths = [{ windingRule: 'NONE', data: 'M 12 2 L 22 21 L 2 21 Z' }]; // replace
+vector.strokeWeight = 2;
+vector.strokeCap = 'ROUND';
+vector.strokeJoin = 'ROUND';
+vector.fills = [];
+// Bind stroke color to a token
+const vars = await figma.variables.getLocalVariablesAsync();
+const textVar = vars.find(v => v.name === 'text');
+vector.strokes = [figma.variables.setBoundVariableForPaint(
+  { type: 'SOLID', color: { r: 0.09, g: 0.12, b: 0.20 } }, 'color', textVar
+)];
+iconComp.appendChild(vector);
+vector.constraints = { horizontal: 'STRETCH', vertical: 'STRETCH' };
+```
+
+4. Swap the icon in a Button/IconButton: `iconInstance.swapComponent(newIconComp)`
+5. Add entry to docs/design-system/components.md under Icons section.
+
+**NEVER:** embed icons as Unicode characters in text nodes (e.g. "SCHOOL ↕") — no token binding, no swap, no resize.
+
 ---
 
 ## Variable collection architecture — plan before building
@@ -200,6 +279,90 @@ return styles.map(s => ({ id: s.id, name: s.name, size: s.fontSize, weight: s.fo
 ```
 
 - Bind text nodes: **always async** — `await node.setTextStyleIdAsync(style.id)`.
+
+---
+
+## Critical Runtime Gotchas
+
+### loadFontAsync — use Promise.all for multiple fonts
+
+```javascript
+// GOOD — parallel (2-3× faster)
+await Promise.all([
+  figma.loadFontAsync({ family: 'Inter', style: 'Regular' }),
+  figma.loadFontAsync({ family: 'Inter', style: 'Medium' }),
+  figma.loadFontAsync({ family: 'Inter', style: 'SemiBold' }),
+]);
+// BAD — sequential await calls (do not chain)
+```
+
+### setProperties(Variant) resets ALL text overrides
+
+Changing a VARIANT property resets all text content back to component defaults.
+**Always set variant first, then text:**
+
+```javascript
+inst.setProperties({ 'Type': 'Primary', 'Size': 'md' }); // variant FIRST
+// Set text AFTER — anything set before variant change is lost
+const labelKey = Object.keys(inst.componentProperties)
+  .find(k => inst.componentProperties[k].type === 'TEXT');
+if (labelKey) inst.setProperties({ [labelKey]: 'Save changes' });
+```
+
+### COMPONENT_SET: set layoutMode = 'NONE' before manual positioning
+
+```javascript
+const set = figma.combineAsVariants([v1, v2, v3], figma.currentPage);
+set.layoutMode = 'NONE'; // MUST be set immediately — otherwise x/y on variants is ignored
+v1.x = 0; v1.y = 0;
+v2.x = 0; v2.y = v1.height + 40;
+```
+
+### COMPONENT_SET: new property requires ALL variant combinations
+
+Adding a property `Size` (sm/md/lg) to a set already having `State × Type` (3×3 = 9)
+means you need 27 variants for ALL combinations. Missing combinations → "?" in properties panel.
+Plan the property space **before** building variants.
+
+### clone() does NOT copy componentPropertyReferences
+
+After `node.clone()` on a component with INSTANCE_SWAP bindings, the clone's inner instances
+lose their property bindings. Rebind via `figma.addComponentProperty()` or rebuild manually.
+
+### Node references go stale after tree modification
+
+After `appendChild`, `setProperties` (variant change), or `insertChild`, previously captured
+`findOne()` references may silently point to removed/replaced nodes:
+
+```javascript
+// RISKY
+const icon = inst.findOne(n => n.name === 'Icon');
+inst.setProperties({ 'Type': 'Primary' }); // tree restructured
+icon.swapComponent(newIcon); // MAY FAIL — stale reference
+
+// SAFE — re-query after modification
+inst.setProperties({ 'Type': 'Primary' });
+const icon = inst.findOne(n => n.name === 'Icon'); // fresh reference
+icon.swapComponent(newIcon);
+```
+
+### Container frame stays tiny without layoutSizingVertical = 'HUG' after appendChild
+
+```javascript
+// WRONG — set before appendChild has no effect
+frame.layoutSizingVertical = 'HUG';
+frame.appendChild(child); // frame stays 10px
+
+// CORRECT
+frame.appendChild(child);
+frame.layoutSizingVertical = 'HUG'; // AFTER appendChild
+```
+
+### resize() is a no-op on nested instance nodes
+
+Calling `nestedInst.resize(w, h)` inside a parent component has no effect.
+Use `layoutSizingHorizontal = 'FILL'` / `layoutSizingVertical = 'FIXED'` on direct
+children only. For deeper nesting: adjust layout sizing modes, not explicit resize.
 
 ---
 
@@ -360,6 +523,36 @@ node.fills = [{ ...paint, opacity: 0.12 }]; // spread AFTER the call
 
 ---
 
+## Binding FLOAT variables (spacing & radius)
+
+```javascript
+const vars = await figma.variables.getLocalVariablesAsync();
+const sp8   = vars.find(v => v.name === 'spacing/8'  && v.resolvedType === 'FLOAT');
+const radMd = vars.find(v => v.name === 'radius/md'  && v.resolvedType === 'FLOAT');
+
+// Bind padding / gap — one call per property
+node.setBoundVariable('paddingTop',    sp8);
+node.setBoundVariable('paddingBottom', sp8);
+node.setBoundVariable('paddingLeft',   sp8);
+node.setBoundVariable('paddingRight',  sp8);
+node.setBoundVariable('itemSpacing',   sp8);
+
+// Uniform corner radius
+node.setBoundVariable('cornerRadius', radMd);
+
+// Mixed corners (when node.cornerRadius === figma.mixed) — bind each individually
+node.setBoundVariable('topLeftRadius',     radMd);
+node.setBoundVariable('topRightRadius',    radMd);
+node.setBoundVariable('bottomRightRadius', radMd);
+node.setBoundVariable('bottomLeftRadius',  radMd);
+```
+
+**Spacing scale (standard):** 4, 8, 12, 16, 20, 24, 32, 40, 48, 64px — values outside this scale need justification.
+
+**Verify:** `node.boundVariables?.paddingTop?.type === 'VARIABLE_ALIAS'` → bound ✓
+
+---
+
 ## Building a new page — step-by-step workflow
 
 ```
@@ -483,6 +676,8 @@ STRUCTURE
 □ All auto-layout frames have descriptive names (not "Frame 123", "Group 7")
 □ No orphan nodes outside sections (DS page) or outside screen frames (screen pages)
 □ New DS components placed in correct section; section resized after adding
+□ After adding default content to a SLOT at component level → snapshot-check existing instances for lost children
+□ No buildX() helper functions in scripts — helpers mask component duplication; use figma_execute per component, never a local helper that creates nodes
 
 TOKENS
 □ Zero hardcoded fills — only setBoundVariableForPaint()
@@ -498,6 +693,54 @@ DOCUMENTATION
 □ New DS component created → add entry to docs/design-system/components.md immediately
 □ Discovered new usage nuance → update the relevant entry ("Kiedy"/"Nie używaj gdy")
 □ Component renamed or restructured → sync the entry
+```
+
+---
+
+## Token compliance audit script
+
+Run this after building any DS component to verify zero hardcoded values:
+
+```javascript
+// Replace 'MyComponent' with the component's exact name
+const comp = figma.currentPage.findOne(n => n.name === 'MyComponent');
+const issues = [];
+const SPACING_VALS = new Set([4,8,12,16,20,24,32,40,48,64]);
+const RADIUS_VALS  = new Set([4,6,8,12,16,9999]);
+
+comp.findAll(() => true).forEach(n => {
+  ['fills','strokes'].forEach(kind => {
+    const paints = n[kind];
+    if (!paints || paints === figma.mixed || paints.length === 0) return;
+    paints.forEach((p, i) => {
+      if (p.type !== 'SOLID' || p.opacity === 0) return;
+      const bound = n.boundVariables?.[kind]?.[i]?.type === 'VARIABLE_ALIAS';
+      if (!bound) issues.push(`${n.name} [${n.id}]: hardcoded ${kind} #${
+        ['r','g','b'].map(c => Math.round(p.color[c]*255).toString(16).padStart(2,'0')).join('')
+      }`);
+    });
+  });
+  if (n.type === 'TEXT') {
+    if (!n.textStyleId || n.textStyleId === figma.mixed)
+      issues.push(`${n.name} [${n.id}]: missing text style (${n.fontSize}px)`);
+  }
+  ['paddingTop','paddingRight','paddingBottom','paddingLeft','itemSpacing'].forEach(prop => {
+    const val = n[prop];
+    if (typeof val !== 'number' || val === 0) return;
+    if (n.boundVariables?.[prop]?.type !== 'VARIABLE_ALIAS')
+      issues.push(`${n.name} [${n.id}]: hardcoded ${prop}=${val}${SPACING_VALS.has(val) ? '' : ' ⚠️ off-scale'}`);
+  });
+  const crBound = n.boundVariables?.cornerRadius?.type === 'VARIABLE_ALIAS';
+  const anyCornerBound = ['topLeftRadius','topRightRadius','bottomLeftRadius','bottomRightRadius']
+    .some(p => n.boundVariables?.[p]?.type === 'VARIABLE_ALIAS');
+  if (!crBound && !anyCornerBound) {
+    const cr = n.cornerRadius;
+    if (typeof cr === 'number' && cr > 0)
+      issues.push(`${n.name} [${n.id}]: hardcoded cornerRadius=${cr}${RADIUS_VALS.has(cr) ? '' : ' ⚠️ off-scale'}`);
+  }
+});
+return { issueCount: issues.length, issues };
+// issueCount: 0 → ready to ship. Anything else → fix before closing the session.
 ```
 
 ---
@@ -527,6 +770,13 @@ DOCUMENTATION
 | New component created when existing one could be extended | Skipped semantic search / searched by exact name only | Run `figma_search_components` with synonyms; if ≥70% overlap → add variant/prop, don't create new |
 | New component placed on bare canvas | Skipped DS page structure check | Always find/create the correct section first (`01–07`), `section.appendChild(component)` |
 | Icon embedded as Unicode character in text node (e.g. "SCHOOL ↕") | Saves time short-term, breaks DS — no variable binding, no swap, no resize | Always use a separate INSTANCE of an icon component. If the icon doesn't exist in the DS iconset → create it from the icon library consistently used in the project, then instantiate. |
+| Multiple `await loadFontAsync` calls in series | Sequential loads are 2-3× slower | Use `Promise.all([figma.loadFontAsync(...), ...])` |
+| `setProperties(Variant)` before setting text | Variant change resets all text overrides to component defaults | Set variant first, then text — never before |
+| COMPONENT_SET manual x/y without `layoutMode='NONE'` | Variants snap to auto-layout, x/y is ignored | Set `set.layoutMode = 'NONE'` immediately after `combineAsVariants()` |
+| `node.clone()` and expect property bindings to persist | `clone()` resets componentPropertyReferences | Rebind INSTANCE_SWAP properties manually after cloning |
+| Using saved `findOne()` reference after `setProperties` | References go stale after variant/tree changes | Re-query via `findOne` after any `setProperties` or `appendChild` |
+| `buildX()` helper function in figma_execute | Helpers mask component duplication and bypass the DS decision tree | Use `figma_search_components` + `createInstance()` for each element; no local builder helpers |
+| Building data table from FRAME grid | Fragile layout, hard to update | `figma.createTable(rows, cols)` → `TableNode` with `.cellAt(r,c)`, `.insertRow()`, `.resizeRow()` |
 
 ---
 
