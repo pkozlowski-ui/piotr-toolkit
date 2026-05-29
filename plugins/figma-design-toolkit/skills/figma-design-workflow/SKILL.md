@@ -279,6 +279,12 @@ return styles.map(s => ({ id: s.id, name: s.name, size: s.fontSize, weight: s.fo
 ```
 
 - Bind text nodes: **always async** — `await node.setTextStyleIdAsync(style.id)`.
+- **⚠️ A text style sets typography ONLY — NOT fill color.** After `setTextStyleIdAsync` the node's
+  `fills` stays its default solid black, **unbound** → a hardcoded-color violation that's easy to miss
+  (the text looks fine, but the audit flags it). After applying the style, **bind the fill separately**:
+  `node.fills = [figma.variables.setBoundVariableForPaint(node.fills[0] || {type:'SOLID',color:{r:0,g:0,b:0},opacity:1}, 'color', textColorVar)]`
+  (e.g. `color/text/body` for default, `color/text/muted` for secondary). Wrap text creation in a helper
+  (`txt(parent, styleName, chars, colorVar)`) so style + font-load + characters + fill-bind always happen together.
 
 ---
 
@@ -525,10 +531,24 @@ node.fills = [{ ...paint, opacity: 0.12 }]; // spread AFTER the call
 
 ## Binding FLOAT variables (spacing & radius)
 
+> **⚠️ Variable NAMES may not equal pixel VALUES — always map by value, never by name.**
+> Many design systems name spacing on a rem/Tailwind scale where `spacing/N = N × 4 px`
+> (so `spacing/4` = 16px, `spacing/16` = **64px**). Looking up `name === 'spacing/16'` to get
+> 16px silently gives you 64px (real bug: a 64px gap where 16 was intended). Worse, names like
+> `spacing/24`/`spacing/20` often **don't exist** → `find` returns `undefined` → `setBoundVariable`
+> is silently skipped → the literal px stays UNBOUND (a token violation no error surfaces).
+> **Build a px→variable map once and look up by resolved value:**
+
 ```javascript
 const vars = await figma.variables.getLocalVariablesAsync();
-const sp8   = vars.find(v => v.name === 'spacing/8'  && v.resolvedType === 'FLOAT');
-const radMd = vars.find(v => v.name === 'radius/md'  && v.resolvedType === 'FLOAT');
+const _sp = vars.filter(v => /^spacing\//.test(v.name))
+  .map(v => ({ v, val: v.valuesByMode[Object.keys(v.valuesByMode)[0]] }));
+const spPx = px => _sp.find(s => s.val === px)?.v;   // spPx(16) → the variable whose VALUE is 16px
+// helper that sets value AND binds (kills the "undefined → unbound literal" trap):
+const setSp = (node, prop, px) => { node[prop] = px; const v = spPx(px); if (v) node.setBoundVariable(prop, v); };
+
+const sp8   = spPx(8);
+const radMd = vars.find(v => v.name === 'radius/md' && v.resolvedType === 'FLOAT');
 
 // Bind padding / gap — one call per property
 node.setBoundVariable('paddingTop',    sp8);
@@ -743,6 +763,33 @@ return { issueCount: issues.length, issues };
 // issueCount: 0 → ready to ship. Anything else → fix before closing the session.
 ```
 
+> **For SCREEN-level audits, treat each INSTANCE as opaque** (count it, don't recurse into it).
+> `findAll(()=>true)` descends into DS components and flags their internal frames (NavRail, AppTopBar)
+> as violations — you'll see a false ~70% where the real composition is 100%. Use a manual walk:
+
+```javascript
+// Instance-ratio audit for a screen — instance = opaque
+function instanceRatioAudit(screen){
+  const LAYOUT=/section|row|col|cols|container|content|wrapper|wrap|group|stack|list|grid|scroll|panel|bar$|spacer|footer|filter|head|header|body|main|kpi|table|card|drawer/i;
+  const violations=[]; let instances=0, layoutFrames=0;
+  (function walk(n){ for(const c of (n.children||[])){
+    if(c.type==='INSTANCE'){ instances++; continue; }            // opaque — never recurse
+    if(c.type==='TEXT'||c.type==='VECTOR'||c.type==='RECTANGLE'||c.type==='SLOT') continue;
+    if(c.type==='FRAME'){
+      if(LAYOUT.test(c.name)){ layoutFrames++; }
+      else { const textChild=c.findOne?.(x=>x.type==='TEXT'),
+                   hasFill=Array.isArray(c.fills)&&c.fills.some(f=>f.visible!==false&&f.opacity!==0),
+                   hasStroke=Array.isArray(c.strokes)&&c.strokes.length>0;
+             if((c.width<240&&c.height<80)||textChild||hasFill||hasStroke) violations.push(c.name); }
+      walk(c);
+    }
+  }})(screen);
+  const total=instances+violations.length;
+  return { ratio:(total?Math.round(instances/total*100):100)+'%', pass: total? instances/total>=0.95 : true, instances, layoutFrames, violations };
+}
+// pass:true (≥95%) → ship. Replace violations with DS instances otherwise.
+```
+
 ---
 
 ## Common mistakes and how to avoid them
@@ -777,6 +824,11 @@ return { issueCount: issues.length, issues };
 | Using saved `findOne()` reference after `setProperties` | References go stale after variant/tree changes | Re-query via `findOne` after any `setProperties` or `appendChild` |
 | `buildX()` helper function in figma_execute | Helpers mask component duplication and bypass the DS decision tree | Use `figma_search_components` + `createInstance()` for each element; no local builder helpers |
 | Building data table from FRAME grid | Fragile layout, hard to update | `figma.createTable(rows, cols)` → `TableNode` with `.cellAt(r,c)`, `.insertRow()`, `.resizeRow()` |
+| Spacing variable looked up by name (`spacing/16` for 16px) | Names often follow a rem scale (`spacing/N = N×4px`) → `spacing/16` is 64px; missing names → `undefined` → silent skip → unbound literal | Map by resolved value: `spPx(px)` (see "Binding FLOAT variables"); never `find(v=>v.name==='spacing/'+px)` |
+| Text fill left default after `setTextStyleIdAsync` | Text style sets typography, not color → fill stays unbound black (hardcoded violation) | Bind fill separately to `color/text/*` right after applying the style |
+| FILL / `layoutGrow=1` child not expanding (stays at min width) | Parent auto-layout is hugging on the primary axis, so there's no free space to distribute | Set parent `primaryAxisSizingMode = 'FIXED'` (or `layoutSizingHorizontal='FILL'`) so free space exists; then the FILL child fills it |
+| Retrying a failed `figma_execute` assuming it rolled back | `figma_execute` is **not** transactional — on error OR timeout, nodes created before the failure persist | Before retry, read current state (`parent.children.map(c=>c.name)`); make scripts small + idempotent; clean partial nodes first |
+| Instance-ratio / token audit descending into instances | Counts DS components' internal frames (NavRail, AppTopBar) as violations → false 70% where it's really 100% | Treat each INSTANCE as **opaque** — count it, don't recurse into it (see the audit scripts; manual `walk` that `continue`s on `type==='INSTANCE'`) |
 
 ---
 
