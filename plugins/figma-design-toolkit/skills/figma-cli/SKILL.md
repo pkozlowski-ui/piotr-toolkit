@@ -25,6 +25,24 @@ Once resolved, the base command is `node $FIGMA_CLI_PATH/src/index.js <command>`
 
 If you can't find the CLI — tell the user and ask for the path. Don't guess.
 
+## Install (new machine)
+
+The CLI is a **separate repo**, not bundled with this plugin — on a fresh machine it won't exist
+and every command below will fail until it's installed. If `$FIGMA_CLI_PATH` resolves to nothing
+and no clone is found in the common locations, install it:
+
+```bash
+# <<UZUPEŁNIJ: URL repo figma-ds-cli>> — np. git@github.com:pkozlowski-ui/figma-cli.git
+git clone <FIGMA_DS_CLI_REPO_URL> ~/figma-cli
+cd ~/figma-cli && npm install        # + build, jeśli repo go wymaga (sprawdź package.json scripts)
+export FIGMA_CLI_PATH=~/figma-cli    # dodaj do ~/.zshrc dla trwałości
+node "$FIGMA_CLI_PATH/src/index.js" daemon status   # sanity check
+```
+
+> Uwaga: `~/.figma-cli/config.json` (jeśli istnieje) trzyma tylko `repoPath` do samego klona —
+> to NIE jest CLI. Sam kod CLI musi być sklonowany osobno (powyżej).
+> Ten krok należy też do skilla `workflow-toolkit:bootstrap-machine` (onboarding nowej maszyny).
+
 ## Pre-flight (each session)
 
 - Figma Desktop is open

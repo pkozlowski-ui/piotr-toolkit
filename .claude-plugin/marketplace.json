@@ -13,6 +13,11 @@
       "name": "workflow-toolkit",
       "description": "Universal Claude Code workflow skills: project bootstrap, session retro, design system lookup, browser verification.",
       "source": "./plugins/workflow-toolkit"
+    },
+    {
+      "name": "design-toolkit",
+      "description": "UI design quality skills: diagnostic layer for existing interfaces (ux-tweaker) and mobile audit. Diagnoses anti-patterns and routes to execution; does not duplicate it.",
+      "source": "./plugins/design-toolkit"
     }
   ]
 }

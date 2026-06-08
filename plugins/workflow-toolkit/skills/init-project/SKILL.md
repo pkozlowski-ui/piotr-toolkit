@@ -111,7 +111,7 @@ Zalecane następne kroki:
 ## Presety per typ projektu
 
 ### Frontend prototype
-- CLAUDE.md: skill auto-triggers (browser-verify, design-system-lookup, motion-expert, responsive-verifier)
+- CLAUDE.md: skill auto-triggers (browser-verify, design-system-lookup, coding-principles)
 - Quality gates: UI changes → browser-verify
 - Stack placeholder: Next.js/React + Tailwind
 
@@ -126,7 +126,7 @@ Zalecane następne kroki:
 - Scaffold pełnego `docs/design-system/` jeśli zaznaczone
 
 ### Code-to-design
-- CLAUDE.md: skill auto-trigger code-to-figma-converter
+- CLAUDE.md: skill auto-trigger figma-router (routuje całą pracę w Figmie)
 - Figma file URL wymagane
 - Brak read-only text rule (bo pracujesz w Figmie, nie w kodzie marketing site)
 

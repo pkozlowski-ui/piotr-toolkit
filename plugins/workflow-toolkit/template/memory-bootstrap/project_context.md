@@ -1,7 +1,8 @@
 ---
-name: Project Context
+name: project-context
 description: Stack, kluczowe ścieżki, konwencje, stan deployment dla {{PROJECT_NAME}}
-type: project
+metadata:
+  type: project
 ---
 
 # {{PROJECT_NAME}}
