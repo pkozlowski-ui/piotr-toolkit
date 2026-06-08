@@ -16,11 +16,15 @@ description: >
 
 **This skill diagnoses. It does not fix.**
 
-Three-skill division of labor:
-- **ux-tweaker** → something's wrong, figure out what and where
-- **impeccable** → execute the fix (`/impeccable typeset`, `/impeccable bolder`, etc.)
-- **taste-skill** → build new UI from scratch with strong aesthetic opinion
-- **frontend-design** → greenfield, no constraints
+Division of labor — ux-tweaker diagnozuje; **egzekucja żyje w skillach ZEWNĘTRZNYCH** (instaluj osobno):
+- **ux-tweaker** (ten skill) → something's wrong, figure out what and where
+- **impeccable** → execute the fix (`/impeccable typeset`, `/impeccable bolder`, etc.) — external: https://github.com/pbakaus/impeccable
+- **taste-skill** → build new UI from scratch with strong aesthetic opinion — external: https://github.com/leonxlnx/taste-skill
+- **frontend-design** → greenfield, no constraints — external (oficjalny plugin Anthropic: `frontend-design`)
+
+> Te skille NIE są częścią tego toolkitu. Jeśli prescription routuje do `/impeccable …` a skill nie jest
+> zainstalowany — powiedz to userowi i wskaż URL powyżej. ux-tweaker działa samodzielnie do etapu **diagnozy**;
+> sama egzekucja wymaga `impeccable`.
 
 ---
 

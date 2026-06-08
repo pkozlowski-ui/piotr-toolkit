@@ -8,7 +8,16 @@ description: Visual UI verification in browser (desktop + mobile) before marking
 ## Auto-trigger
 After any UI change. Exception: logic/data-only changes with no visual impact.
 
+**Scope (vs `mobile-audit`):** browser-verify to **szybki smoke-check** przed „done" (desktop + mobile screenshot, błędy w konsoli). Pełny, wieloviewportowy audyt mobile z raportem → `mobile-audit` (design-toolkit).
+
 ## Protocol
+
+### 0 — Pre-flight (Playwright)
+Sprawdź czy Playwright jest dostępny: `npx playwright --version` (lub `@playwright/test` w devDeps). Jeśli nie —
+powiedz to **od razu** i zaproponuj instalację, albo poproś o ręczne screenshoty (bez tego kroki 2–3 nie zadziałają):
+```bash
+npm install -D @playwright/test && npx playwright install chromium
+```
 
 ### 1 — Dev server + resolve the URL
 

@@ -12,6 +12,8 @@ description: >
 
 Szukaj problemów, nie potwierdzeń. Raportuj po polsku.
 
+> **Zakres (vs `browser-verify`):** to **głęboki**, wieloviewportowy audyt z raportem `MOBILE_AUDIT.md`. Do szybkiego smoke-checku po zmianie UI przed „done" użyj `browser-verify` (workflow-toolkit).
+
 ---
 
 ## Pre-flight (zanim cokolwiek zaczniesz)

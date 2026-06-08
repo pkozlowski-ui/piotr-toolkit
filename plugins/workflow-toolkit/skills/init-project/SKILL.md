@@ -79,9 +79,14 @@ Na podstawie odpowiedzi:
    - `{{FIGMA_URL}}` → jeśli podany
    - `{{READ_ONLY_TEXT}}` → włącz sekcję i skopiuj hook jeśli zaznaczone
 
-3. **Design system scaffold** (jeśli zaznaczone):
-   - Utwórz `docs/design-system/01-foundations/` z placeholder `colors.md`
-   - `02-primitives/`, `03-patterns/`, `04-page-blueprints/` jako puste katalogi z README
+3. **Design system scaffold** (jeśli zaznaczone) — twórz programowo, NIE polegaj na template (`cp` kopiuje tylko top-level README):
+   ```bash
+   for d in 01-foundations 02-primitives 03-patterns 04-page-blueprints; do
+     mkdir -p "docs/design-system/$d"
+     echo "# ${d#*-}" > "docs/design-system/$d/README.md"
+   done
+   echo "# Tokens / kolory" > docs/design-system/01-foundations/colors.md
+   ```
 
 4. **Memory** (jeśli zaznaczone) — model git-trwały wg `memory-discipline` (NIE lokalny `~/.claude/projects/...`):
    ```bash
@@ -137,6 +142,12 @@ Zalecane następne kroki:
 - CLAUDE.md: skill auto-trigger figma-router (routuje całą pracę w Figmie)
 - Figma file URL wymagane
 - Brak read-only text rule (bo pracujesz w Figmie, nie w kodzie marketing site)
+
+### Generic / inne (stack-agnostic)
+- CLAUDE.md: tylko uniwersalne auto-triggers (coding-principles); browser-verify/design-system-lookup TYLKO jeśli projekt ma UI
+- Stack placeholder `{{STACK}}` **pusty** — żadnych założeń npm/Tailwind
+- Quality gates + allowlist **warunkowe od wykrytego stacku** (`pyproject.toml` → Python, `Cargo.toml` → Rust, `go.mod` → Go, `package.json` → JS/TS)
+- Bez scaffoldu DS i bez read-only text rule (chyba że user zaznaczy)
 
 ## Zasady
 
