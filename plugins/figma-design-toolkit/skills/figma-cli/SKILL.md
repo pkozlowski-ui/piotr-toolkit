@@ -32,8 +32,7 @@ and every command below will fail until it's installed. If `$FIGMA_CLI_PATH` res
 and no clone is found in the common locations, install it:
 
 ```bash
-# <<UZUPEŁNIJ: URL repo figma-ds-cli>> — np. git@github.com:pkozlowski-ui/figma-cli.git
-git clone <FIGMA_DS_CLI_REPO_URL> ~/figma-cli
+git clone https://github.com/silships/figma-cli.git ~/figma-cli
 cd ~/figma-cli && npm install        # + build, jeśli repo go wymaga (sprawdź package.json scripts)
 export FIGMA_CLI_PATH=~/figma-cli    # dodaj do ~/.zshrc dla trwałości
 node "$FIGMA_CLI_PATH/src/index.js" daemon status   # sanity check

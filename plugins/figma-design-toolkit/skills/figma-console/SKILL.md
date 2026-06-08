@@ -7,6 +7,20 @@ description: Prerequisite for figma-console MCP tools (figma_execute, figma_capt
 
 Controls Figma Desktop via WebSocket (Desktop Bridge plugin). Requires Figma to be open with the plugin running.
 
+## Install / Setup (MCP server)
+
+The `figma_execute` / `figma_capture_screenshot` / `figma_search_components` tools come from the
+**figma-console MCP server** — a separate component, not bundled with this plugin. On a fresh machine
+the tools won't exist until it's installed and registered.
+
+- **Repo:** https://github.com/southleft/figma-console-mcp (clone + follow its README for install + MCP registration)
+- After registering the MCP server, the Figma Desktop side needs the **Desktop Bridge plugin** running
+  (Figma open, plugin launched) — see that repo for the bridge setup.
+- Verify with `figma_get_status`. If the `figma_*` tools aren't available at all → the MCP server isn't
+  registered (this is install, not a connection drop — `figma_reconnect` won't help).
+
+> Część skilla `workflow-toolkit:bootstrap-machine` (onboarding nowej maszyny) powinna obejmować ten krok.
+
 ## When to load
 - About to call `figma_execute` for Plugin API operations
 - Working with component variants (`setProperties`)

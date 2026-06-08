@@ -1,6 +1,6 @@
 {
   "name": "figma-design-toolkit",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Figma design workflow skills: component-first methodology, Plugin API via Desktop Bridge, and JSX CLI. Works with any Figma design system.",
   "author": {
     "name": "pkozlowski-ui",
