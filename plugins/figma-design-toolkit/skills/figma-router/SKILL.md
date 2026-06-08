@@ -19,6 +19,8 @@ Do not act before routing is complete.
 | **FigJam / diagrams** | diagram, flow, FigJam, flowchart, scenariusz, schemat, board URL (`figma.com/board/…`) | Read `figjam-diagrams/SKILL.md` |
 | **Accessibility** | accessibility, dostępność, WCAG, ARIA, screen reader, kontrast, a11y, VoiceOver, TalkBack, focus order | Read `figma-accessibility/SKILL.md` |
 | **DS audit / repair** | drift, audit DS, hardcoded colors, odeszło od DS, podepnij do DS, token audit, detached instances | Read `figma-ds-tools/SKILL.md` |
+| **DS scaffold / init** | "załóż design system", zainicjalizuj DS, ustaw design system, scaffold DS docs, bootstrap figma docs, registry/build-kit | Read `figma-ds-init/SKILL.md` |
+| **Prototype / interakcje** | prototyp, prototype mode, połącz ekrany, tranzycje, overlay, back navigation, interactions | Read `figma-prototype/SKILL.md` |
 
 ## Rules
 

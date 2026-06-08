@@ -23,13 +23,13 @@ Template mieszka w tym samym pluginie, w katalogu `template/` obok `skills/`.
 Po zainstalowaniu pluginu Claude Code kopiuje plugin do lokalnego cache. Ścieżka:
 
 ```
-~/.claude/plugins/cache/pkozlowski-ui-marketplace/workflow-toolkit/<version>/template/
+~/.claude/plugins/cache/*/workflow-toolkit/<version>/template/
 ```
 
 Żeby znaleźć aktualną wersję, użyj glob:
 
 ```bash
-ls -d ~/.claude/plugins/cache/pkozlowski-ui-marketplace/workflow-toolkit/*/template 2>/dev/null | sort -V | tail -1
+ls -d ~/.claude/plugins/cache/*/workflow-toolkit/*/template 2>/dev/null | sort -V | tail -1
 ```
 
 Jeśli ten katalog nie istnieje — plugin `workflow-toolkit` nie jest zainstalowany.
@@ -57,7 +57,7 @@ Sprawdź obecny katalog:
 - Design system — scaffold docs/design-system/ z 4-warstwową hierarchią
 - Read-only text rule — nie dotykać copy marketingowego (hook ochronny)
 - Weekly audit — automatyczny raport co poniedziałek
-- Memory — inicjalizuj ~/.claude/projects/<cwd>/memory/
+- Memory — załóż `.claude/memory/` w repo + symlink (git-trwałe; patrz `memory-discipline`)
 
 **Pytanie 3: Stack techniczny (tylko jeśli Pytanie 1 = "Inne")**
 Open-ended, user wpisuje.
@@ -68,7 +68,7 @@ Na podstawie odpowiedzi:
 
 1. **Kopiuj strukturę** z cache pluginu do obecnego katalogu:
    ```bash
-   TEMPLATE_DIR=$(ls -d ~/.claude/plugins/cache/pkozlowski-ui-marketplace/workflow-toolkit/*/template 2>/dev/null | sort -V | tail -1)
+   TEMPLATE_DIR=$(ls -d ~/.claude/plugins/cache/*/workflow-toolkit/*/template 2>/dev/null | sort -V | tail -1)
    cp -r "$TEMPLATE_DIR/." ./
    ```
    Kopiuje: `CLAUDE.md`, `.claude/settings.json`, `docs/design-system/` szkielet, `memory-bootstrap/`.
@@ -83,9 +83,17 @@ Na podstawie odpowiedzi:
    - Utwórz `docs/design-system/01-foundations/` z placeholder `colors.md`
    - `02-primitives/`, `03-patterns/`, `04-page-blueprints/` jako puste katalogi z README
 
-4. **Memory** (jeśli zaznaczone):
-   - Utwórz `~/.claude/projects/<sanitized-cwd>/memory/MEMORY.md` z nagłówkiem indeksu
-   - Skopiuj `project_context.md` template — ale **nie wypełniaj** konkretnymi wartościami, zostaw placeholdery do wypełnienia w pierwszej sesji
+4. **Memory** (jeśli zaznaczone) — model git-trwały wg `memory-discipline` (NIE lokalny `~/.claude/projects/...`):
+   ```bash
+   mkdir -p .claude/memory
+   cp "$TEMPLATE_DIR/memory-bootstrap/." .claude/memory/ 2>/dev/null || cp -r "$TEMPLATE_DIR/memory-bootstrap/"* .claude/memory/
+   # symlink: natywny katalog Claude Code → .claude/memory/ w repo
+   DASHED=$(pwd | sed 's#/#-#g; s# #-#g')
+   LINK="$HOME/.claude/projects/$DASHED/memory"
+   [ -L "$LINK" ] || { rm -rf "$LINK"; mkdir -p "$(dirname "$LINK")"; ln -s "$(pwd)/.claude/memory" "$LINK"; }
+   ```
+   - `project_context.md` zostaw z placeholderami (`{{...}}`) do wypełnienia w pierwszej sesji.
+   - `.claude/memory/` jest wersjonowane w repo → przeżywa migrację (commit = backup).
 
 ### Krok 4 — Weekly audit registration
 
@@ -99,7 +107,7 @@ Pokaż użytkownikowi:
 ```
 ✓ CLAUDE.md utworzony (typ: frontend prototype)
 ✓ .claude/ settings.json skopiowany
-✓ Memory zainicjalizowana w ~/.claude/projects/.../memory/
+✓ Memory zainicjalizowana w .claude/memory/ (w repo) + symlink
 ✓ Weekly audit zarejestrowany (poniedziałek 10:00)
 
 Zalecane następne kroki:
