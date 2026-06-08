@@ -1,13 +1,13 @@
 {
   "name": "workflow-toolkit",
-  "version": "1.3.0",
-  "description": "Universal Claude Code workflow skills: project bootstrap, session retro, design system lookup, browser verification, coding principles, handoff. Works across any project type.",
+  "version": "1.4.0",
+  "description": "Universal Claude Code workflow skills: project bootstrap, session retro, design system lookup, browser verification, coding principles, handoff, memory discipline. Works across any project type.",
   "author": {
     "name": "pkozlowski-ui",
     "email": "piotr.kozlowski@sunscrapers.com",
     "url": "https://github.com/pkozlowski-ui"
   },
-  "repository": "https://github.com/pkozlowski-ui/skills",
+  "repository": "https://github.com/pkozlowski-ui/piotr-toolkit",
   "license": "MIT",
-  "keywords": ["workflow", "bootstrap", "memory", "session-retro", "design-system", "verification", "coding-principles", "handoff"]
+  "keywords": ["workflow", "bootstrap", "memory", "memory-discipline", "session-retro", "design-system", "verification", "coding-principles", "handoff"]
 }
