@@ -38,8 +38,8 @@ Zbierz wskaźniki do istniejących artefaktów (ścieżki plików, URL PR, linie
 Przykłady:
 - Pliki zmienione: `src/app/apply/guardian/page.tsx`
 - Otwarte PR: `gh pr list` jeśli nie wiesz
-- Plan mode file jeśli był użyty: `/Users/piotr/.claude/plans/*.md`
-- Memory projektu: `~/.claude/projects/<sanitized-cwd>/memory/MEMORY.md`
+- Plan mode file jeśli był użyty: `~/.claude/plans/*.md`
+- Memory projektu: `.claude/memory/MEMORY.md` (w repo; lokalny katalog Claude Code to symlink — patrz `memory-discipline`)
 
 ### Krok 3 — Suggested skills dla następnej sesji
 
