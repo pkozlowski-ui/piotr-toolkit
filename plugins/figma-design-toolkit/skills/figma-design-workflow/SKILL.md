@@ -332,8 +332,48 @@ Plan the property space **before** building variants.
 
 ### clone() does NOT copy componentPropertyReferences
 
-After `node.clone()` on a component with INSTANCE_SWAP bindings, the clone's inner instances
-lose their property bindings. Rebind via `figma.addComponentProperty()` or rebuild manually.
+After `node.clone()`, the clone loses property bindings — both INSTANCE_SWAP **and** TEXT `characters`
+refs (labels revert to defaults; `setProperties` on them silently no-ops). Rebind explicitly:
+`textNode.componentPropertyReferences = { ...textNode.componentPropertyReferences, characters: 'Label#id' }`.
+Two ordering rules when cloning a variant into a COMPONENT_SET: (1) **rename before append** — a clone keeps
+the source's variant name → duplicate-variant conflict; (2) **set refs only after the clone is in the set** —
+props don't resolve on an orphan ("Could not find a component property with name…"). Also observed: `clone()`
+of a frame can silently **drop a nested child** — verify `clone.children` for critical structures.
+
+### COMPONENT_SET with inconsistent variant props → "existing errors"
+
+If some variants define a property others don't (e.g. half named `Size,Active`, half `Size,Active,Focus`),
+`componentPropertyDefinitions` throws "Component set has existing errors" and you can't read or extend it.
+**Repair:** normalize EVERY variant name to the same property keys (add the missing one, e.g. `, Focus=False`).
+The error then clears and you can append new variants (e.g. a `Size=5` row) + new TEXT props (`addComponentProperty`).
+
+### New nodes inherit the last-used paint
+
+`createComponent` / `createRectangle` / new strokes can inherit the **last paint used in the Figma session**
+(e.g. a leftover gradient stroke appears on a "plain" new component). Never assume a clean default — explicitly
+set or clear right after creating (`node.strokes = []`, or bind a token). Token audits only flag SOLID paints,
+so a stray GRADIENT stroke slips through — check `strokes[0].type` when something looks off.
+
+### Flipped/rotated SECTION renders new children inverted
+
+A SECTION with a flipped transform (`relativeTransform [[1,0,x],[0,-1,y]]`, scaleY=-1) makes newly-created
+children render upside-down *in that section* (existing siblings compensate with their own scaleY=-1).
+Instances placed in a normal frame are upright regardless. `node.rotation` reports `0` even when flipped —
+inspect `relativeTransform`, not `.rotation`. Fix the source: match siblings' transform, or build elsewhere.
+
+### width / height ARE bindable to FLOAT variables
+
+`node.setBoundVariable('width', floatVar)` works (also `'height'`) — tokenize panel/drawer/rail dimensions
+instead of hardcoding (e.g. a `width/drawer` token), and binding at the component level propagates to instances.
+⚠️ Guard against an instance's width getting bound to the *wrong* size token — it overrides the component default.
+
+### figma_execute timeouts on heavy scripts / whole-tree findAll
+
+Creating many instances in one call, or `findAll`/`findAllWithCriteria` over a whole page/document, hits the
+execution timeout (default ~5–7s; max 30s — pass `timeout`). Split into smaller calls, scope `findAll` to a
+specific node (never `figma.root`/page), and wrap geometry reads (`n.height`) in `try` — stale instance-sublayer
+nodes throw "node … does not exist". `figma_execute` is **not** transactional — partial nodes persist on
+error/timeout; inspect and clean them before retrying.
 
 ### Node references go stale after tree modification
 
@@ -803,6 +843,11 @@ function instanceRatioAudit(screen){
 | Importing local component by key | Local components: `getNodeByIdAsync(nodeId)` |
 | One giant `figma_execute` for the whole screen | Split into sections, screenshot after each |
 | Wrong frame width (e.g. 1440 vs 1563) | Check `frame.width` on an existing page |
+| Cloned variant labels revert / `setProperties` no-ops on a clone | `clone()` drops `componentPropertyReferences` (TEXT too) — rename before append, then re-set `componentPropertyReferences.characters` once the clone is in the set |
+| New component has a stray gradient/odd stroke | New nodes inherit last-used paint — set/clear `strokes`/`fills` explicitly (audit skips non-SOLID paints) |
+| Component renders upside-down on the DS page | Parent SECTION is flipped (`scaleY=-1`) — match siblings' `relativeTransform` or build in a non-flipped section (`.rotation` reports 0) |
+| Hardcoded panel/drawer/rail width | Bind to a FLOAT token: `node.setBoundVariable('width', widthVar)` (width/height ARE bindable) |
+| COMPONENT_SET won't read/extend ("existing errors") | Variant property sets are inconsistent — normalize every variant name to the same keys (add the missing `Prop=Default`) |
 | Text in instance — no TEXT prop | `setProperties` if prop exists; `findOne(TEXT).characters` after `loadFontAsync` if not. NEVER detach. |
 | `detachInstance()` to change text or color | Use: (1) `setProperties` for TEXT props, (2) `findOne(TEXT).characters`, (3) fill override on instance |
 | Content area built with `createFrame()` in a DS component | Use `createSlot()` instead — only SLOT nodes accept `appendChild` in instances; FRAME inside instance throws "Cannot move node" |
