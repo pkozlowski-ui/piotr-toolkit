@@ -38,11 +38,14 @@ await node.setReactionsAsync([{
 
 ## ⚠️ Gotchas API (dynamic-page) — czytaj zanim napiszesz pierwszy skrypt
 
-Te trzy pułapki wywalają każdy `figma_execute` po kolei. Realne błędy z sesji Flow 1 (2026-06-01):
+Te pułapki wywalają każdy `figma_execute` po kolei. Realne błędy z sesji (Flow 1 2026-06-01; Flow 15/16 2026-06-09):
 
 1. **`node.reactions = [...]` rzuca błąd** `Cannot call with documentAccess: dynamic-page`. Plugin działa w trybie dynamic-page → ZAWSZE `await node.setReactionsAsync([...])`. Odczyt: `await node.reactions` (getter nadal działa).
 2. **`action:` (l. poj.) rzuca** `Please update the 'actions' field instead of the 'action' field in order to prevent data loss`. ZAWSZE `actions: [ {...} ]` (tablica) — nawet dla pojedynczej akcji. Pole `action` jest deprecated.
 3. **`flowStartingPoints` nie znosi zduplikowanych `nodeId`** → `Found duplicate input nodeIds`. Frame bywa już punktem startowym pod inną nazwą. Filtruj po **`nodeId`**, nie po nazwie, zanim dopiszesz swój.
+4. **Buttony w modalu/drawerze/zagnieżdżonej instancji adresuj PEŁNĄ ścieżką instancji** `I<root>;…;<btn>`, NIE gołym ID. Gołe ID (np. `2891:62610`) rozwiązuje się do węzła **wewnątrz komponentu** (chain urywa się, nie sięga PAGE) → `destination rejected … the source may not be a valid prototype source`. Znajdź on-canvas węzeł przez `screen.findAll(n=>n.type==='INSTANCE' && …)` i sprawdź, że parent-chain dochodzi do `PAGE` (`reachesPage`). Realny błąd Flow 15 (modal Merge-confirm) i Flow 16 (przycisk w SideDrawer).
+5. **`setReactionsAsync` NIE jest rollbackowane przy throwie skryptu.** Mimo że `figma_execute` bywa „atomic", reactions ustawione PRZED rzutem zostają zapisane. Po nieudanym skrypcie **zweryfikuj stan** (odczytaj `reactions`), nie zakładaj że nic się nie stało — i pisz wiring idempotentnie (overwrite), żeby ponowienie było bezpieczne.
+6. **Lista „Flows" w Present mode = `page.flowStartingPoints`, nie sekcje/ekrany.** Samo okablowanie ekranów i przycisków NIE sprawi, że flow pojawi się na liście ani że da się go odpalić z panelu — trzeba dopisać `{nodeId, name}` do `flowStartingPoints` (dedupe po `nodeId`, patrz pkt 3). Typowy „starting point" to cover/intro-frame, którego CTA wchodzi w pierwszy ekran flow.
 
 ---
 
