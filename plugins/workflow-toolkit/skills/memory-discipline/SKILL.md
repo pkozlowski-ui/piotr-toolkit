@@ -26,9 +26,17 @@ Rozdzielamy dwa problemy, które łatwo pomylić:
 |---|---|---|---|
 | 1. Kanon projektu | reguły, decyzje, blueprinty, pamięć projektu | `CLAUDE.md` + `docs/` + **`.claude/memory/` w repo projektu** | git (repo projektu) |
 | 2. Konwencje | "jak prowadzić pamięć" (ten skill) | `workflow-toolkit` (piotr-toolkit) | git (toolkit, public) |
-| 3. Dane cross-project | osobiste / między-projektowe wpisy, **dane wrażliwe** | prywatny repo `claude-memory` ← symlink z globalnego `memory/` | git (prywatny) |
+| 3. Cross-project | wpisy między-projektowe, **dane wrażliwe**, **globalny `CLAUDE.md`** (always-on reguły) | prywatny repo `claude-memory` ← symlink z globalnego `memory/` (+ `CLAUDE.global.md` ← symlink `~/.claude/CLAUDE.md`) | git (prywatny) |
 
 **Zasada przewodnia:** trwała wiedza → git; lokalna pamięć → cache roboczy, promowany do git.
+
+**Dwa kanały na warstwie 3 — nie myl ich** (lustro rozróżnienia z warstwy 1):
+- **Globalny `CLAUDE.md`** (`claude-memory/CLAUDE.global.md`, symlink `~/.claude/CLAUDE.md`) = instrukcje
+  **ładowane zawsze**, co sesję — stabilne reguły work-style / komunikacji / workflow obowiązujące we
+  wszystkich projektach.
+- **Pliki pamięci** (`type: user/feedback/reference`) = fakty **przywoływane na trafność**, gdy pasują do zadania.
+- Reguła „stosuj zawsze, wszędzie" → globalny `CLAUDE.md`; fakt sytuacyjny → plik pamięci.
+  (Analogicznie warstwa 1: projektowy `CLAUDE.md` always-on vs `.claude/memory/` retrieved.)
 
 ## Trwałość przez symlink (warstwa 1 i 3)
 
@@ -72,10 +80,14 @@ przy edycji migruj do `metadata.type`. Indeks: jedna linia w `MEMORY.md` (`- [Ty
 ## Reguła promocji (retro)
 
 Lokalna/projektowa pamięć to cache. Na koniec sesji (patrz `session-retro`):
-- **stabilna reguła/konwencja** → `CLAUDE.md` projektu,
+- **stabilna reguła/konwencja projektu** → projektowy `CLAUDE.md`,
+- **stabilna reguła cross-project / work-style (always-on, dotyczy wszystkich projektów)** → **globalny `CLAUDE.md`** (`claude-memory/CLAUDE.global.md`),
 - **decyzja "dlaczego tak"** → nowy ADR w `docs/decisions/`,
-- **cross-project lesson** → warstwa 3 (`claude-memory`),
+- **cross-project lesson / fakt sytuacyjny** → plik pamięci w warstwie 3 (`claude-memory`),
 - **ulotny kontekst projektu** → zostaje w `.claude/memory/`.
+
+Rozróżnienie projekt vs globalny `CLAUDE.md`: reguła ważna tylko w jednym repo → projektowy; reguła
+work-style obowiązująca wszędzie → globalny.
 
 ## Czego NIE zapisywać
 
