@@ -100,6 +100,18 @@ Append a **DS rules** block to the project `CLAUDE.md` (or confirm it exists). M
   issueCount:0 and pass:true (≥95%) before "done".
 - Collection rules: new DS component → figma-registry.json + components.md in the same commit;
   new clonable composite → canonical-patterns.md; project-specific gotcha → memory.
+- **Definition of Done — a new DS component is NOT "done" until all of:**
+  1. token-compliant (tokenAudit issueCount:0);
+  2. **placed on its DS page wrapped in a spec-card** (specCard() — title + 1-line desc + the master), in
+     the page's master container, NOT loose on the canvas; Foundations = token-gallery, not spec-card;
+  3. **scaleY = +1** (`relativeTransform[1][1] > 0` — not flipped); section at abs (0,0);
+  4. registry entry (id, type, variants, props, use);
+  5. components.md entry (Kiedy / Nie używaj gdy);
+  6. WCAG checklist if interactive.
+- **Naming canon:** the registry/components.md key MUST equal the exact Figma node name. Drift
+  (`next-steps-card` vs `NextStepsCard`, `Divider/CloseButton` vs `CloseButton`) is a bug — fix in Figma.
+- **Tombstones, not deletes:** a removed/merged component keeps a marker in both files (`_deprecated:true`
+  + 🗑️ in registry, `~~Name~~` in components.md). Never delete a component before A4 (0 instances) — see figma-ds-tools.
 ```
 
 ---
@@ -161,6 +173,24 @@ async function txt(parent, styleName, chars, tokenVar = TOK.textBody) {
   bindFill(t, tokenVar);                    // the step everyone forgets
   return t;
 }
+
+// DS-PAGE DOC LAYOUT — every component on a component-doc page (02–07) lives in a titled spec-card.
+// Readable, consistent, self-labelling. (Foundations uses a swatch grid bound to live vars, not spec-cards.)
+async function specCard(master, title, desc) {        // master = COMPONENT / COMPONENT_SET node
+  const c = figma.createFrame(); c.name = 'spec-card/' + title; c.layoutMode = 'VERTICAL';
+  setSp(c, 'itemSpacing', 16); ['paddingTop','paddingBottom','paddingLeft','paddingRight'].forEach(p => setSp(c, p, 24));
+  setRadius(c, 12); bindFill(c, TOK.surface, { r: 1, g: 1, b: 1 }); bindStroke(c, TOK.border, 1);
+  c.layoutSizingHorizontal = 'HUG'; c.layoutSizingVertical = 'HUG';
+  const head = figma.createFrame(); head.name = 'head'; head.layoutMode = 'VERTICAL'; head.fills = [];
+  setSp(head, 'itemSpacing', 2); head.layoutSizingHorizontal = 'HUG'; head.layoutSizingVertical = 'HUG'; c.appendChild(head);
+  await txt(head, 'label/lg', title, TOK.textBody);
+  if (desc) await txt(head, ['body/sm','body'], desc, TOK.textMuted);
+  c.appendChild(master);   // reparent master INTO the card — instances are unaffected by master position
+  return c;
+}
+// Page master = one VERTICAL auto-layout frame per DS page ("DS-<Name>", gap 48, padding 48, fill surface),
+// living inside the page's SECTION at abs (0,0). Append each specCard() to it, then resize the SECTION to
+// master.width+48 / master.height+48. Audit before "done": every component sits in a spec-card; scaleY=+1.
 ```
 
 ## Audits (instance = OPAQUE — do NOT recurse into instances)

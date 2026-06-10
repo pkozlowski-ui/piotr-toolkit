@@ -359,7 +359,19 @@ so a stray GRADIENT stroke slips through — check `strokes[0].type` when someth
 A SECTION with a flipped transform (`relativeTransform [[1,0,x],[0,-1,y]]`, scaleY=-1) makes newly-created
 children render upside-down *in that section* (existing siblings compensate with their own scaleY=-1).
 Instances placed in a normal frame are upright regardless. `node.rotation` reports `0` even when flipped —
-inspect `relativeTransform`, not `.rotation`. Fix the source: match siblings' transform, or build elsewhere.
+inspect `relativeTransform`, not `.rotation`. **Prefer normalizing over compensating:** un-flip the section
+(`sec.relativeTransform=[[1,0,0],[0,1,0]]`) AND every child that carried a compensating scaleY=-1
+(`n.relativeTransform=[[sx,0,tx],[0,1,ty]]`), then build normally. Keep sections at abs (0,0) — negative-Y
+sections also export mirrored PNGs. Audit: `figma-ds-tools` A5.
+
+### figma_arrange_component_set is destructive — do NOT use
+
+This tool **clones the entire component set** into a new "Component Container" doc-frame on the *currently
+active page* (not the set's own page), creating a **duplicate master** with a fresh ID. The duplicate
+pollutes the library and steals instances. Variants in a set are selected by **property, not position** —
+a loose grid after `clone()`+`appendChild` is harmless and needs no "tidying". If you must arrange visually,
+set `x/y` on variants by hand. (If already run: delete the cloned container, verify the original set's
+variant count is intact, confirm instances still point at the original.)
 
 ### width / height ARE bindable to FLOAT variables
 

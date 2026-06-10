@@ -2,8 +2,9 @@
 name: figma-ds-tools
 description: >
   Audit and repair design system drift in Figma files. Load when checking DS compliance,
-  finding hardcoded values that should be tokens, reconnecting detached instances,
-  or running a token audit across pages.
+  finding hardcoded values that should be tokens, reconnecting detached instances, running a
+  token audit, finding dead/unused or deprecated components before deleting, detecting flipped
+  or orphaned masters, or checking Figma↔registry parity.
 ---
 
 # figma-ds-tools — Design System Audit & Repair
@@ -16,6 +17,9 @@ Use together with `figma-design-toolkit:figma-console` for execution.
 - "Find hardcoded colors / values not using tokens"
 - "Reconnect these components to the library"
 - "How far has this file drifted from the design system?"
+- "Do we have unused / deprecated components? Can we delete any?" (A4 — deprecated ≠ unused)
+- "Why does this section render upside-down / mirrored?" (A5 — flipped scaleY)
+- "Is every component documented in the registry?" (A7 — parity)
 - Taking over a file that grew organically without DS discipline
 
 ## Skill boundaries
@@ -26,7 +30,7 @@ For accessibility audit of components, load `figma-design-toolkit:figma-accessib
 
 ## Workflow A — Audit
 
-Run all three scripts below. Collect counts. Then prioritize by impact.
+Run the scripts below (A1–A7). Collect counts. Then prioritize by impact.
 
 ### A1 — Find detached instances (disconnected from main component)
 
@@ -104,15 +108,80 @@ return { count: hardcoded.length, hardcoded };
 // Priority: 🟡 Medium
 ```
 
+### A4 — Dead / deprecated component audit (deprecated ≠ unused)
+
+**Rule: never delete a component before checking live instance count.** A component flagged deprecated may still have many live instances — deleting it orphans them (lost labels/overrides). Use `getInstancesAsync`.
+
+```javascript
+// Count live instances per component/set on a DS page. 0 = safe-delete candidate.
+async function count(node){
+  if(node.type==='COMPONENT') return (await node.getInstancesAsync()).length;
+  let t=0; for(const v of (node.children||[])) if(v.type==='COMPONENT') t+=(await v.getInstancesAsync()).length;
+  return t;
+}
+const comps = figma.currentPage.findAll(n => n.type==='COMPONENT' || n.type==='COMPONENT_SET');
+const out=[];
+for(const c of comps){
+  const n = await count(c);
+  const flaggedDeprecated = /deprecated/i.test(c.name); // `_` prefix = internal, NOT deprecated
+  out.push({ name:c.name, id:c.id, instances:n,
+    verdict: n===0 ? '🗑️ SAFE TO DELETE (0 instances)' : (flaggedDeprecated ? '⚠️ deprecate-in-place (still used — do NOT delete)' : 'live') });
+}
+return out.sort((a,b)=>a.instances-b.instances);
+// Priority: 🟢 hygiene. Delete only verdict=SAFE. Deprecated+used → keep, point Description to successor, migrate instances first.
+```
+
+### A5 — Flipped node audit (`scaleY = -1`)
+
+A vertically-flipped SECTION or component renders its children/text inverted and exports mirrored at negative Y. Often pre-existing corruption.
+
+```javascript
+const flipped = figma.currentPage.findAll(n =>
+  'relativeTransform' in n && n.relativeTransform[1][1] < 0
+).map(n => ({ name:n.name, id:n.id, type:n.type, scaleY:n.relativeTransform[1][1] }));
+return { count: flipped.length, flipped };
+// Repair: const t=n.relativeTransform; n.relativeTransform=[[t[0][0],t[0][1],t[0][2]],[t[1][0],1,t[1][2]]];
+// Fix the SECTION first, then any child component that carried a compensating -1. Keep sections at abs (0,0).
+// Priority: 🔴 High (breaks layout + PNG export).
+```
+
+### A6 — Orphaned master audit (`parent == null`)
+
+A component that exists (instances reference it) but sits on no page — usually left after a container delete. Invisible, undocumented.
+
+```javascript
+// Check specific suspect IDs (whole-file findAll times out). parent==null + removed==false = orphan.
+async function check(id){ const n=await figma.getNodeByIdAsync(id); return n && !n.removed && n.parent==null ? {id,name:n.name,orphan:true} : {id,orphan:false}; }
+// Re-home: wrap in a spec-card and append to the right DS page master.
+// Priority: 🟡 Medium.
+```
+
+### A7 — Figma ↔ registry parity audit (3-way consistency)
+
+Every component on a DS page must have a `figma-registry.json` entry (and a `components.md` row). Catches docs drifting behind Figma.
+
+```javascript
+// 1) collect component names on DS page masters → 2) diff against registry keys (read figma-registry.json).
+const onPage = figma.currentPage.findAll(n => (n.type==='COMPONENT'||n.type==='COMPONENT_SET')).map(n=>n.name);
+return { onPage }; // compare to Object.keys(registry) in the repo; report names missing from registry.
+// Also flag naming drift: registry key MUST equal the exact Figma node name (e.g. `next-steps-card` vs `NextStepsCard`).
+// Priority: 🟡 Medium (handoff/codegen correctness).
+```
+
 ### Audit summary table
 
-After running A1–A3, produce this before any repair work:
+After running A1–A7, produce this before any repair work:
 
 | Issue | Count | Priority | Impact |
 |---|---|---|---|
 | Detached instances | — | 🔴 High | DS updates don't reach these nodes |
 | Hardcoded fills | — | 🟡 Medium | Theme switch won't affect these colors |
 | Hardcoded radii | — | 🟡 Medium | Radius token changes won't propagate |
+| Dead components (0 instances) | — | 🟢 Hygiene | Safe to delete; clutter otherwise |
+| Deprecated but used | — | ⚠️ Keep | Deprecate-in-place; migrate before delete |
+| Flipped nodes (scaleY<0) | — | 🔴 High | Inverted render + mirrored export |
+| Orphaned masters (no page) | — | 🟡 Medium | Undocumented, invisible |
+| Missing from registry | — | 🟡 Medium | Handoff/codegen drift |
 
 Agree on priority order with the team before repairing.
 
