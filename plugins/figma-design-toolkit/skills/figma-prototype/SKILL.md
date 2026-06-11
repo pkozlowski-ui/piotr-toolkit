@@ -44,7 +44,7 @@ Te pułapki wywalają każdy `figma_execute` po kolei. Realne błędy z sesji (F
 4. **Buttony w modalu/drawerze/zagnieżdżonej instancji adresuj PEŁNĄ ścieżką instancji** `I<root>;…;<btn>`, NIE gołym ID. Gołe ID (np. `2891:62610`) rozwiązuje się do węzła **wewnątrz komponentu** (chain urywa się, nie sięga PAGE) → `destination rejected … the source may not be a valid prototype source`. Znajdź on-canvas węzeł przez `screen.findAll(n=>n.type==='INSTANCE' && …)` i sprawdź, że parent-chain dochodzi do `PAGE` (`reachesPage`). Realny błąd Flow 15 (modal Merge-confirm) i Flow 16 (przycisk w SideDrawer).
 5. **`setReactionsAsync` NIE jest rollbackowane przy throwie skryptu.** Mimo że `figma_execute` bywa „atomic", reactions ustawione PRZED rzutem zostają zapisane. Po nieudanym skrypcie **zweryfikuj stan** (odczytaj `reactions`), nie zakładaj że nic się nie stało — i pisz wiring idempotentnie (overwrite), żeby ponowienie było bezpieczne.
 6. **Lista „Flows" w Present mode = `page.flowStartingPoints`, nie sekcje/ekrany.** Samo okablowanie ekranów i przycisków NIE sprawi, że flow pojawi się na liście ani że da się go odpalić z panelu — trzeba dopisać `{nodeId, name}` do `flowStartingPoints` (dedupe po `nodeId`, patrz pkt 3). Typowy „starting point" to cover/intro-frame, którego CTA wchodzi w pierwszy ekran flow.
-7. **`scrollBehavior` (fixed-position) jest NIEWIDOCZNY dla Bridge plugina (API v1.0.0).** `'scrollBehavior' in node === false`, odczyt zwraca `undefined`, a zapis (`node.scrollBehavior='FIXED'`) rzuca `object is not extensible`. Czyli **przez `figma_execute` NIE odczytasz ani nie ustawisz** „Fix position when scrolling". Odczyt (audyt) zrób przez **REST** (`figma_get_file_data` → pole `scrollBehavior`: `SCROLLS`|`FIXED`|`STICKY_SCROLLS`); ustawienie — **tylko ręcznie w UI** (zaznacz element → Position → „Fix position when scrolling"). Realny bug 2026-06-11 (Staff flows: cała chrome `SCROLLS`, NavRail/AppTopBar/footer odjeżdżały przy scrollu na ekranach > viewport).
+7. **`scrollBehavior` (fixed-position) jest NIEWIDOCZNY dla Plugin API — w żadnej wersji** (`api:"1.0.0"` jest aktualne; to nie kwestia wersji bridge'a). `'scrollBehavior' in node === false`, odczyt `undefined`, zapis `node.scrollBehavior='FIXED'` rzuca `object is not extensible`. **Odczyt** (audyt): przez **REST** `GET /v1/files/:key/nodes?ids=<id>&depth=1` (bez `geometry`) → pole `scrollBehavior` (`SCROLLS`|`FIXED`|`STICKY_SCROLLS`). **Zapis** per-node: niemożliwy. **JEDYNA programowa dźwignia fixed-position = `frame.numberOfFixedChildren = N`** (zapisywalny, zweryfikowane 2026-06-11) — przypina N **wiodących dzieci-bezpośrednich** (np. ekran `[NavRail, Content]` → `numberOfFixedChildren=1` pinuje NavRail). Chrome zagnieżdżona głębiej (AppTopBar/footer w `Content`) → restrukturyzacja albo ręczny toggle w UI. Realny bug 2026-06-11 (Staff flows: cała chrome `SCROLLS`).
 
 ---
 
@@ -279,8 +279,12 @@ Po okablowaniu flow (albo gdy user prosi „zweryfikuj prototyp") zrób **automa
 
 Dla każdej sekcji-flow: BFS osiągalności od ekranu wejściowego (z `flowStartingPoints` / karty intro). Wykrywa **sieroty** (ekran nieosiągalny), **dead-endy** (brak wyjścia i brak BACK), **cross-flow** (NAVIGATE poza sekcję flow) oraz **tranzycje ≠ instant** (łamią globalną regułę).
 
+> ⚡ **Perf:** ustaw `figma.skipInvisibleInstanceChildren = true` na górze i skanuj reakcje przez `findAllWithCriteria` (filtr w silniku), nie `findAll(() => true)` — na dużej sekcji `findAll` timeoutuje. Dla długiego skanu podbij `timeout` w `figma_execute` (max 30000).
+
 ```js
 // FLOWS: { 'Nazwa': { entry:'<pierwszy-ekran-id>', secs:['<section-id>', ...] } }
+figma.skipInvisibleInstanceChildren = true;            // ⚡ kluczowe dla dużych stron
+const RX_TYPES = ['FRAME','INSTANCE','COMPONENT','GROUP','TEXT','VECTOR','RECTANGLE'];
 const FLOWS = {
   'Flow 1': { entry:'2288:30487', secs:['2288:30486'] },
   // ...
@@ -295,7 +299,7 @@ for (const [fname, cfg] of Object.entries(FLOWS)) {
   const outNav = {}, hasBack = {}, animated = [];
   for (const s of screens) {
     outNav[s.id] = new Set(); hasBack[s.id] = false;
-    const rxNodes = s.findAll(n => n.reactions && n.reactions.length > 0);
+    const rxNodes = s.findAllWithCriteria({ types: RX_TYPES }).filter(n => n.reactions && n.reactions.length > 0);
     if (s.reactions && s.reactions.length) rxNodes.push(s);
     for (const n of rxNodes) for (const r of n.reactions) for (const a of (r.actions || [])) {
       if (a.type === 'BACK') hasBack[s.id] = true;
@@ -343,9 +347,16 @@ for (const sid of SECS) { const sec = await figma.getNodeByIdAsync(sid);
 return out;
 ```
 
-Krok B: `figma_get_file_data({ nodeIds: [<chrome ids>], verbosity:'full', depth:0 })`. Wynik bywa duży → zapisuje się do pliku; wyciągnij pole przez grep/jq:
-`grep -oE '"scrollBehavior"\s*:\s*"[^"]+"' <plik> | sort | uniq -c`.
-Każdy chrome-element na ekranie > viewport powinien być `FIXED`. `SCROLLS` na NavRail/AppTopBar/wizard-footer = **do poprawy ręcznie** (Position → „Fix position when scrolling") — `figma_execute` tego nie ustawi (Gotcha #7). Zaraportuj listę ekranów + elementów do odklikania.
+Krok B — odczyt `scrollBehavior` (Plugin API go nie widzi, Gotcha #7) przez **targetowany REST**, NIE pełny dump:
+`GET https://api.figma.com/v1/files/:key/nodes?ids=<chrome-id1,chrome-id2>&depth=1` (bez `geometry` — inaczej payload puchnie; `depth=0` bywa ignorowane, użyj `depth=1`). W każdym węźle pole `scrollBehavior`: `SCROLLS`|`FIXED`|`STICKY_SCROLLS`. (Header `X-Figma-Token: <PAT>`. Endpoint `nodes` jest Tier-1, ~20/min — cachuj.)
+
+Krok C — naprawa. **`scrollBehavior` per-node jest niezapisywalny** (Plugin API ani REST), ALE **`numberOfFixedChildren` JEST zapisywalny** i to jedyna programowa dźwignia:
+```js
+// Przypina N wiodących dzieci-BEZPOŚREDNICH frame'a. Ekran [NavRail, Content] → pinuje NavRail.
+const screen = await figma.getNodeByIdAsync('<screen-id>');
+screen.numberOfFixedChildren = 1;   // NavRail (1. dziecko) zostaje przy scrollu
+```
+Działa tylko dla **wiodących dzieci-bezpośrednich**. AppTopBar/wizard-footer zagnieżdżone w `Content` tego nie złapią — albo przenieś je na poziom dzieci-bezpośrednich frame'a scrollującego (restrukturyzacja), albo zostaw **ręczny toggle w UI** (zaznacz → Position → „Fix position when scrolling"). Zaraportuj: co przypięto skryptem (NavRail) + listę elementów do ręcznego odklikania.
 
 ---
 
