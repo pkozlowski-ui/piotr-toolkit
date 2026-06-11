@@ -89,6 +89,23 @@ Lokalna/projektowa pamięć to cache. Na koniec sesji (patrz `session-retro`):
 Rozróżnienie projekt vs globalny `CLAUDE.md`: reguła ważna tylko w jednym repo → projektowy; reguła
 work-style obowiązująca wszędzie → globalny.
 
+### Wewnątrz `CLAUDE.md`: always-on vs on-demand (anti-bloat)
+
+`CLAUDE.md` (projektowy i globalny) jest **always-on** — ładowany co sesję, kosztuje kontekst. Docs
+(`components.md`, `registry`, ADR, blueprinty) ładują się **on-demand**, gdy je czytasz. Stąd, już
+po zakwalifikowaniu reguły do warstwy CLAUDE.md, podziel ją dalej po **zasięgu**:
+
+- **Przekrojowa** (dotyczy wielu obszarów / potrzebna ~każdej sesji: konwencje work-style, token-compliance,
+  „buduj z instancji nie raw-frame", naming canon, bramki jakości) → **pełna treść w CLAUDE.md** (musi być
+  always-on, inaczej zgubisz egzekwowanie).
+- **Wąsko-specyficzna** (jeden komponent / obszar / plik; potrzebna tylko gdy go dotykasz: drabina
+  wariantów komponentu, anatomia, konkretny wzorzec) → **pełny kanon w docs on-demand**, a w CLAUDE.md
+  zostaw **skrócony imperatyw + wskaźnik** (`→ <docs> → <sekcja>`).
+
+Nie duplikuj pełnej treści w obu miejscach: CLAUDE.md skrót + wskaźnik, kanon w docs. Przy zmianie reguły
+edytuj **kanon** (docs) i ewentualnie skrót. Dotyczy też globalnego `CLAUDE.md` (always-on work-style
+pełny; szczegóły jednego narzędzia/przepływu → osobny skill + wskaźnik).
+
 ## Czego NIE zapisywać
 
 - Tego, co repo już zapisuje: struktura kodu, historia git, treść CLAUDE.md, przeszłe fixy.
