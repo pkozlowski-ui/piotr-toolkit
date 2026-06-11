@@ -79,6 +79,12 @@ Na podstawie odpowiedzi:
    - `{{FIGMA_URL}}` → jeśli podany
    - `{{READ_ONLY_TEXT}}` → włącz sekcję i skopiuj hook jeśli zaznaczone
 
+   **Struktura od startu — always-on vs on-demand (patrz `memory-discipline`):** CLAUDE.md ma być **lean**.
+   Reguły przekrojowe (work-style, quality gates, token-compliance, naming) → pełne w CLAUDE.md. Reguły
+   wąsko-specyficzne (komponent/obszar) → **kanon w docs on-demand** (`docs/design-system/...`, ADR),
+   a w CLAUDE.md tylko skrócony imperatyw + wskaźnik (`→ <docs> → <sekcja>`). Nie pakuj do always-on
+   treści potrzebnej okazjonalnie — to anti-bloat na całe życie projektu, nie sprzątanie po fakcie.
+
 3. **Design system scaffold** (jeśli zaznaczone) — twórz programowo, NIE polegaj na template (`cp` kopiuje tylko top-level README):
    ```bash
    for d in 01-foundations 02-primitives 03-patterns 04-page-blueprints; do
