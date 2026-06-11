@@ -20,6 +20,8 @@ description: Tworzenie interaktywnych prototypów w Figmie — łączenie ekran�
 
 Prototype mode w Figmie = właściwość `reactions` na każdym nodzie. **Tylko Plugin API (figma_execute) może to zapisywać** — REST API i MCP server są read-only dla prototype.
 
+> **⚠️ DOMYŚLNA TRANZYCJA = INSTANT (`transition: null`).** Nigdy nie wstawiaj `SMART_ANIMATE`/`DISSOLVE`/`PUSH` ani innej animacji — ani dla nawigacji, ani dla overlayów/disclosure/drawerów — **chyba że user wyraźnie o animację poprosi**. To globalny default (patrz user-level `CLAUDE.md → Figma — prototypy`). Tabela „Transition animation types" niżej jest referencją na wypadek wyraźnej prośby, nie zachętą.
+
 ```js
 await node.setReactionsAsync([{
   trigger: { type: 'ON_CLICK' },
@@ -27,11 +29,7 @@ await node.setReactionsAsync([{
     type: 'NODE',
     destinationId: 'target-frame-id',
     navigation: 'NAVIGATE',        // 'NAVIGATE' | 'OVERLAY' | 'SWAP' | 'SCROLL_TO'
-    transition: {
-      type: 'SMART_ANIMATE',
-      duration: 0.3,
-      easing: { type: 'EASE_OUT' }
-    }
+    transition: null               // INSTANT (default). Animacja tylko na wyraźną prośbę.
   }]
 }]);
 ```
@@ -46,6 +44,7 @@ Te pułapki wywalają każdy `figma_execute` po kolei. Realne błędy z sesji (F
 4. **Buttony w modalu/drawerze/zagnieżdżonej instancji adresuj PEŁNĄ ścieżką instancji** `I<root>;…;<btn>`, NIE gołym ID. Gołe ID (np. `2891:62610`) rozwiązuje się do węzła **wewnątrz komponentu** (chain urywa się, nie sięga PAGE) → `destination rejected … the source may not be a valid prototype source`. Znajdź on-canvas węzeł przez `screen.findAll(n=>n.type==='INSTANCE' && …)` i sprawdź, że parent-chain dochodzi do `PAGE` (`reachesPage`). Realny błąd Flow 15 (modal Merge-confirm) i Flow 16 (przycisk w SideDrawer).
 5. **`setReactionsAsync` NIE jest rollbackowane przy throwie skryptu.** Mimo że `figma_execute` bywa „atomic", reactions ustawione PRZED rzutem zostają zapisane. Po nieudanym skrypcie **zweryfikuj stan** (odczytaj `reactions`), nie zakładaj że nic się nie stało — i pisz wiring idempotentnie (overwrite), żeby ponowienie było bezpieczne.
 6. **Lista „Flows" w Present mode = `page.flowStartingPoints`, nie sekcje/ekrany.** Samo okablowanie ekranów i przycisków NIE sprawi, że flow pojawi się na liście ani że da się go odpalić z panelu — trzeba dopisać `{nodeId, name}` do `flowStartingPoints` (dedupe po `nodeId`, patrz pkt 3). Typowy „starting point" to cover/intro-frame, którego CTA wchodzi w pierwszy ekran flow.
+7. **`scrollBehavior` (fixed-position) jest NIEWIDOCZNY dla Bridge plugina (API v1.0.0).** `'scrollBehavior' in node === false`, odczyt zwraca `undefined`, a zapis (`node.scrollBehavior='FIXED'`) rzuca `object is not extensible`. Czyli **przez `figma_execute` NIE odczytasz ani nie ustawisz** „Fix position when scrolling". Odczyt (audyt) zrób przez **REST** (`figma_get_file_data` → pole `scrollBehavior`: `SCROLLS`|`FIXED`|`STICKY_SCROLLS`); ustawienie — **tylko ręcznie w UI** (zaznacz element → Position → „Fix position when scrolling"). Realny bug 2026-06-11 (Staff flows: cała chrome `SCROLLS`, NavRail/AppTopBar/footer odjeżdżały przy scrollu na ekranach > viewport).
 
 ---
 
@@ -73,9 +72,10 @@ Definiuj flow jako tablicę tupli, apliku hurtem. To podstawowy pattern pracy z 
 
 ```js
 // Flow: [sourceId, targetId, trigger, transition]
+// transition pomiń lub 'INSTANT' — to domyślne i preferowane (patrz Core concept).
 const flow = [
-  ['111:01', '111:02', 'ON_CLICK', 'SMART_ANIMATE'],
-  ['111:02', '111:03', 'ON_CLICK', 'PUSH'],
+  ['111:01', '111:02', 'ON_CLICK'],   // brak = INSTANT
+  ['111:02', '111:03', 'ON_CLICK', 'INSTANT'],
   ['111:03', '111:01', 'ON_CLICK', 'INSTANT'],
 ];
 
@@ -271,11 +271,92 @@ return `Cleared reactions on ${all.length} nodes`;
 
 ---
 
+## Verification pass — OBOWIĄZKOWY pierwszy audyt (przed „done")
+
+Po okablowaniu flow (albo gdy user prosi „zweryfikuj prototyp") zrób **automatyczny, dokładny audyt** — nie zgłaszaj „done" na podstawie samego faktu, że `setReactionsAsync` przeszło. Audyt ma 3 osie; pierwsze dwie robisz w pełni programowo, trzecią (fixed-position) czytasz przez REST i raportujesz (UI fix po stronie usera).
+
+### Oś 1 + 2 — Connections, reachability, transitions (jeden skrypt `figma_execute`)
+
+Dla każdej sekcji-flow: BFS osiągalności od ekranu wejściowego (z `flowStartingPoints` / karty intro). Wykrywa **sieroty** (ekran nieosiągalny), **dead-endy** (brak wyjścia i brak BACK), **cross-flow** (NAVIGATE poza sekcję flow) oraz **tranzycje ≠ instant** (łamią globalną regułę).
+
+```js
+// FLOWS: { 'Nazwa': { entry:'<pierwszy-ekran-id>', secs:['<section-id>', ...] } }
+const FLOWS = {
+  'Flow 1': { entry:'2288:30487', secs:['2288:30486'] },
+  // ...
+};
+const report = {};
+for (const [fname, cfg] of Object.entries(FLOWS)) {
+  const screens = [];
+  for (const sid of cfg.secs) { const sec = await figma.getNodeByIdAsync(sid);
+    sec.children.filter(n => n.type === 'FRAME').forEach(f => screens.push(f)); }
+  const ids = new Set(screens.map(s => s.id));
+  const nameById = {}; screens.forEach(s => nameById[s.id] = s.name);
+  const outNav = {}, hasBack = {}, animated = [];
+  for (const s of screens) {
+    outNav[s.id] = new Set(); hasBack[s.id] = false;
+    const rxNodes = s.findAll(n => n.reactions && n.reactions.length > 0);
+    if (s.reactions && s.reactions.length) rxNodes.push(s);
+    for (const n of rxNodes) for (const r of n.reactions) for (const a of (r.actions || [])) {
+      if (a.type === 'BACK') hasBack[s.id] = true;
+      if (a.type === 'NODE' && a.navigation === 'NAVIGATE' && a.destinationId) {
+        outNav[s.id].add(a.destinationId);
+        if (a.transition) animated.push({ from: nameById[s.id], node: n.name, t: a.transition.type }); // ≠ instant
+      }
+    }
+  }
+  const reached = new Set(), q = [cfg.entry];
+  while (q.length) { const cur = q.shift(); if (reached.has(cur)) continue; reached.add(cur);
+    for (const d of (outNav[cur] || [])) if (ids.has(d) && !reached.has(d)) q.push(d); }
+  report[fname] = {
+    total: screens.length, reached: reached.size,
+    unreachable: [...ids].filter(id => !reached.has(id)).map(id => nameById[id]),
+    deadEnds:    [...ids].filter(id => outNav[id].size === 0 && !hasBack[id]).map(id => nameById[id]),
+    crossFlow:   screens.flatMap(s => [...outNav[s.id]].filter(d => !ids.has(d)).map(d => ({ from: nameById[s.id], destId: d }))),
+    animatedTransitions: animated,   // powinno być [] — instant rule
+  };
+}
+return report;
+```
+
+**Zielony wynik:** `reached === total`, `unreachable: []`, `deadEnds: []`, `animatedTransitions: []`. `crossFlow` ≠ [] → zwykle nieintencjonalny skok do innego flow (zgłoś userowi, nie tnij po cichu, jeśli to decyzja produktowa).
+
+### Oś 3 — Fixed-position na ekranach > viewport (REST, read-only)
+
+Ekran wyższy niż viewport (desktop ≈ 1080, mobile = wys. urządzenia) **scrolluje się w Present mode**. Jeśli chrome (`NavRail` / `AppTopBar` / `footer` / `page-header`) nie ma `scrollBehavior: FIXED`, odjedzie przy scrollu — wygląda zepsuto. Bridge tego nie widzi (Gotcha #7) → czytaj przez REST.
+
+```js
+// Krok A (figma_execute, tanie): wypisz ekrany > viewport + ID kandydatów chrome do przypięcia.
+const SECS = ['<section-id>', /* ... */]; const VIEWPORT = 1080;
+const CHROME = /navrail|apptopbar|topbar|footer|page-header|side-?rail|breadcrumb/i;
+const out = [];
+for (const sid of SECS) { const sec = await figma.getNodeByIdAsync(sid);
+  for (const s of sec.children.filter(n => n.type === 'FRAME')) {
+    if (s.height <= VIEWPORT) continue;
+    const chrome = [];
+    const scan = (n, d) => { for (const c of n.children || []) {
+      if (CHROME.test(c.name || '')) chrome.push({ name: c.name, id: c.id });
+      if (d < 2) scan(c, d + 1); } };
+    scan(s, 0);
+    out.push({ screen: s.name, h: Math.round(s.height), chrome });
+  } }
+return out;
+```
+
+Krok B: `figma_get_file_data({ nodeIds: [<chrome ids>], verbosity:'full', depth:0 })`. Wynik bywa duży → zapisuje się do pliku; wyciągnij pole przez grep/jq:
+`grep -oE '"scrollBehavior"\s*:\s*"[^"]+"' <plik> | sort | uniq -c`.
+Każdy chrome-element na ekranie > viewport powinien być `FIXED`. `SCROLLS` na NavRail/AppTopBar/wizard-footer = **do poprawy ręcznie** (Position → „Fix position when scrolling") — `figma_execute` tego nie ustawi (Gotcha #7). Zaraportuj listę ekranów + elementów do odklikania.
+
+---
+
 ## Checklist przed wgraniem flow
 
 - [ ] Node IDs zweryfikowane (skrypt inspect lub `figma_get_selection`)
 - [ ] Source i destination frames są na tej samej stronie
-- [ ] Flow starting point ustawiony (jeden per flow)
+- [ ] Flow starting point ustawiony (jeden per flow) + dopisany do `flowStartingPoints`
+- [ ] **Verification pass oś 1+2:** reachable === total, brak sierot / dead-endów / cross-flow, `animatedTransitions: []`
+- [ ] **Verification pass oś 3:** ekrany > viewport mają chrome `FIXED` (lub zaraportowana lista do ręcznego toggle)
+- [ ] Wszystkie tranzycje = INSTANT (chyba że user prosił o animację)
 - [ ] Test w Present mode: Cmd+Enter (Mac) / Ctrl+Enter (Win)
 - [ ] Overlaye mają poprawną pozycję i backdrop
 
