@@ -1,7 +1,7 @@
 {
   "name": "design-toolkit",
-  "version": "1.0.2",
-  "description": "UI design quality skills: diagnostic layer for existing interfaces, mobile audit, and focused design audits. Works alongside impeccable and taste-skill — diagnoses and routes, does not duplicate execution.",
+  "version": "1.1.0",
+  "description": "Product-design quality skills: design-tweaker (full-stack UX/UI/look-&-feel/AI-slop audit across 7 lenses, reference-grounded, ranks by impact×effort) and mobile-audit. Diagnoses, prioritizes, and routes execution; works alongside impeccable and taste-skill.",
   "author": {
     "name": "pkozlowski-ui",
     "email": "piotr.kozlowski@sunscrapers.com",

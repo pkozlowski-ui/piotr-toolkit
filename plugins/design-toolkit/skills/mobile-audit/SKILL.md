@@ -81,7 +81,7 @@ Patrz okiem designera. Cel: zidentyfikować co wygląda nieprofesjonalnie lub ch
 - **Obrazy** — focal point widoczny po przycięciu (`object-position`), ikony spójny rozmiar i styl w obrębie grupy, grafiki nie za małe (gubią się) ani nie za duże (dominują)
 - **Detal** — spójne `border-radius` w podobnych komponentach, spójne bordery, animacje nie blokują interakcji
 
-Jeśli po tym kroku widzisz głębszy problem z layoutem lub architekturą sekcji → uruchom `ux-tweaker` dla pełnej diagnozy strukturalnej.
+Jeśli po tym kroku widzisz głębszy problem z layoutem lub architekturą sekcji → uruchom `design-tweaker` dla pełnego audytu (UX/wizual/look&feel/AI-slop, diagnoza strukturalna).
 
 ---
 

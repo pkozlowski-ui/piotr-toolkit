@@ -16,7 +16,7 @@
     },
     {
       "name": "design-toolkit",
-      "description": "UI design quality skills: diagnostic layer for existing interfaces (ux-tweaker) and mobile audit. Diagnoses anti-patterns and routes to execution; does not duplicate it.",
+      "description": "Product-design quality skills: design-tweaker (full-stack UX/UI/look-&-feel/AI-slop audit across 7 lenses, reference-grounded, impact×effort ranked) and mobile-audit. Diagnoses, prioritizes, routes execution; does not duplicate it.",
       "source": "./plugins/design-toolkit"
     }
   ]
