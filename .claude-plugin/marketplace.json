@@ -18,6 +18,11 @@
       "name": "design-toolkit",
       "description": "Product-design quality skills: design-tweaker (full-stack UX/UI/look-&-feel/AI-slop audit across 7 lenses, reference-grounded, impact×effort ranked) and mobile-audit. Diagnoses, prioritizes, routes execution; does not duplicate it.",
       "source": "./plugins/design-toolkit"
+    },
+    {
+      "name": "obsidian-toolkit",
+      "description": "Obsidian vault workflow skills: make the vault the natural home for durable, human-facing documentation. feedback-sweep turns Figma/FigJam review comments into a classified, routed, answered register. Vault-agnostic process; per-project config.",
+      "source": "./plugins/obsidian-toolkit"
     }
   ]
 }

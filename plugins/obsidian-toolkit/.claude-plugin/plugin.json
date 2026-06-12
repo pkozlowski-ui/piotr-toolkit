@@ -1,0 +1,13 @@
+{
+  "name": "obsidian-toolkit",
+  "version": "1.0.0",
+  "description": "Obsidian vault workflow skills: turn the vault into the natural home for durable, human-facing documentation. Feedback-sweep (Figma/FigJam review → classified, routed, answered register). Vault-agnostic process; per-project config.",
+  "author": {
+    "name": "pkozlowski-ui",
+    "email": "piotr.kozlowski@sunscrapers.com",
+    "url": "https://github.com/pkozlowski-ui"
+  },
+  "repository": "https://github.com/pkozlowski-ui/piotr-toolkit",
+  "license": "MIT",
+  "keywords": ["obsidian", "vault", "feedback-sweep", "design-review", "figma", "figjam", "kanban", "documentation", "knowledge"]
+}
