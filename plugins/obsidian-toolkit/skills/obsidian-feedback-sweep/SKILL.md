@@ -35,9 +35,18 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 ## Protokół — 5 faz
 
 ```
-1. CAPTURE   figma_get_comments(include_resolved:true) → odfiltruj rozwiązane WĄTKI
-             (reply w rozwiązanym wątku liczy się jako rozwiązany → pomiń)
-             zdeduplikuj na poziomie wątku; node_id → ekran/Flow przez figma_execute
+1. CAPTURE   INKREMENTALNIE — pobieraj tylko to, co nowe od ostatniego sweepu:
+             a) ustal WATERMARK = `last-swept` z frontmatter poprzedniego rejestru
+                (fallback: jego `updated`/`collected`). Zbierz też set zalogowanych thread-id.
+             b) figma_get_comments(include_resolved:true) — duży output (potrafi >90k znaków,
+                przekracza budżet tokenów) → ZAPISYWANY DO PLIKU; NIGDY nie wrzucaj go do kontekstu.
+                Parsuj plik skryptem (python/jq), zwracaj tylko skondensowaną deltę.
+             c) Grupuj po wątku (root = brak parent_id). Dla każdego wątku zachowaj tylko gdy ma
+                wiadomość po watermark od AUTORA ≠ właściciel kanału (pomiń własne repliki/odpowiedzi).
+                Odfiltruj rozwiązane WĄTKI (resolved_at na rootcie). Zdeduplikuj na poziomie wątku.
+             d) Rozbij na: NOWE WĄTKI (root po watermark) vs NOWE ODPOWIEDZI na zalogowane wątki
+                (root sprzed, reply po) — te drugie podlinkuj do istniejącego F##/B## po node_id.
+             e) node_id → ekran/Flow przez figma_execute. FigJam (board) = osobny file_key → osobny pull.
 2. CLASSIFY  Oś A (Typ) + Oś B (Dyspozycja), uzasadnione regułami domenowymi projektu
 3. ROUTE     Dyspozycja = "Needs decision" → przypisz Ownera (macierz) + Consulted (RACI-lite, 1 primary)
 4. ACT       Answer & close → draft odpowiedzi (odpowiedz na pytanie)
@@ -85,6 +94,14 @@ Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK:
 Blok detalu per item: `Lokalizacja · Autor · Data · Komentarz · Reakcja (Typ + uzasadnienie) · Odpowiedź`.
 Dodaj **Status** (`New → Routed → Decided → Done`) w miarę postępu.
 
+**Frontmatter — watermark (wymagany dla inkrementalności):** każdy rejestr zapisuje `last-swept: <ISO>`
+(czas najnowszej przetworzonej wiadomości) — to punkt odcięcia następnego sweepu. Trzymaj **jeden rejestr
+per sweep** (np. `YYYY-MM-DD - …`); odhaczony (✅) rejestr zostaje zamknięty, nowy startuje od jego watermark.
+
+**Cykl życia rejestru:** gdy rejestr jest „done" (✅ w nazwie), nie dopisuj do niego — załóż nowy. Itemy,
+które są szersze/na przyszłość (nie domkną się w tym sweepie), **wynieś do osobnej notatki tematycznej**,
+żeby rejestr sweepu mógł zostać czysto odhaczony (zostaw 1-liniowy pointer + backlink).
+
 ## Szablony (copy-paste)
 W `reference/templates.md`: wiersz triage, blok detalu, Decision Ask. Użyj ich zamiast wymyślać format.
 
@@ -92,6 +109,9 @@ W `reference/templates.md`: wiersz triage, blok detalu, Decision Ask. Użyj ich 
 - **`obsidian_search_notes` (text) fuzzy-matchuje tokeny** — szukanie `"Flow 9b"` zwraca trafienia samego
   `"Flow"` i zawyżony licznik. Do precyzji: `obsidian_get_note` z `format:document-map` (nagłówki) /
   `format:section` (treść), podstawienia przez `obsidian_replace_in_note` na pełnych, unikalnych stringach.
+- **`figma_get_comments` to duży output** — przy aktywnym pliku łatwo >90k znaków → przekracza budżet
+  tokenów i ląduje w pliku. Parsuj plik skryptem (grupuj wątki, filtruj po watermark/autorze/resolved),
+  zwracaj tylko deltę. Pola: `id`, `parent_id`, `user.handle`, `created_at`, `resolved_at`, `client_meta.node_id`, `message`.
 - **`figma_get_comments` zwraca też rozwiązane** — filtruj rozwiązane WĄTKI po stronie skilla.
 - **`figma_execute` nie jest transakcyjny** — przy błędzie/timeoucie zostają częściowe node'y; sprzątnij
   przed retry. Trzymaj skrypty małe.
