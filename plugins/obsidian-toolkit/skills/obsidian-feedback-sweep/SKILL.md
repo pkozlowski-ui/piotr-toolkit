@@ -94,13 +94,28 @@ Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK:
 Blok detalu per item: `Lokalizacja · Autor · Data · Komentarz · Reakcja (Typ + uzasadnienie) · Odpowiedź`.
 Dodaj **Status** (`New → Routed → Decided → Done`) w miarę postępu.
 
-**Frontmatter — watermark (wymagany dla inkrementalności):** każdy rejestr zapisuje `last-swept: <ISO>`
-(czas najnowszej przetworzonej wiadomości) — to punkt odcięcia następnego sweepu. Trzymaj **jeden rejestr
-per sweep** (np. `YYYY-MM-DD - …`); odhaczony (✅) rejestr zostaje zamknięty, nowy startuje od jego watermark.
+**Frontmatter (źródło prawdy o stanie — nie nazwa pliku):**
+```yaml
+type: feedback-log
+status: open | active | done    # cykl życia rejestru (queryable, NIE w nazwie)
+scope: <co sweep objął>          # ZAKRES, nie stan — nie mieszaj z status
+last-swept: <ISO>                # czas pullu — punkt odcięcia następnego sweepu (wymagany)
+previous: "[[poprzedni rejestr]]"
+closed: <YYYY-MM-DD>             # gdy status: done
+```
+- **`status` to źródło prawdy**, nie ✅ w nazwie. Emoji w nazwie = opcjonalna kosmetyka dla oka; rename psuje
+  `[[linki]]` i łańcuch `previous`/`last-swept`, więc stan trzymaj w polu, nie w nazwie.
+- **`scope` ≠ `status`.** `scope` opisuje *co* sweep objął (np. „active threads only"); `status` opisuje *stan pracy*.
 
-**Cykl życia rejestru:** gdy rejestr jest „done" (✅ w nazwie), nie dopisuj do niego — załóż nowy. Itemy,
-które są szersze/na przyszłość (nie domkną się w tym sweepie), **wynieś do osobnej notatki tematycznej**,
-żeby rejestr sweepu mógł zostać czysto odhaczony (zostaw 1-liniowy pointer + backlink).
+**Model „rejestr = pozycja to-do":** rejestr to zamknięta jednostka pracy (jeden sweep).
+- **Definicja „done":** wszystkie itemy *odpowiedziane lub zrouowane* — **nic nie czeka na akcję właściciela kanału**.
+  Item czekający na decyzję Ownera NIE blokuje zamknięcia (piłka po jego stronie); gdy Owner odpowie, wróci w następnym sweepie.
+- Gdy `status: done` — nie dopisuj do rejestru; nowy sweep startuje od jego `last-swept`.
+- Itemy szersze/na przyszłość (nie domkną się w tym sweepie) → **osobna notatka tematyczna** (`type: concept-backlog`),
+  żeby rejestr mógł zostać czysto domknięty (zostaw 1-liniowy pointer + backlink).
+
+**Widok Bases:** nad folderem rejestrów trzymaj `*.base` (kanban-view, `groupByProperty: note.status`,
+kolumny `open · active · done`) — rejestry stają się odhaczalną to-do listą sweepów, tym samym mechanizmem co tablica zadań.
 
 ## Szablony (copy-paste)
 W `reference/templates.md`: wiersz triage, blok detalu, Decision Ask. Użyj ich zamiast wymyślać format.

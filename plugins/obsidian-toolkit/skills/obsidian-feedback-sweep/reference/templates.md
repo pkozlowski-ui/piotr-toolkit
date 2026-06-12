@@ -29,9 +29,14 @@
 ## Nagłówek żywego rejestru (frontmatter notatki)
 ```
 ---
-type: feedback-register
-created: YYYY-MM-DD
-source: Figma + FigJam
-channel: <Obsidian-only | mirror-Linear>
+type: feedback-log
+status: open            # open | active | done
+collected: YYYY-MM-DD
+source: <plik/board + file_key>
+scope: <co sweep objął — np. incremental since previous>
+previous: "[[poprzedni rejestr]]"
+last-swept: <ISO>       # punkt odcięcia następnego sweepu
+created: YYYY-MM-DDTHH:MM
+# closed: YYYY-MM-DD     # dopisz gdy status: done
 ---
 ```
