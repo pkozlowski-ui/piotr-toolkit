@@ -74,6 +74,10 @@ Gdy karta trafia/jest w `Done`, zaproponuj rozstrzygnięcie (propose-first):
 - **typowo osobiste/małe** → **zaproponuj skasowanie** karty (sygnalizuj — destrukcyjne).
 Cel: `Done` nie puchnie i nie miesza „trzymać" z „trzeba było skasować".
 
+**Karty-wskaźniki sweepów** (zakładane automatycznie przez `obsidian-feedback-sweep`, linkują do rejestru):
+to operacyjne pointery, nie treść. Gdy linkowany rejestr osiąga `status: done` (sweep ogarnięty) →
+**skasuj kartę** (rejestr-rekord zostaje w `Feedback Pipeline/`). Sygnalizuj kasowanie.
+
 ## Propose-first (dyscyplina zapisu)
 To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, czekaj na OK:
 - tworzenie/przesuwanie kart, triage, edycja `.base` — diff/lista przed zapisem,

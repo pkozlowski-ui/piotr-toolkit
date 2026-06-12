@@ -55,6 +55,7 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
              Defer/Phase-2  → zaloguj + tag fazy (zaznacz intencję, nie tylko odłóż)
 5. CLOSE     zaktualizuj rejestr; człowiek wkleja odpowiedzi + resolve'uje w Figmie;
              potem re-pull figma_get_comments i pogódź rejestr z realnym stanem posted/resolved
+6. KANBAN    AUTO — załóż lekką kartę-wskaźnik na głównym Kanbanie (patrz niżej)
 ```
 
 ## Klasyfikacja — 2 osie
@@ -81,12 +82,21 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 
 > Kluczowa lekcja: **oddziel Typ od Dyspozycji.** Jeden łączony tag ukrywa, kto musi zadziałać.
 
+## Krok zamykający — karta na Kanbanie (AUTO, jedyny wyłom od propose-first)
+Po zapisaniu rejestru **automatycznie** (bez pytania — świadoma decyzja usera) załóż **lekką kartę-wskaźnik**
+na głównym Kanbanie (folder z configu projektu, np. `KANBAN/`):
+- nazwa np. `Ogarnij feedback sweep — YYYY-MM-DD`, frontmatter `status: To-do`,
+- treść = 1 linia + **backlink do rejestru** (`- "[[YYYY-MM-DD - … Feedbacks]]"`, lista w cudzysłowach),
+- to **wskaźnik do akcji** na tablicy decyzyjnej; treść feedbacku zostaje w rejestrze (nie kopiuj).
+Cykl: gdy sweep ogarnięty (rejestr `status: done`) → karta-wskaźnik **kasowana** (rejestr-rekord zostaje). Patrz `obsidian-kanban`.
+
 ## Propose-first (dyscyplina zapisu)
-Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK:
+Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK — **z jednym wyjątkiem**:
+karta-wskaźnik na Kanbanie z kroku zamykającego powstaje automatycznie (decyzja usera).
 - Pokaż diff/wstawkę zanim utworzysz lub nadpiszesz notatkę rejestru.
 - **Nie** postuj odpowiedzi ani nie resolve'uj wątków w Figmie sam — to robi człowiek.
 - Drafty odpowiedzi przygotuj w rejestrze; właściciel kanału decyduje, co i kiedy wklei.
-- Nowe karty/notatki → propozycja; zmiany w istniejącym rejestrze → też pokaż przed zapisem.
+- Nowe notatki tematyczne → propozycja; zmiany w istniejącym rejestrze → też pokaż przed zapisem.
 
 ## Schemat rejestru
 Żywy rejestr to **jedyne źródło prawdy**. Tabela triage:
