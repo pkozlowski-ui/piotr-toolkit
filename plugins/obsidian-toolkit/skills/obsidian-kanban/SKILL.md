@@ -100,6 +100,8 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 - **Wikilinki w YAML** — `klucz: [[A]], [[B]]` to niepoprawny YAML → notatka traci property → wypada z boardu.
   Zawsze listą: `klucz:\n  - "[[A]]"`.
 - **Karta bez property grupującego** → „Uncategorized". Na create zawsze ustaw status.
+- **Digest stosuje filtry z `.base`** (np. `file.name != "…"`) — nie listuj folderu na ślepo, bo pokażesz wykluczone notatki jako fałszywe „Uncategorized".
+- **Notatka nie-karta w folderze boardu** (np. referencyjna „jak pracuję") → **wyklucz w filtrze `.base`** (`file.name != "…"`, bez rozszerzenia), nie zostawiaj jako Uncategorized.
 - **Token-safety:** do digestu czytaj frontmatter, nie pełne treści kart.
 - **Bases bywa wrażliwe** — po zmianach strukturalnych w `.base` zweryfikuj render w UI.
 
