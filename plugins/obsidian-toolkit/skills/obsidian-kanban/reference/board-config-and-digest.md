@@ -6,13 +6,17 @@ Skill odkrywa strukturę z `.base`, ale projekt może wskazać domyślną tablic
 - **Property grupujące:** zwykle `note.status`
 - **Słownik kolumn:** lista wartości w kolejności
 
-### Przykład — antisis (Manta Vault)
+### Przykład — Manta Vault (board cross-project Piotra)
 - Tablica: `KANBAN/-Kanban Board.base` · grupa `note.status`
 - Kolumny: `Lab` → `To-do` → `In progress` → `To confirm` → `Done`
 - Kolory: `To confirm: yellow`, `In progress: cyan`
-- Tag priorytetu: `high-priority`
-- `Lab` = inbox pomysłów/narzędzi (często goły link do przejrzenia)
-- `To confirm` = czeka na decyzję Piotra → to kolejka do akcji w digescie
+- Tagi: `high-priority` (wyjątkowo ważne) · `blocked` (ktoś/coś blokuje — *co* w karcie)
+- **Semantyka** (kanon — patrz też vault `Kanban — jak pracuję.md`):
+  - `Lab` = lodówka: do zbadania · przemyślenia · możliwe projekty (3 kubełki przy triage).
+  - `To-do` = backlog; „następne" trzymane na górze (kolejność = priorytet).
+  - `In progress` = **tylko realnie aktywne** (nie „zaraz zacznę").
+  - `To confirm` = zrobione, czeka na feedback zespołu (wejście dla feedback-sweep); 2 wyjścia: Done / wraca do To-do.
+  - `Done` = warte pamięci dla zespołu → **kandydat do promocji do vaultu** (`obsidian-capture`); osobiste/małe → kasować.
 
 ## Przepis na digest (token-safe)
 1. Odczytaj `.base`: `groupByProperty`, `columnOrders.<prop>`, `filters` (folder + wykluczenia).

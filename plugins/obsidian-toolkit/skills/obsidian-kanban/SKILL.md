@@ -29,14 +29,22 @@ Tablice różnią się per-projekt. Zanim cokolwiek zrobisz, przeczytaj plik `.b
 Przykład (Manta): `KANBAN/-Kanban Board.base` · grupa `note.status` · kolumny `Lab → To-do → In progress → To confirm → Done`.
 **Karta = notatka w folderze** z property grupującym we frontmatter. Brak property → karta wpada do „Uncategorized".
 
+## Semantyka kolumn (czytaj z configu boardu — nie zakładaj)
+Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki / `CLAUDE.md`. Wzorzec (Manta):
+- **Lab** — lodówka/inbox: *do zbadania* · *przemyślenie* · *możliwy projekt* (3 różne cykle życia).
+- **To-do** — backlog rzeczy do zrobienia. Tagi: `blocked` (ktoś/coś blokuje — dopisz *co* w karcie) · `high-priority`.
+- **In progress** — **tylko to, nad czym realnie pracujesz.** „Zaraz zacznę" ≠ in-progress → trzymaj na **górze `To-do`** (kolejność = priorytet), żeby WIP był prawdziwy.
+- **To confirm** — zrobione, czeka na omówienie/feedback zespołu. Dwa wyjścia: feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`. (Wejście dla **feedback-sweep**.)
+- **Done** — zrobione i **warte pamięci dla zespołu**. To kandydat do **promocji do vaultu** (`obsidian-capture`); rzeczy typowo osobiste/małe → **kasuj**, nie trzymaj.
+
 ## Operacje
 
 ### A) Digest stanu (read-only, token-safe)
 Czytaj **tylko frontmatter** kart (status, tags, tytuł) — nie całe treści (oszczędność tokenów).
 Zbuduj podsumowanie **per kolumna** w kolejności z `.base`. Wyróżnij:
-- **In progress** (nad czym aktywnie pracujesz) i **To confirm** (czeka na decyzję usera — to Twoja kolejka do akcji),
-- karty z tagiem priorytetu (np. `high-priority`),
-- **Lab** = inbox pomysłów/linków (kandydaci do triage), policz ile czeka.
+- **In progress** (realny WIP) i **To confirm** (kolejka usera — czeka na omówienie/feedback),
+- karty z tagiem `high-priority` oraz **`blocked`** (te ostatnie wypisz osobno — co je blokuje),
+- **Lab** = inbox (policz ile czeka na triage), **Done** = ilu kandydatów do promocji/skasowania.
 
 ### B) Utwórz kartę (propose-first)
 Nowa notatka w folderze tablicy, frontmatter `status: <kolumna>` (+ opcjonalne `tags`). Tytuł = nazwa pliku.
@@ -46,9 +54,12 @@ Jeśli nadajesz **nowy** status (spoza słownika) — dopisz go do `columnOrders
 Zmień **wartość property grupującego** we frontmatter (np. `status: To-do` → `In progress`).
 **Nie zmieniaj nazwy pliku** do sygnalizacji stanu — stan żyje w property (rename psuje `[[linki]]`).
 
-### D) Triage inboxu (kolumna „Lab"/idea-dump)
-Dla każdej wrzutki (często goły link): w jednej linii **co to jest i czy warto** → rekomendacja:
-`promuj do To-do` / `zostaw w Lab` / `odrzuć`. Wzbogać kartę o 1-liniowy opis. Wszystko propose-first.
+### D) Triage inboxu „Lab" (3 kubełki)
+Dla każdej wrzutki (często goły link) w jednej linii **co to jest** → przypisz kubełek + rekomendacja:
+- *do zbadania* → akcjonowalne: **promuj do `To-do`** (z 1-liniowym „po co"),
+- *przemyślenie* → referencja: **zostaw w Lab** (ewentualnie → vault, jeśli warte zapamiętania),
+- *możliwy projekt* → kandydat na decyzję: **zostaw + oznacz do omówienia**, albo **odrzuć**.
+Wzbogać kartę o 1-liniowy opis. Wszystko propose-first.
 
 ### E) Podlinkuj artefakty
 Dodaj do karty backlinki: vault doc, plik/board Figma (URL), repo/PR. Wikilinki we frontmatter **tylko listą i w cudzysłowach** (patrz gotcha).
@@ -56,6 +67,12 @@ Dodaj do karty backlinki: vault doc, plik/board Figma (URL), repo/PR. Wikilinki 
 ### F) Promuj z backlogu/feedbacku → tablica
 Most między skillami: weź itemy z notatki backlogu (np. `Open items …` z feedback-sweepu) i załóż z nich karty
 (`status: To-do`, tag jeśli priorytet), z backlinkiem do źródła. Propose-first; pokaż listę kart przed zapisem.
+
+### G) Domknięcie karty „Done" → promote/delete (hook do `obsidian-capture`)
+Gdy karta trafia/jest w `Done`, zaproponuj rozstrzygnięcie (propose-first):
+- **warte pamięci dla zespołu** (decyzja / spec / koncept) → **promuj do vaultu** (`obsidian-capture`) jako trwały dok we właściwym folderze, potem kartę archiwizuj;
+- **typowo osobiste/małe** → **zaproponuj skasowanie** karty (sygnalizuj — destrukcyjne).
+Cel: `Done` nie puchnie i nie miesza „trzymać" z „trzeba było skasować".
 
 ## Propose-first (dyscyplina zapisu)
 To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, czekaj na OK:
