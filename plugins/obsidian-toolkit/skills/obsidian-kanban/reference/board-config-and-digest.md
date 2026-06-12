@@ -16,7 +16,8 @@ Skill odkrywa strukturę z `.base`, ale projekt może wskazać domyślną tablic
   - `To-do` = backlog; „następne" trzymane na górze (kolejność = priorytet).
   - `In progress` = **tylko realnie aktywne** (nie „zaraz zacznę").
   - `To confirm` = zrobione, czeka na feedback zespołu (wejście dla feedback-sweep); 2 wyjścia: Done / wraca do To-do.
-  - `Done` = warte pamięci dla zespołu → **kandydat do promocji do vaultu** (`obsidian-capture`); osobiste/małe → kasować.
+  - `Done` = warte pamięci dla zespołu → **kandydat do promocji do vaultu** (`obsidian-capture`); po domknięciu kartę **archiwizuj** (przenieś do folderu archiwum), **nie kasuj**.
+- **Folder archiwum:** `KANBAN/Archive` — domknięte karty trafiają tu (podfolder boardu). Filtr `.base` to `file.folder == "KANBAN"` (dokładne dopasowanie), więc karta w `KANBAN/Archive` automatycznie znika z tablicy, a notatka zostaje. **Bez kolumny `Trash`** — to relikt.
 
 ## Przepis na digest (token-safe)
 1. Odczytaj `.base`: `groupByProperty`, `columnOrders.<prop>`, `filters` (folder + wykluczenia).
@@ -29,3 +30,4 @@ Skill odkrywa strukturę z `.base`, ale projekt może wskazać domyślną tablic
 - **Move:** edytuj tylko linię `status:` we frontmatter. Nie ruszaj nazwy pliku.
 - **Create:** nowa notatka z `status: <kolumna>`; jeśli status nowy → dopisz do `columnOrders` w `.base`.
 - **Promote z backlogu:** dla każdego itemu karta `status: To-do` + backlink `[[źródło]]` (lista w cudzysłowach).
+- **Archiwizuj (domknięcie Done):** przenieś plik karty do folderu archiwum (`KANBAN/Archive`): `write` w nowej ścieżce (ustaw `status: Done`) + `delete` starej. Karta wypada z boardu przez filtr folderu. **Nie kasuj do Trash.** `delete` sygnalizuj. Uwaga: move przez REST nie aktualizuje `[[backlinków]]` — karty-cele linków przenoś w UI.
