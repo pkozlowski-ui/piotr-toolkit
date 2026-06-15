@@ -163,9 +163,12 @@ After every operation that creates or modifies visual elements:
 3. Iterate if something looks off (max 3 times)
 4. Final `figma_capture_screenshot` for confirmation
 
-**figma_capture_screenshot vs figma_take_screenshot:**
-- `figma_capture_screenshot` — via plugin runtime, sees changes immediately, preferred for validation
-- `figma_take_screenshot` — via REST API (cloud), may not reflect latest state
+**figma_capture_screenshot vs figma_take_screenshot — ALWAYS use `capture` to verify edits:**
+- `figma_capture_screenshot` — `exportAsync` from the plugin runtime. Renders the LIVE node every call, **independent of which page is active**, and reflects your last edit immediately. The only reliable screenshot for validation.
+- `figma_take_screenshot` — cloud/REST path with two real failure modes that each waste a whole loop:
+  1. **Caches per nodeId** — repeat calls on the same node return *identical bytes* even after the node changed.
+  2. **Renders stale master defaults for instance SLOT content** (Modal/SideDrawer/AssistantPanel `content`/`footer`) unless that node's page is the *active* page.
+- Corollary: never trust a `take` screenshot showing an "old value". The model is the truth — confirm with `componentProperties` / `.characters`, or just re-shoot with `capture`. (Verified 2026-06-15: `capture` rendered live slot content correctly while a *different* page was active; `take` showed defaults + cached bytes.)
 
 ## Session Management
 
@@ -221,14 +224,15 @@ Step 7: Final validation of the whole screen
 
 ## Error Recovery
 
-`figma_execute` is atomic — if the script throws, no changes are applied.
+⚠️ `figma_execute` is **NOT reliably atomic on this bridge** — a throw, and *especially* a timeout, mid-script can leave **partial artifacts** (half-built frames, duplicated nodes). Do not assume a failed call changed nothing.
 
 **On error:**
 1. STOP — don't retry immediately
 2. Read the error message carefully
-3. If unclear — `figma_capture_screenshot` + `figma_get_file_data` to check state
-4. Fix the script
-5. Retry (safe — nothing was changed)
+3. `figma_capture_screenshot` (live) + inspect — check what, if anything, was created
+4. **Clean up partial artifacts before retrying** (find by name / empty children, remove)
+5. Fix the script — make it **cleanup-tolerant** (guard-and-reuse existing nodes, not blind create)
+6. Keep each call small (**≤ ~15 awaits**; each `createInstance`/`txt`/`setReactionsAsync` is one) to stay under the ~5s budget — long scripts time out and that's the main partial-state cause
 
 **On success but looks wrong:**
 1. `figma_capture_screenshot(nodeId)` — not the whole page
