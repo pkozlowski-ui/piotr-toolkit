@@ -56,9 +56,8 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 5. CLOSE     zaktualizuj rejestr; człowiek wkleja odpowiedzi + resolve'uje w Figmie;
              potem re-pull (active-only = mniejszy output; wątek z triażu którego NIE ma w active = resolved/zamknięty;
              sprawdź ostatniego autora + czy właściciel kanału odpisał). Leftovers (czekają na decyzję innych) →
-             osobny kolektor `Open items` + karta Kanban; nowe nieprzetriażowane komentarze → następny dated sweep.
-             Po domknięciu: archiwizuj rejestr → podfolder `Done/` (patrz Schemat rejestru).
-6. KANBAN    AUTO — załóż lekką kartę-wskaźnik na głównym Kanbanie (patrz niżej)
+             wydziel do osobnej notatki tematycznej `Open items`; nowe nieprzetriażowane komentarze → następny dated sweep.
+             Po domknięciu: oznacz rejestr `status: done` i przenieś → podfolder `Done/` (patrz Schemat rejestru).
 ```
 
 ## Klasyfikacja — 2 osie
@@ -85,17 +84,15 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 
 > Kluczowa lekcja: **oddziel Typ od Dyspozycji.** Jeden łączony tag ukrywa, kto musi zadziałać.
 
-## Krok zamykający — karta na Kanbanie (AUTO, jedyny wyłom od propose-first)
-Po zapisaniu rejestru **automatycznie** (bez pytania — świadoma decyzja usera) załóż **lekką kartę-wskaźnik**
-na głównym Kanbanie (folder z configu projektu, np. `KANBAN/`):
-- nazwa np. `Ogarnij feedback sweep — YYYY-MM-DD`, frontmatter `status: To-do`,
-- treść = 1 linia + **backlink do rejestru** (`- "[[YYYY-MM-DD - … Feedbacks]]"`, lista w cudzysłowach),
-- to **wskaźnik do akcji** na tablicy decyzyjnej; treść feedbacku zostaje w rejestrze (nie kopiuj).
-Cykl: gdy sweep ogarnięty (rejestr `status: done`) → karta-wskaźnik **ustaw na `Done`** (NIE kasuj — karta i rejestr zostają jako archiwum). Patrz `obsidian-kanban`.
+## Krok zamykający — `done` + archiwizacja
+Feedback-sweep jest **samodzielny** — nie zakłada ani nie rusza kart na tablicy zadań (Kanban). Domknięcie sweepu to dwie rzeczy w samym pipeline rejestrów:
+1. **Wdrożone/odpowiedziane itemy → `status: done`** w rejestrze (źródło prawdy o stanie, nie nazwa pliku).
+2. Gdy cały sweep domknięty → **przenieś rejestr do podfolderu `Done/`** (patrz Schemat rejestru i ⚠️ niżej o `mv`).
+
+Leftovers (czekają na decyzję innych / na przyszłość) **wydziel do osobnych notatek tematycznych** (`Open items`, `type: concept-backlog`) z 1-liniowym pointerem + backlinkiem — żeby rejestr mógł zostać czysto domknięty.
 
 ## Propose-first (dyscyplina zapisu)
-Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK — **z jednym wyjątkiem**:
-karta-wskaźnik na Kanbanie z kroku zamykającego powstaje automatycznie (decyzja usera).
+Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK.
 - Pokaż diff/wstawkę zanim utworzysz lub nadpiszesz notatkę rejestru.
 - **Nie** postuj odpowiedzi ani nie resolve'uj wątków w Figmie sam — to robi człowiek.
 - Drafty odpowiedzi przygotuj w rejestrze; właściciel kanału decyduje, co i kiedy wklei.
@@ -127,8 +124,9 @@ closed: <YYYY-MM-DD>             # gdy status: done
 - Itemy szersze/na przyszłość (nie domkną się w tym sweepie) → **osobna notatka tematyczna** (`type: concept-backlog`),
   żeby rejestr mógł zostać czysto domknięty (zostaw 1-liniowy pointer + backlink).
 
-**Widok Bases:** nad folderem rejestrów trzymaj `*.base` (kanban-view, `groupByProperty: note.status`,
-kolumny `open · active · done`) — rejestry stają się odhaczalną to-do listą sweepów, tym samym mechanizmem co tablica zadań.
+**Widok Bases (własny dla pipeline'u, nie tablica zadań):** nad folderem rejestrów trzymaj `*.base`
+(`groupByProperty: note.status`, kolumny `open · active · done`) — rejestry stają się odhaczalną listą sweepów.
+To wewnętrzny widok feedback-pipeline'u, odrębny od jakiejkolwiek tablicy zadań w vaulcie.
 
 **Archiwizacja done-rejestrów = przenieś do podfolderu `Done/`** (np. `Feedback Pipeline/Done/`), NIE rename z ✅. Obsidian rozwiązuje wikilinki po **basename**, więc przeniesienie do podfolderu **nie psuje linków** (zmiana basename — psuje). ⚠️ Filtr w `*.base` MUSI być **rekursywny**: `file.inFolder("<folder>")`, NIE `file.folder == "<folder>"` (to drugie wyklucza podfolder → done-rejestry znikają z kolumny Done). **Nigdy nie kasuj rekordu** — done zostaje jako archiwum.
 
