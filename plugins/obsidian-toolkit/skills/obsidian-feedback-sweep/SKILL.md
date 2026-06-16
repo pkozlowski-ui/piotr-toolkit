@@ -130,7 +130,9 @@ closed: <YYYY-MM-DD>             # gdy status: done
 **Widok Bases:** nad folderem rejestrów trzymaj `*.base` (kanban-view, `groupByProperty: note.status`,
 kolumny `open · active · done`) — rejestry stają się odhaczalną to-do listą sweepów, tym samym mechanizmem co tablica zadań.
 
-**Archiwizacja done-rejestrów = przenieś do podfolderu `Done/`** (np. `Feedback Pipeline/Done/`), NIE rename z ✅. Obsidian rozwiązuje wikilinki po **basename**, więc przeniesienie do podfolderu **nie psuje linków** (zmiana basename — psuje). Przenoś plik w **UI Obsidiana** (drag = in-place move). ⚠️ Wtedy filtr w `*.base` MUSI być **rekursywny**: `file.inFolder("<folder>")`, NIE `file.folder == "<folder>"` (to drugie wyklucza podfolder → done-rejestry znikają z kolumny Done). **Nigdy nie kasuj rekordu** — done zostaje jako archiwum.
+**Archiwizacja done-rejestrów = przenieś do podfolderu `Done/`** (np. `Feedback Pipeline/Done/`), NIE rename z ✅. Obsidian rozwiązuje wikilinki po **basename**, więc przeniesienie do podfolderu **nie psuje linków** (zmiana basename — psuje). ⚠️ Filtr w `*.base` MUSI być **rekursywny**: `file.inFolder("<folder>")`, NIE `file.folder == "<folder>"` (to drugie wyklucza podfolder → done-rejestry znikają z kolumny Done). **Nigdy nie kasuj rekordu** — done zostaje jako archiwum.
+
+⚠️ **Jak przenieść — `mv`, nie MCP copy+delete.** Najpierw zmień frontmatter na `status: done` + `closed:` (przez MCP `manage_frontmatter`/`patch_note`), **potem** `mv` pliku na filesystemie: `mv "<vault>/Feedback Pipeline/Nota.md" "<vault>/Feedback Pipeline/Done/"`. To **jeden atomowy ruch**. NIE rób „`write_note(Done/…)` + `delete_note(stary)`" — to dwa kroki, a gdy delete zostanie anulowany (jest destrukcyjny, często bez auto-zgody), zostaje **osierocony duplikat** w obu folderach (realny przypadek z sesji). Alternatywa: drag w UI Obsidiana (auto-przepina też ew. linki po basename), ale agent zwykle nie ma dostępu do UI → `mv`. Mechanika dwóch kanałów (treść = MCP, pliki = filesystem): skill `obsidian-setup`.
 
 ## Szablony (copy-paste)
 W `reference/templates.md`: wiersz triage, blok detalu, Decision Ask. Użyj ich zamiast wymyślać format.

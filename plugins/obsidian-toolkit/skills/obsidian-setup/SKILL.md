@@ -50,10 +50,21 @@ W `CLAUDE.md` projektu zanotuj: ścieżkę vaultu, które skille `obsidian-*` do
 (`feedback-sweep`: folder rejestrów + macierz decydentów; `kanban`: plik `.base` + semantyka kolumn).
 Vault bywa **cross-project** (np. osobisty board) — wtedy semantyka żyje w notatce w vaulcie, nie w jednym repo.
 
+## Dwa kanały dostępu — treść (MCP) vs pliki (filesystem)
+Vault jest osiągalny **dwiema drogami**; dobierz ją do operacji:
+- **Treść notatki** (czytanie, edycja, frontmatter, search) → narzędzia `mcp__obsidian__*` (Local REST API). To jedyny sposób, by zmiany przeszły przez Obsidiana semantycznie.
+- **Operacje na plikach** (move, rename, batch-przeniesienie) → **bezpośredni `mv`/`bash` na lokalnej ścieżce vaultu** (Google Drive/iCloud sam zsynchronizuje). MCP **nie ma operacji move/rename**.
+
+⚠️ **Przenoszenie notatki (np. do `Done/`): użyj `mv`, NIE „write nową ścieżkę + delete starą".**
+- MCP-owy „move" = `write_note(nowa ścieżka)` (tworzy kopię) + `delete_note(stara)` — **dwa kroki, ryzyko osieroconego duplikatu**, jeśli delete się nie powiedzie/zostanie anulowany (`delete_note` jest destrukcyjny → często bez auto-zgody).
+- `mv "<vault>/Folder/Nota.md" "<vault>/Folder/Done/"` = **jeden atomowy ruch**, zero kopii, zero ryzyka. Szybsze i bezpieczniejsze.
+- Wyjątek: gdy przy przenoszeniu chcesz też **zmienić frontmatter** (np. `status: open → done`, `closed:`) — zrób to osobno przez MCP (`manage_frontmatter`/`patch_note`) **przed** `mv`. `mv` nie dotyka treści.
+- Ścieżkę lokalną vaultu znajdź raz: `find ~/Library/CloudStorage -maxdepth 4 -type d -name "<nazwa vaultu>"` (typowo `~/Library/CloudStorage/GoogleDrive-<konto>/Mój dysk/<Vault>`).
+
 ## Gotchas
 - Wymaga **działającego Obsidiana** z otwartym vaultem — serwer to most do uruchomionej aplikacji.
 - `obsidian_search_notes` (text) **fuzzy-matchuje** — do precyzji `get_note` (`document-map`/`section`) + `replace_in_note` na unikalnych stringach.
-- Vault na Google Drive/iCloud — zapisy synchronizują się; kasowanie odwracalne przez kosz dysku.
+- Vault na Google Drive/iCloud — zapisy synchronizują się; kasowanie odwracalne przez kosz dysku. **Move plików rób przez `mv` na filesystemie, nie przez MCP copy+delete** (patrz sekcja „Dwa kanały dostępu").
 
 ## Raport
 Status połączenia (`✓/✗`), co dodano do permissionów, co zanotowano w `CLAUDE.md` projektu.
