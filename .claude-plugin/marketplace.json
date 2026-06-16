@@ -21,7 +21,7 @@
     },
     {
       "name": "obsidian-toolkit",
-      "description": "Obsidian vault workflow skills: make the vault the natural home for durable, human-facing documentation. feedback-sweep turns Figma/FigJam review comments into a classified, routed, answered register. Vault-agnostic process; per-project config.",
+      "description": "Obsidian vault workflow skills: make the vault the natural home for durable, human-facing documentation. feedback-sweep (Figma/FigJam review comments → classified, routed, answered register), kanban (Bases task board: digest, cards, triage), capture (promote artifacts to vault), setup (connect vault via Local REST API + MCP). Vault-agnostic; per-project config.",
       "source": "./plugins/obsidian-toolkit"
     }
   ]

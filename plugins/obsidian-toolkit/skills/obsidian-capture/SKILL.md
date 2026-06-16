@@ -1,6 +1,6 @@
 ---
 name: obsidian-capture
-description: Gest „promote to vault" — bierze gotowy, trwały artefakt (decyzja+uzasadnienie, spec/wymagania, synteza researchu, notatki ze spotkań) i zapisuje go jako poprawną notatkę we właściwym folderze vaultu z frontmatter + backlinkami. Uruchamia się gdy user mówi "zapisz to do vaultu", "promuj do vaultu", "udokumentuj tę decyzję", "to warto zachować", "capture", lub gdy karta Done / przemyślenie z Lab jest warte pamięci.
+description: Gest „promote to vault" — bierze gotowy, trwały artefakt (decyzja+uzasadnienie, spec/wymagania, synteza researchu, notatki ze spotkań) i zapisuje go jako poprawną notatkę we właściwym folderze vaultu z frontmatter + backlinkami. Uruchamia się gdy user mówi (EN+PL) "zapisz to do vaultu", "promuj do vaultu", "udokumentuj tę decyzję", "to warto zachować", "capture", "save to vault", "document this decision", "worth keeping", lub gdy karta Done / przemyślenie z Lab jest warte pamięci.
 ---
 
 # Skill: obsidian-capture
@@ -17,6 +17,9 @@ ten promuje do **dokumentacji dla człowieka** (vault).
 - przemyślenie z **Lab** warte zachowania
 - sesja wyprodukowała trwałą **decyzję / spec / syntezę researchu / notatki ze spotkania**
 
+## Wymagania
+- **MCP `obsidian`** (`mcp__obsidian__*`) do zapisu/edycji notatek + dostęp do plików vaultu do ew. przeniesień. Brak `mcp__obsidian__*` → najpierw skill `obsidian-setup`.
+
 ## Brama promocji (co graduuje — a co NIE)
 Promuj tylko **trwałe + dla człowieka**. Cztery kategorie:
 1. **Decyzje + uzasadnienia** — co zdecydowano, *dlaczego*, jakie opcje odrzucono.
@@ -27,7 +30,7 @@ Promuj tylko **trwałe + dla człowieka**. Cztery kategorie:
 **NIE promuj** (zostaw efemeryczne / w innej warstwie):
 - plany, które robi agent, rozumowanie pośrednie, scratch → nigdzie (efemeryczne),
 - reguły/gotchy/ID/konwencje *dla agenta* → `.claude/memory` + `CLAUDE.md` (to robota `session-retro`, nie tu).
-> Decyzja bywa dwustronna: **ADR-owy „dlaczego" → vault** (dla człowieka) + **1-liniowa reguła → CLAUDE.md** (dla agenta). To nie dублowanie — różne warstwy, różni odbiorcy.
+> Decyzja bywa dwustronna: **ADR-owy „dlaczego" → vault** (dla człowieka) + **1-liniowa reguła → CLAUDE.md** (dla agenta). To nie dublowanie — różne warstwy, różni odbiorcy.
 
 ## Protokół
 
@@ -49,8 +52,8 @@ Pokaż treść **przed** zapisem. Aktualizuj istniejącą notatkę zamiast tworz
 - W źródle zostaw **pointer** do nowej notatki (wikilink listą, w cudzysłowach).
 
 ### 5 — Domknij źródło
-- Promocja z **karty Done** → zaproponuj archiwizację/skasowanie karty (sygnalizuj — destrukcyjne).
-- Promocja z **Lab** → zaproponuj usunięcie przemyślenia z inboxu (już żyje w vaulcie).
+- Promocja z **karty Done** → zaproponuj **archiwizację** karty (`mv` do folderu archiwum boardu; **nie kasuj** — spójnie z `obsidian-kanban`).
+- Promocja z **Lab** → zaproponuj usunięcie przemyślenia z inboxu (już żyje w vaulcie) — sygnalizuj, że to destrukcyjne.
 
 ## Frontmatter (wzór)
 ```

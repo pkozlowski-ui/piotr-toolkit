@@ -1,6 +1,6 @@
 ---
 name: obsidian-kanban
-description: Obsługa tablicy zadań w Obsidianie (Bases kanban-view) — digest stanu, tworzenie/przesuwanie kart, triage inboxu, promocja itemów z backlogu na tablicę. Uruchamia się gdy user mówi "co mam na kanbanie", "pokaż tablicę", "dodaj zadanie", "przesuń kartę", "ztriażuj lab", "zrób porządek na tablicy", "kanban".
+description: Obsługa tablicy zadań w Obsidianie (Bases kanban-view) — digest stanu, tworzenie/przesuwanie/archiwizacja kart, triage inboxu, promocja itemów z backlogu na tablicę. Uruchamia się gdy user mówi (EN+PL) "co mam na kanbanie", "pokaż tablicę", "co in progress", "dodaj/przesuń kartę", "oznacz jako done", "zarchiwizuj kartę", "ztriażuj lab", "zrób porządek na tablicy", "kanban" — lub po angielsku "show the board", "what's in progress", "add/move a card", "mark done", "kanban".
 ---
 
 # Skill: obsidian-kanban
@@ -17,8 +17,8 @@ podlinkować artefakty i **promować itemy z backlogu** (np. otwarte itemy z fee
 - "wrzuć te itemy na kanban" / promocja z backlogu/feedbacku
 
 ## Wymagania
-- **MCP `obsidian`** (`mcp__obsidian__*`) lub dostęp do plików vaultu.
-- **Tablica = plik `.base`** z `kanban-view`. Skill **odkrywa strukturę z `.base`** — nie zakłada wcześniej kolumn.
+- **MCP `obsidian`** (`mcp__obsidian__*`) do treści + **dostęp do plików vaultu** (`mv`/`bash` na lokalnej ścieżce) do przenoszenia kart. Brak `mcp__obsidian__*` → najpierw skill `obsidian-setup`.
+- **Tablica = plik `.base`** z `kanban-view`. Skill **odkrywa strukturę z `.base`** — nie zakłada wcześniej kolumn. Brak `.base` w projekcie → nie zgaduj; powiedz userowi i zaproponuj utworzenie boardu (propose-first).
 
 ## Krok 0 — odczytaj board z `.base` (NIE hardcoduj kolumn)
 Tablice różnią się per-projekt. Zanim cokolwiek zrobisz, przeczytaj plik `.base` i ustal:
@@ -34,7 +34,7 @@ Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki
 - **Lab** — lodówka/inbox: *do zbadania* · *przemyślenie* · *możliwy projekt* (3 różne cykle życia).
 - **To-do** — backlog rzeczy do zrobienia. Tagi: `blocked` (ktoś/coś blokuje — dopisz *co* w karcie) · `high-priority`.
 - **In progress** — **tylko to, nad czym realnie pracujesz.** „Zaraz zacznę" ≠ in-progress → trzymaj na **górze `To-do`** (kolejność = priorytet), żeby WIP był prawdziwy.
-- **To confirm** — zrobione, czeka na omówienie/feedback zespołu. Dwa wyjścia: feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`. (Wejście dla **feedback-sweep**.)
+- **To confirm** — zrobione, czeka na omówienie/feedback zespołu. Dwa wyjścia: feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`.
 - **Done** — zrobione i **warte pamięci dla zespołu**. To kandydat do **promocji do vaultu** (`obsidian-capture`). Po domknięciu kartę **archiwizuj** (przenieś do folderu archiwum boardu) — **nie kasuj**: zachowujemy zapis tego, co zrobione.
 
 ## Operacje
@@ -73,15 +73,15 @@ Gdy karta trafia/jest w `Done` i jest potwierdzona, zaproponuj rozstrzygnięcie 
 - **warte pamięci dla zespołu** (decyzja / spec / koncept) → **promuj do vaultu** (`obsidian-capture`) jako trwały dok we właściwym folderze, **potem zarchiwizuj kartę**;
 - **pozostałe** → **zarchiwizuj kartę** od razu.
 
-**Archiwizacja = przenieś plik karty do folderu archiwum boardu** (per-board config, np. `<folder boardu>/Archive`) — **nigdy nie kasuj do Trash ani nie usuwaj pliku**. Zasada: *archiwizuj, nie kasuj* — Piotr nie traci zapisu tego, co zrobione (karty Done często mają w treści cenny status realizacji).
+**Archiwizacja = przenieś plik karty do folderu archiwum boardu** (per-board config, np. `<folder boardu>/Archive`) — **nigdy nie kasuj do Trash ani nie usuwaj pliku**. Zasada: *archiwizuj, nie kasuj* — nie tracimy zapisu tego, co zrobione (karty Done często mają w treści cenny status realizacji).
 - **Mechanizm:** board filtruje po **dokładnym** folderze (`file.folder == "<folder>"`), więc karta w podfolderze archiwum **automatycznie wypada z tablicy**, a notatka żyje. Status we frontmatter staje się wtedy martwy — ustaw go na `Done` (czytelny ślad), nie zostawiaj `Trash`.
+- **⚠️ Jak przenieść — `mv` na filesystemie, NIE „write nowej ścieżki + delete starej".** MCP `obsidian` **nie ma operacji move/rename**; emulacja przez `write_note(nowa ścieżka)` + `delete_note(stara)` to dwa kroki i ryzyko **osieroconego duplikatu**, gdy destrukcyjny `delete` zostanie anulowany. Zamiast tego: najpierw ustaw `status: Done` przez MCP (`manage_frontmatter`), **potem** `mv "<vault>/<folder>/Karta.md" "<vault>/<folder>/Archive/"` — jeden atomowy ruch (Google Drive/iCloud zsynchronizuje). Mechanika dwóch kanałów: skill `obsidian-setup`.
+- **Brak folderu archiwum** w configu boardu → zaproponuj jego utworzenie (propose-first), nie improwizuj.
 - **Brak kolumny „Trash"** na boardzie — to relikt; domknięcie idzie do folderu archiwum, nie do kolumny.
 
 Cel: `Done` nie puchnie, a żaden zapis nie ginie.
 
-**Karty-wskaźniki sweepów** (zakładane automatycznie przez `obsidian-feedback-sweep`, linkują do rejestru):
-to operacyjne pointery, nie treść. Gdy linkowany rejestr osiąga `status: done` (sweep ogarnięty) →
-**zarchiwizuj kartę** (rejestr-rekord i tak zostaje w `Feedback Pipeline/`).
+**Promocja `Open items` z feedback-sweepu (opcjonalna, inicjowana z kanbana — NIE automatyczna):** feedback-sweep nie tworzy żadnych kart na tablicy. Jeśli chcesz, możesz **ręcznie** wziąć leftovers z notatki `Open items …` (`type: concept-backlog`) i wypromować je na board operacją F.
 
 ## Propose-first (dyscyplina zapisu)
 To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, czekaj na OK:
@@ -107,7 +107,7 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 - **Karta bez property grupującego** → „Uncategorized". Na create zawsze ustaw status.
 - **Digest stosuje filtry z `.base`** (np. `file.name != "…"`) — nie listuj folderu na ślepo, bo pokażesz wykluczone notatki jako fałszywe „Uncategorized".
 - **Notatka nie-karta w folderze boardu** (np. referencyjna „jak pracuję") → **wyklucz w filtrze `.base`** (`file.name != "…"`, bez rozszerzenia), nie zostawiaj jako Uncategorized.
-- **Archiwizacja przenosi plik** — przez REST robisz to jako `write` (nowa ścieżka) + `delete` (stara). To **nie aktualizuje `[[backlinków]]`** do karty (Obsidian robi to tylko przy move w UI). Karty Done zwykle są liśćmi (nikt do nich nie linkuje) — wtedy OK; jeśli karta jest celem linków, przenieś ją w UI Obsidiana. Sam `delete` zawsze sygnalizuj (destrukcyjne) i wykonuj dopiero po potwierdzeniu kopii.
+- **Archiwizacja przenosi plik — `mv` na filesystemie, nie REST copy+delete** (MCP nie ma move; copy+delete grozi osieroconym duplikatem — patrz sekcja archiwizacji + `obsidian-setup`). `mv` nie aktualizuje `[[backlinków]]` do karty (Obsidian robi to tylko przy move w UI). Karty Done zwykle są liśćmi (nikt do nich nie linkuje) — wtedy OK; jeśli karta jest celem linków, przenieś ją w UI Obsidiana.
 - **Token-safety:** do digestu czytaj frontmatter, nie pełne treści kart.
 - **Bases bywa wrażliwe** — po zmianach strukturalnych w `.base` zweryfikuj render w UI.
 

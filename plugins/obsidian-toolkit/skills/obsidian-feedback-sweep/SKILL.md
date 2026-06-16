@@ -1,6 +1,6 @@
 ---
 name: obsidian-feedback-sweep
-description: Zamiana komentarzy z review designu (Figma + FigJam) w sklasyfikowany, zrouowany, odpowiedziany rejestr w Obsidianie. Uruchamia się gdy user mówi "zrób sweep feedbacku", "przejrzyj feedback", "triage komentarzy z Figmy", "ogarnij komentarze z review", "feedback sweep".
+description: Turn scattered design-review comments from Figma & FigJam into one classified, routed, answered register in Obsidian — type + disposition axes, owner routing (RACI-lite), ready reply drafts. Use after a design/review session to triage unresolved comment threads. Triggers EN+PL — "feedback sweep", "sweep the feedback", "triage Figma/FigJam comments", "go through the review comments", "process review feedback", "zrób sweep feedbacku", "przejrzyj feedback", "triage komentarzy z Figmy/FigJam", "ogarnij komentarze z review", "feedback z review" — and on the intent even when unnamed: new unresolved comment threads on a Figma file or FigJam board to process after a review. NOT for: code-review/PR feedback, written feedback on a doc, user/customer feedback analysis, or one-off comment replies. Needs a per-project config (decision-owner matrix, register folder); if missing, proposes setup from the template (propose-first).
 ---
 
 # Skill: obsidian-feedback-sweep
@@ -12,14 +12,16 @@ vaulcie; **człowiek decyduje, co wkleić z powrotem do Figmy** — to kuratorow
 szybkich wrzutek (Slack→Linear).
 
 ## Auto-trigger
-Uruchamia się gdy user mówi:
-- "zrób sweep feedbacku" / "feedback sweep" / "ogarnij feedback"
-- "przejrzyj komentarze z Figmy" / "triage komentarzy" / "feedback z review"
-- po sesji review, gdy w pliku Figma / na boardzie FigJam pojawiły się nowe nierozwiązane wątki
+Uruchamia się gdy user mówi (EN+PL — bramką jest pole `description`, ta lista jest jej lustrem):
+- "feedback sweep" / "sweep the feedback" / "zrób sweep feedbacku" / "ogarnij feedback"
+- "triage Figma/FigJam comments" / "go through the review comments" / "process review feedback"
+- "przejrzyj feedback" / "przejrzyj komentarze z Figmy" / "triage komentarzy" / "feedback z review"
+- **na samą intencję** (nawet bez słowa „sweep"): po sesji review pojawiły się nowe nierozwiązane wątki na pliku Figma / boardzie FigJam do przerobienia
+- **NIE dla:** feedbacku z code-review/PR, feedbacku do tekstu/dokumentu, analizy user/customer feedback, jednorazowej odpowiedzi na pojedynczy komentarz
 
 ## Wymagania
-- **MCP `obsidian`** — rejestr i edycja notatek (`mcp__obsidian__*`). Patrz gotcha o wyszukiwaniu niżej.
-- **MCP `figma-console`** — pobranie komentarzy (`figma_get_comments`) i mapowanie `node_id` → ekran (`figma_execute`).
+- **MCP `obsidian`** — rejestr i edycja notatek (`mcp__obsidian__*`). Brak narzędzi `mcp__obsidian__*` → najpierw skill `obsidian-setup`. Patrz gotcha o wyszukiwaniu niżej.
+- **MCP `figma-console`** — pobranie komentarzy (`figma_get_comments`) i mapowanie `node_id` → ekran (`figma_execute`). Projekt może mieć inny Figma MCP (oficjalny `mcp__Figma__*` lub inny server) — użyj jego odpowiednika pobierania komentarzy; gdy żaden Figma MCP nie jest podłączony → poproś usera o podłączenie zanim ruszysz CAPTURE.
 - **Config per-projekt** — macierz decydentów, folder rejestru, scope kanału, reguły domenowe.
   Jeśli projekt go nie ma → patrz `reference/project-config-template.md` i zaproponuj założenie (propose-first).
 
