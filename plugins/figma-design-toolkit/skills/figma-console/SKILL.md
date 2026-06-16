@@ -170,6 +170,23 @@ After every operation that creates or modifies visual elements:
   2. **Renders stale master defaults for instance SLOT content** (Modal/SideDrawer/AssistantPanel `content`/`footer`) unless that node's page is the *active* page.
 - Corollary: never trust a `take` screenshot showing an "old value". The model is the truth — confirm with `componentProperties` / `.characters`, or just re-shoot with `capture`. (Verified 2026-06-15: `capture` rendered live slot content correctly while a *different* page was active; `take` showed defaults + cached bytes.)
 
+## Embedding images / screenshots INTO FigJam (or any board)
+
+**Programmatic image embedding via this bridge is NOT reliable — don't burn time re-trying it.** Verified empirically (2026-06-16):
+- `figma.createImageAsync(URL)` is blocked by the plugin's `networkAccess.allowedDomains` — and even a *listed* `http://localhost:PORT` is rejected (mixed-content: HTTP inside Figma's HTTPS runtime). Surfaces as a generic "does not satisfy the allowedDomains" error.
+- `figma.createImageAsync('data:image/…;base64,…')` and `figma_set_image_fill` (base64) DO bypass the domain check and work *in principle* — BUT the base64 must pass through the agent into the tool call, and at real screenshot sizes the transcription **corrupts the byte stream** (image renders with a garbled/grey lower half). `figma_set_image_fill` also tends to **time out (60s)** on non-trivial payloads.
+- The plugin manifest **regenerates from the npm package on every server start** (`copyFileSync` in `setupStablePluginDir`), so hand-editing `~/.figma-console-mcp/plugin/manifest.json` to add domains is futile — it reverts.
+- Figma REST API cannot create nodes / upload media (read-only + comments only).
+
+**→ Workflow for screenshots on FigJam/boards (do this EVERY time screenshot work comes up):**
+1. Create a **folder on the macOS Desktop** (`~/Desktop/…`, named per task).
+2. Drop in every screenshot you can source — from Figma files via `get_screenshot` → `curl` the returned (short-lived) URL to a file; public web screenshots via curl / browser tools; Mobbin etc.
+3. **User drags the files into FigJam** (FigJam embeds them losslessly — zero corruption).
+4. **You arrange / size / caption** them in the target section.
+Screens that live only in chat (pasted) or behind a login → user drops into the same folder.
+
+Full automation only becomes possible if figma-console adds **local-file-path** input for images (announced in PR #31, absent in 1.31.0) — then the MCP server reads the file and base64 never passes through the agent. Until then: Desktop-folder → drag-drop.
+
 ## Session Management
 
 ### Connection
