@@ -54,7 +54,10 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
              Needs decision → zbuduj jasną część UI + draft Decision Ask dla Ownera
              Defer/Phase-2  → zaloguj + tag fazy (zaznacz intencję, nie tylko odłóż)
 5. CLOSE     zaktualizuj rejestr; człowiek wkleja odpowiedzi + resolve'uje w Figmie;
-             potem re-pull figma_get_comments i pogódź rejestr z realnym stanem posted/resolved
+             potem re-pull (active-only = mniejszy output; wątek z triażu którego NIE ma w active = resolved/zamknięty;
+             sprawdź ostatniego autora + czy właściciel kanału odpisał). Leftovers (czekają na decyzję innych) →
+             osobny kolektor `Open items` + karta Kanban; nowe nieprzetriażowane komentarze → następny dated sweep.
+             Po domknięciu: archiwizuj rejestr → podfolder `Done/` (patrz Schemat rejestru).
 6. KANBAN    AUTO — załóż lekką kartę-wskaźnik na głównym Kanbanie (patrz niżej)
 ```
 
@@ -88,7 +91,7 @@ na głównym Kanbanie (folder z configu projektu, np. `KANBAN/`):
 - nazwa np. `Ogarnij feedback sweep — YYYY-MM-DD`, frontmatter `status: To-do`,
 - treść = 1 linia + **backlink do rejestru** (`- "[[YYYY-MM-DD - … Feedbacks]]"`, lista w cudzysłowach),
 - to **wskaźnik do akcji** na tablicy decyzyjnej; treść feedbacku zostaje w rejestrze (nie kopiuj).
-Cykl: gdy sweep ogarnięty (rejestr `status: done`) → karta-wskaźnik **kasowana** (rejestr-rekord zostaje). Patrz `obsidian-kanban`.
+Cykl: gdy sweep ogarnięty (rejestr `status: done`) → karta-wskaźnik **ustaw na `Done`** (NIE kasuj — karta i rejestr zostają jako archiwum). Patrz `obsidian-kanban`.
 
 ## Propose-first (dyscyplina zapisu)
 Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK — **z jednym wyjątkiem**:
@@ -96,6 +99,7 @@ karta-wskaźnik na Kanbanie z kroku zamykającego powstaje automatycznie (decyzj
 - Pokaż diff/wstawkę zanim utworzysz lub nadpiszesz notatkę rejestru.
 - **Nie** postuj odpowiedzi ani nie resolve'uj wątków w Figmie sam — to robi człowiek.
 - Drafty odpowiedzi przygotuj w rejestrze; właściciel kanału decyduje, co i kiedy wklei.
+- **Drafty pisz w języku kanału review** — jeśli komentarze w Figmie są po angielsku, drafty TEŻ po angielsku (lądują wprost w komentarzach Figmy). Metki/struktura rejestru mogą zostać w języku roboczym. (Cudzysłowy w eksporcie komentarzy Figmy bywają mieszane: otwierający `„` U+201E + zamykający prosty `"` U+0022 — przy `replace` mapuj dokładny znak.)
 - Nowe notatki tematyczne → propozycja; zmiany w istniejącym rejestrze → też pokaż przed zapisem.
 
 ## Schemat rejestru
@@ -113,8 +117,7 @@ last-swept: <ISO>                # czas pullu — punkt odcięcia następnego sw
 previous: "[[poprzedni rejestr]]"
 closed: <YYYY-MM-DD>             # gdy status: done
 ```
-- **`status` to źródło prawdy**, nie ✅ w nazwie. Emoji w nazwie = opcjonalna kosmetyka dla oka; rename psuje
-  `[[linki]]` i łańcuch `previous`/`last-swept`, więc stan trzymaj w polu, nie w nazwie.
+- **`status` to źródło prawdy stanu**, NIE nazwa pliku. **Nie oznaczaj done przez ✅/prefix w nazwie** — rename zmienia basename i psuje `[[linki]]` + łańcuch `previous`/`last-swept`. (Wyjątek: rename **w UI Obsidiana** auto-przepina linki; rename przez API lub `mv` na dysku — NIE.) Stan trzymaj w polu `status`.
 - **`scope` ≠ `status`.** `scope` opisuje *co* sweep objął (np. „active threads only"); `status` opisuje *stan pracy*.
 
 **Model „rejestr = pozycja to-do":** rejestr to zamknięta jednostka pracy (jeden sweep).
@@ -126,6 +129,8 @@ closed: <YYYY-MM-DD>             # gdy status: done
 
 **Widok Bases:** nad folderem rejestrów trzymaj `*.base` (kanban-view, `groupByProperty: note.status`,
 kolumny `open · active · done`) — rejestry stają się odhaczalną to-do listą sweepów, tym samym mechanizmem co tablica zadań.
+
+**Archiwizacja done-rejestrów = przenieś do podfolderu `Done/`** (np. `Feedback Pipeline/Done/`), NIE rename z ✅. Obsidian rozwiązuje wikilinki po **basename**, więc przeniesienie do podfolderu **nie psuje linków** (zmiana basename — psuje). Przenoś plik w **UI Obsidiana** (drag = in-place move). ⚠️ Wtedy filtr w `*.base` MUSI być **rekursywny**: `file.inFolder("<folder>")`, NIE `file.folder == "<folder>"` (to drugie wyklucza podfolder → done-rejestry znikają z kolumny Done). **Nigdy nie kasuj rekordu** — done zostaje jako archiwum.
 
 ## Szablony (copy-paste)
 W `reference/templates.md`: wiersz triage, blok detalu, Decision Ask. Użyj ich zamiast wymyślać format.
