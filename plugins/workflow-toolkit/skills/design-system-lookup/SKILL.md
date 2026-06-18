@@ -94,6 +94,9 @@ If you need a value not in the tokens — ask before adding it.
 **Pages are compositions, not inventions.**
 Page files (`pages/`, `app/`, routes) use managed components only. No inline anonymous divs, one-off wrappers, or hardcoded values in page files.
 
+**Content is part of the DS — reuse copy patterns too, don't reinvent labels.**
+Before writing a new label/CTA/status/error, check the project's content canon (`docs/design-system/01-foundations/ux-writing.md`): action-label canon (one base label per action), status/badge lexicon (one label per state), voice register by audience, glossary (one canonical term per concept). Match the existing pattern — a new synonym reads as a new concept.
+
 **If the component doesn't exist yet:**
 1. Create it in the component directory (not inside a page file)
 2. Document it if the project has design system docs

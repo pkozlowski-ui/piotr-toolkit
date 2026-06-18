@@ -168,9 +168,25 @@ return { onPage }; // compare to Object.keys(registry) in the repo; report names
 // Priority: 🟡 Medium (handoff/codegen correctness).
 ```
 
+### A8 — Copy / UX-writing audit (content is part of the DS)
+
+Mechanical UX-writing drift — flags what `tokenAudit` can't: Title-Case CTAs, placeholders, year format,
+glyph-in-label. Register/tone is a human judgment against `01-foundations/ux-writing.md` (per-surface +
+per-audience register), not this script. For a whole experience, run the full `ux-writing-audit-playbook.md`
+(harvest → fan-out per dimension → register → fix) rather than this per-screen check.
+
+```javascript
+// Same as copyAudit() in figma-build-kit.md. Read ALL visible TEXT (copy is often per-instance override).
+// Flags: /^(Button|Helper text|Option|Placeholder text|Lorem|Description goes here)/ (placeholder);
+//   Title-Case label inside Button/Tab (→ sentence case); /\d{4}[–-]\d{2,4}/ (year → 2026/27);
+//   trailing glyph (+ → ↗ ✓ ✕) in a button label (→ icon slot).
+// ⚠ Heuristic — review flags: real proper nouns (school names "… High School") are NOT errors.
+// Priority: 🟡 Medium (credibility/consistency; placeholders shipping = 🔴 High).
+```
+
 ### Audit summary table
 
-After running A1–A7, produce this before any repair work:
+After running A1–A8, produce this before any repair work:
 
 | Issue | Count | Priority | Impact |
 |---|---|---|---|

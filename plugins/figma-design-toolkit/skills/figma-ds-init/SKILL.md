@@ -37,8 +37,11 @@ docs/design-system/
   figma-build-kit.md            ← UNIVERSAL (write verbatim from "Build kit template" below)
   figma-registry.json           ← per-project skeleton (Step 2)
   components.md                 ← per-project template (Step 3)
+  01-foundations/
+    ux-writing.md               ← per-project CONTENT canon (Step 4b) — content is part of the DS
   03-patterns/
     navigation-shell.md         ← per-project (create empty stub with heading)
+    ux-writing-audit-playbook.md ← per-project (stub: harvest→register→fix; fill on first audit)
   04-page-blueprints/
     canonical-patterns.md       ← per-project template (Step 4)
 ```
@@ -84,6 +87,38 @@ Human-readable catalog. Seed with the canonical section structure (adjust per pr
 ## (fill as you go) list / wizard / drawer shells — `<node id>`
 ```
 
+## Step 4b — `01-foundations/ux-writing.md` (content canon — content is part of the DS)
+Content is a first-class DS layer, not an afterthought. Scaffold this file with the UNIVERSAL rules
+(from `figma-design-workflow` → "Content / UX-writing") pre-filled, and PER-PROJECT slots to fill as you build.
+Template:
+````md
+# UX writing — <project>
+
+> Content layer of the DS. Read before writing any user-facing string. Audit copy like tokens (`copyAudit`).
+
+## Voice registers (PER-PROJECT — pick by AUDIENCE, not screen)
+- <register A, e.g. internal/admin> — operational, scannable.
+- <register B, e.g. consumer funnel> — warm, benefit-first, low-friction, plain/ESL.
+- <register C, e.g. returning-user dashboard> — status + next-action + "no action needed".
+- AI layer — advisory (attribution→finding→action, hedged, never blocks); brand exposure per audience (often white-label for end-users).
+
+## Capitalization by surface (UNIVERSAL)
+sentence-case default · UPPERCASE-via-style only for eyebrow + table-header · Title Case only for proper nouns +
+formal data-field labels. Descriptive categories/filters = sentence case. (full table → figma-design-workflow)
+
+## Action-label canon (PER-PROJECT) — one base label per action
+| Action | Canonical | Variants | Kill |
+
+## Status / badge lexicon (PER-PROJECT) — one label per state
+
+## Glossary (PER-PROJECT) — one canonical string per concept; list ghost/forbidden terms
+| Use | Avoid | Note |
+
+## Mechanics
+buttons verb-first/sentence/no-period/no-glyph · helper fragment→no period, sentence→period · errors full sentence+period, supportive · year `2026/27` · `…` ellipsis · locale (pick one) · no placeholders ship.
+````
+Per-experience audit findings live OUTSIDE the repo if the project uses a vault (e.g. Obsidian `Design Guidelines/Audits/`); otherwise under `docs/design-system/_audit/`.
+
 ## Step 5 — wire into CLAUDE.md
 Append a **DS rules** block to the project `CLAUDE.md` (or confirm it exists). Minimum:
 
@@ -93,11 +128,14 @@ Append a **DS rules** block to the project `CLAUDE.md` (or confirm it exists). M
   - Krok 0: paste the helper kit from docs/design-system/figma-build-kit.md; for lists/wizards/
     drawers — clone the canonical shell from 04-page-blueprints/canonical-patterns.md (don't reinvent).
   - Krok 1: read docs/design-system/figma-registry.json (replaces figma_search_components).
-  - Krok 2: emit the UI-atom → DS-component mapping table before writing the script.
+  - Krok 2: emit the UI-atom → DS-component mapping table before writing the script (incl. a copy column —
+    each string's register×surface per 01-foundations/ux-writing.md).
 - Token compliance: every fill/stroke bound (setBoundVariableForPaint), every text → setTextStyleIdAsync
   + fill bound separately, every padding/gap/radius bound (map spacing by VALUE — names ≠ px).
-- After each screen: run tokenAudit + instanceRatioAudit (instance = opaque) from the build kit.
-  issueCount:0 and pass:true (≥95%) before "done".
+- Copy compliance (content = part of the DS): capitalization by surface, verb-first buttons, no glyph/placeholder,
+  register by audience, one canonical term per concept — per 01-foundations/ux-writing.md.
+- After each screen: run tokenAudit + instanceRatioAudit + copyAudit (instance = opaque) from the build kit.
+  issueCount:0, pass:true (≥95%), copy count:0 before "done".
 - Collection rules: new DS component → figma-registry.json + components.md in the same commit;
   new clonable composite → canonical-patterns.md; project-specific gotcha → memory.
 - **Definition of Done — a new DS component is NOT "done" until all of:**
@@ -222,8 +260,25 @@ function instanceRatioAudit(screen) {
   const total = instances + violations.length;
   return { ratio: (total ? Math.round(instances / total * 100) : 100) + '%', pass: total ? instances / total >= 0.95 : true, instances, layoutFrames, violations };
 }
+// Copy audit — content is part of the DS. Mechanical UX-writing violations only (register/tone = human, per
+// ux-writing.md). count:0 = ok. Flags: placeholders, Title-Case CTAs, year en-dash/hyphen, glyph-in-label.
+function copyAudit(root){
+  const PH = /^(Button|Helper text|Option|Placeholder text|Lorem|Description goes here)/i;
+  const YEAR = /\b\d{4}[–-]\d{2,4}\b/;                 // 2026–27 / 2026-2027 → UI should be 2026/27
+  const issues = [];
+  const btnish = t => { let p = t.parent, h = 0; while (p && h < 5) { if (/Button|WizardFooter|BackButton|Pagination|Tab\b/.test(p.name)) return true; p = p.parent; h++; } return false; };
+  (function walk(n){ for (const c of (n.children || [])) { if (c.visible === false) continue;
+    if (c.type === 'TEXT') { const s = (c.characters || '').trim(); if (s) {
+      if (PH.test(s)) issues.push({ t: s.slice(0,40), why: 'placeholder/dev-leftover' });
+      else { if (/^[A-Z][a-z]+ [A-Z][a-z]/.test(s) && s.length < 40 && btnish(c)) issues.push({ t: s, why: 'Title-Case CTA → sentence case' });
+        if (YEAR.test(s)) issues.push({ t: s.slice(0,40), why: 'year → 2026/27' });
+        if (/[+→↗✓✕]\s*$/.test(s) && btnish(c)) issues.push({ t: s, why: 'glyph in label → icon slot' }); } } }
+    walk(c); } })(root);
+  const seen = new Set(); const uniq = issues.filter(i => { const k = i.why + i.t; return seen.has(k) ? false : (seen.add(k), true); });
+  return { count: uniq.length, issues: uniq };
+}
 const screen = await figma.getNodeByIdAsync('SCREEN_ID');
-return { token: tokenAudit(screen), ratio: instanceRatioAudit(screen) };
+return { token: tokenAudit(screen), ratio: instanceRatioAudit(screen), copy: copyAudit(screen) };
 ```
 ````
 

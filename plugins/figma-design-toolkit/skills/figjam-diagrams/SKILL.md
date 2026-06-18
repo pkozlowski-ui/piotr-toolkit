@@ -21,6 +21,7 @@ entire approach.
 - Comparing multiple options/approaches side-by-side
 - Turning meeting notes or a list of steps into a diagram
 - Adding to an existing FigJam board (URL provided)
+- **Editing / rearranging an existing populated board, or ingesting user-uploaded screenshots** → read `references/editing-existing-boards.md` FIRST
 
 ## Tool selection
 
@@ -112,6 +113,13 @@ What you CAN use:
 - System state hexagons (HEXAGON shape, solid fill)
 - Text annotations (SQUARE shape, empty fill + empty strokes = invisible background)
 - Actor icons (ELLIPSE shape for head, SQUARE for body)
+
+### ⚠ use_figma gives NO feedback
+
+`console.log` inside `use_figma` returns nothing, and `use_figma` has no return value. You cannot
+debug by logging or read values back through the call. To inspect state, re-fetch with `get_figjam`
+(structure) or `get_screenshot` (pixels). Write code to be correct first, then verify. See
+`references/editing-existing-boards.md` §2.
 
 ### Append before positioning
 
@@ -261,6 +269,10 @@ const s2y = s1y + SEC_H + SEC_GAP;
 const s3y = s2y + SEC_H + SEC_GAP;
 ```
 
+> ⚠ Sections lay out by absolute Y, not tree order. After ANY edit that adds, removes, or resizes
+> content, re-flow every section from y=0 (see `references/editing-existing-boards.md` §1) — an
+> auto-resize can shove a section into negative Y and silently reorder the board.
+
 ---
 
 ### Visual grammar
@@ -297,6 +309,11 @@ Use shape type and colour to communicate meaning at a glance:
 - Use `⚠` prefix for warnings
 - Keep to 1–2 lines
 - Describe the implication, not the technical detail
+
+**Naming sections & cross-references:**
+- Name sections descriptively, never with letter codes ("A — Canon"). Letter codes read as internal
+  shorthand and break when sections get reordered. Set both `node.name` (layer panel) and the visible
+  header text. Don't reference sections by code in body copy ("see G", "F3") — name the thing.
 
 ---
 
@@ -395,9 +412,27 @@ figma.viewport.scrollAndZoomIntoView([s1]);
 
 ---
 
+## MODE C — Editing an existing populated board
+
+When the board already has content (you're rearranging, translating, adding a section, or snapping in
+user-uploaded screenshots), the rules differ from greenfield creation. **Read
+`references/editing-existing-boards.md` before starting.** Key points:
+
+- **Re-flow sections from y=0** after any add/remove/resize — layout is by absolute Y, not tree order.
+- **No debugging via logs** — `use_figma` returns nothing; verify with `get_figjam` / `get_screenshot`.
+- **`get_metadata` doesn't work on FigJam** — use `get_figjam` for structure.
+- **Images: placeholder → swap** — the API can't upload rasters; build named placeholder frames, have
+  the user drag PNGs in, then map images onto placeholders by name and delete the placeholders.
+- **Re-parenting needs coordinate conversion** — after `appendChild`, convert absolute→section-relative
+  via `absoluteTransform`.
+- **Remove the stray upload container** left behind by drag-drop once images are placed.
+
+---
+
 ## Reference files
 
 - `references/plugin-api-guide.md` — complete confirmed API surface, all known gotchas, shape type list
 - `references/visual-patterns.md` — detailed layout patterns for different diagram types (comparison grids, decision trees, user journeys)
+- `references/editing-existing-boards.md` — editing/rearranging a populated board, re-flowing sections, ingesting user-uploaded images, the placeholder→swap pattern (lessons from real edit sessions)
 
 Read them when the task is complex or requires a layout type not covered above.

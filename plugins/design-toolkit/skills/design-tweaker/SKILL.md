@@ -105,7 +105,7 @@ The audit surface. **Quick mode:** apply the lenses the complaint implicates (us
 ### 7 · Accessibility & robustness
 - Contrast, color-only state, **focus ring** (`:focus-visible` visible, ≥3:1), touch targets ≥44px with ≥8px spacing.
 - **States & edge cases (harden):** empty / loading / error / zero / very long text / overflow / huge numbers / long names colliding with layout. Are they handled or will they break?
-- **Copy / microcopy** — CTA is action-led ("Send reminders" > "Submit"); labels clear; error messages helpful; voice consistent.
+- **Copy / microcopy (content = part of the DS)** — CTA action-led & verb-first ("Send reminders" > "Submit"); **capitalization by surface** (sentence-case default; Title Case only for proper nouns / formal data-field labels — `Open seats only`, not `Open Seats Only`); no glyph in labels; no placeholders shipped (`Button`, `Lorem`); **voice register matches the audience** (admin = operational · consumer funnel = warm/plain · returning dashboard = status + next-action); one canonical term per concept (watch ghost/renamed terms). If the project has `01-foundations/ux-writing.md`, audit against it (mechanical: `copyAudit`); for a whole experience run the harvest→register→fix playbook.
 - Code-level tells: `outline-none` w/o replacement · `transition: all` · icon buttons w/o `aria-label` · `<div onClick>` · form `font-size < 16px` (iOS zoom).
 
 ---
