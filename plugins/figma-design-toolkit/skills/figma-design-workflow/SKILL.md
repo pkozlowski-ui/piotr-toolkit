@@ -16,16 +16,18 @@ Use together with `figma-console` (MCP mechanics) or `figma-cli` (JSX render).
 
 ## First decision — which tool to use
 
-Before doing anything, pick the execution path:
+Before doing anything, pick the execution path. **Don't funnel everything through `figma_execute`** — it's the slowest, most timeout-prone path (hardcoded ~5 s budget; see `figma-console` → "Performance & the timeout budget — READ FIRST").
 
 | Signal | Tool | Skill |
 |---|---|---|
-| Render a frame/component from JSX, apply shadcn/tailwind tokens, create UI block | **figma-cli** | `figma-design-toolkit:figma-cli` |
-| Need component variants, programmatic variable binding, multi-page operations | **figma-console** | `figma-design-toolkit:figma-console` |
-| Read design context / screenshot for code generation | Figma desktop MCP read tools | n/a |
+| New screen/component from JSX, shadcn/tailwind tokens, UI block | **figma-cli** | `figma-design-toolkit:figma-cli` |
+| Read design context / screenshot for code / generate-from-intent / FigJam | **official Figma MCP** (Dev Mode, `localhost:3845`, has write) | `figma:figma-use` (external) |
+| Variants, programmatic variable binding, multi-page ops, batch tokens, DS audit/parity, prototype reactions | **figma-console** (`figma_execute`, small scripts) | `figma-design-toolkit:figma-console` |
 | Desktop Bridge unavailable (no Figma Desktop, restricted env) | claude.ai Figma MCP | `figma:figma-use` (external) |
 
-Default: **figma-cli** for new screens, **figma-console** when JSX falls short.
+- **Greenfield** (build new from scratch) → figma-cli.
+- **Assembling from an existing DS** (instantiate components, set variants, wire prototype reactions) → figma-console; this can't move to JSX render — just keep each call small.
+- Both MCP servers can run at once — split read/codegen (official Figma MCP) from DS/variant work (figma-console).
 
 ---
 

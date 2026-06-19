@@ -28,6 +28,7 @@ Do not act before routing is complete.
 2. **Load exactly one skill** per request — do not combine skills simultaneously
 3. **Cross-domain request** (e.g. "build accessible screen") → route to PRIMARY domain; that skill references the secondary where needed
 4. **Ambiguous request** → ask one clarifying question before routing
+5. **Cheapest tool wins** — for Plugin API work, prefer figma-cli (greenfield) or the official Figma MCP (read/codegen/generation) over `figma_execute` where they fit; `figma_execute` is timeout-prone (hardcoded ~5 s budget). The matched skill's performance budget is mandatory — see `figma-console`.
 
 ## Extension pattern
 

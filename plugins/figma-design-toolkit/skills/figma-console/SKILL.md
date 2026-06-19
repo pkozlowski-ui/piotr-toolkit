@@ -28,14 +28,39 @@ the tools won't exist until it's installed and registered.
 - Operations across multiple pages
 - Anything that figma-cli JSX render can't express
 
-## Tool selection
+## Tool selection — don't funnel everything through `figma_execute`
+
+`figma_execute` is the **most expensive and timeout-prone** path (see "Performance & the timeout budget" below). Reserve it for what *only* it can do; push everything else to a cheaper tool.
 
 | Task | Tool |
 |---|---|
-| JSX render, shadcn tokens, UI blocks | **figma-cli** |
-| Complex Plugin API, variants, variable binding | **figma-console** (`figma_execute`) |
-| Read design context, screenshot for code | Figma desktop MCP read tools |
+| New screen/component from JSX, shadcn/tailwind tokens, UI blocks | **figma-cli** (`render` / `blocks` / `tokens`) |
+| Read design context, screenshot for code, generate-from-intent, FigJam | **official Figma MCP** (Dev Mode, `localhost:3845` — has write now, no 7s ceiling) |
+| Variants, programmatic variable binding, multi-page ops, DS audit/parity, prototype reactions | **figma-console** (`figma_execute`) — keep each call small |
+| Bulk variable create/update | **figma-console** `figma_batch_create_variables` / `figma_batch_update_variables` (not a loop in `execute`) |
 | Cloud fallback (no Desktop Bridge available) | claude.ai Figma MCP |
+
+Both MCP servers can run **simultaneously** — figma-console for DS/variant/parity work, official Figma MCP for read/codegen/generation. Assembling a prototype from an existing DS (instances + variants + reactions) stays in figma-console; that can't move to JSX render.
+
+## Performance & the timeout budget — READ FIRST
+
+`figma_execute` is hardcoded to a **two-layer timeout** (verified in figma-console-mcp source — **NOT configurable** by env var or tool param):
+- the plugin kills the script at **5000 ms**
+- the WebSocket command then fails at **7000 ms** → `WebSocket command EXECUTE_CODE timed out after 7000ms`
+
+**Any single script needing more than ~5 s of plugin work ALWAYS times out** — and a timeout can leave **partial artifacts** (it is not reliably atomic). This is the #1 source of wasted loops. The median call is fast (~0.5 s); the pain comes entirely from heavy multi-task scripts and page-wide traversal. Stay under budget:
+
+1. **One job per call, ≤ ~15 awaits.** Each `createInstance` / `setText` / `setProperties` / `setReactionsAsync` / `loadFontAsync` counts as one. Build a screen as a *chain* of small calls (container → tokens → instances → layout → reactions), validating between — never one mega-script.
+2. **Cheap traversal — the biggest hidden cost (≈97% of scripts traverse).**
+   - Hold node IDs and pass them forward between calls → `getNodeByIdAsync(id)`. Don't re-`findAll` the page to re-find a node you just created.
+   - Use `findAllWithCriteria({ types: ['INSTANCE'] })` (indexed, fast) instead of predicate `findAll(n => n.type === …)`.
+   - Scope to the smallest subtree (`section.findAll…`), not `figma.root` / the whole `currentPage`, whenever you can.
+   - `loadAllPagesAsync()` once per session is fine (cached) — the cost is the *scan*, not the load. Skip it when you already hold the node by ID on the current page.
+3. **Batch variables** via `figma_batch_create_variables` / `figma_batch_update_variables` (≤100/call, 10–50× faster) — never a `createVariable` loop inside `execute`.
+4. **Screenshots: `figma_capture_screenshot` only** (~0.7 s). `figma_take_screenshot` is REST (~7–14 s, caches stale bytes) — see the validation section.
+5. **`figma_search_components` is the single slowest tool** (~19 s median, up to ~70 s). Call it rarely: prefer the project catalog (`docs/design-system/components.md`), search once at session start, reuse the IDs.
+
+**Genuinely un-splittable heavy op?** (rare). The ceiling can be raised by running a pinned, *patched* figma-console (`5000/7000 → 30000/32000`) instead of `npx …@latest` — but that's a maintained fork and 5 s is also a runaway-script guard. Ask the user before going there; first try splitting.
 
 ## Methodology — see figma-design-workflow
 
