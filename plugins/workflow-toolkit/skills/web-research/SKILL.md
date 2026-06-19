@@ -1,6 +1,6 @@
 ---
 name: web-research
-description: Deep, multi-source web research turned into a structured, citation-dense report — for business/market intelligence, technology trends, and UX/product research. Engine is native Claude Code (WebSearch + WebFetch with Opus synthesis): free, zero-setup, works in any project, no API keys or Docker. HARD RULE — prioritize authoritative sources (consulting/analyst reports, primary data, recognized practitioner authorities) and verify claims across sources. Auto-triggers EN+PL — "web research", "research X", "market report", "competitive landscape", "trends in X", "state of X", "best practices for X", "UX patterns for X"; PL "zrób research", "researchuj", "raport rynkowy", "rozeznanie rynku", "trendy w X", "wzorce UX dla", "dobre praktyki dla" — and on /web-research. NOT for single-fact lookups, codebase/internal research, or news-of-the-day digests.
+description: Deep, multi-source web research turned into a structured, citation-dense report — for business/market intelligence, technology trends, and UX/product research. Engine is native Claude Code (WebSearch + WebFetch with Opus synthesis): free, zero-setup, works in any project, no API keys or Docker. On invocation it runs a one-round INTAKE — asks (via AskUserQuestion) for any missing decision-relevant scope (goal, angle, depth, output format, timeframe) before researching. HARD RULE — prioritize authoritative sources (consulting/analyst reports, primary data, recognized practitioner authorities) and verify claims across sources. Auto-triggers EN+PL on "web research" / "web-research" / "webresearch", and on the intent — "research X", "do research on", "market report", "competitive landscape", "trends in X", "state of X", "best practices for X", "UX patterns for X"; PL "zrób research", "zrób web research", "researchuj", "raport rynkowy", "rozeznanie rynku", "trendy w X", "wzorce UX dla", "dobre praktyki dla" — and on /web-research. NOT for single-fact lookups, codebase/internal research, or news-of-the-day digests.
 argument-hint: "<temat> + kąt (biznes/tech/UX) + zakres czasowy + głębokość (quick/standard/deep)"
 ---
 
@@ -32,6 +32,40 @@ Fire on these intents (EN+PL):
 - A single fact you can answer in one search → just call `WebSearch` directly, no report.
 - Code/internal research → use `Explore` / `Grep` / file tools.
 - "What happened today" news digests → out of scope.
+
+## Intake — clarify scope before researching (step 0, mandatory)
+
+Research quality collapses when the goal/scope is fuzzy, so this gate runs **on every invocation**
+(auto-trigger or `/web-research` alike). It fires **once** and only for what's actually missing —
+it is not a nag.
+
+**Procedure:**
+1. Parse the request for five dimensions:
+   - **Goal / decision** — what decision or deliverable this feeds (most important; shapes everything).
+   - **Angle** — business/market, technology, UX/product (can be several).
+   - **Depth** — quick / standard / deep.
+   - **Output format** — full report / short brief / custom sections.
+   - **Timeframe + industry/region** — recency window and domain.
+2. For every dimension that is **missing AND decision-relevant**, ask the user — batched into a
+   **single `AskUserQuestion` call** (never drip-feed one at a time), recommended default listed first.
+   Ask at most the four highest-value ones; **never more than one round.**
+3. For dimensions you can **safely infer** (e.g. timeframe → "last 12–24 months"), don't ask — state
+   the inference in one line and proceed.
+4. If the request **already specifies everything**, skip intake: restate scope in one line
+   ("Running: deep · business angle · 2025–2026 · full report") and go straight to research.
+5. After this single round, **run to completion without further questions** (per the per-task loop).
+
+**Canonical intake questions** (include only the missing ones):
+
+- **Cel** (single) — "Do czego ma posłużyć raport?": Decyzja strategiczna/biznesowa · Input do
+  feature/spec (UX/produkt) · Rozeznanie rynku/konkurencji · Ogólny przegląd / nauka.
+- **Kąt** (multi) — "Z jakiej perspektywy?": Biznes/rynek · Technologia · UX/produkt.
+- **Głębokość** (single) — "Jak głęboko?": Standard *(rec)* · Quick (szybki przegląd) · Deep (dogłębnie).
+- **Format** (single) — "Format wyjścia?": Pełny raport strukturalny *(rec)* · Krótki brief
+  (findings + źródła) · Własne sekcje (Other).
+
+Timeframe/industry: infer + state by default; promote to a fifth question only when the answer hinges
+on a specific window or market.
 
 ## Engine
 
@@ -85,9 +119,9 @@ others, anything undated, single-source extraordinary claims.
 
 ## Workflow (protocol)
 
-1. **Scope.** Identify topic, angle (business / tech / UX — can be multiple), timeframe, geography/
-   industry, depth. If a *critical* dimension is missing and changes the answer, ask 1–2 sharp
-   questions; otherwise infer, **state your assumptions at the top**, and proceed.
+1. **Intake.** Run the step-0 intake gate above — one batched `AskUserQuestion` round for any missing
+   decision-relevant dimension, infer + state the rest, or skip if the request is already complete.
+   Lock scope before any searching.
 2. **Decompose.** Break into 4–10 concrete sub-questions. This drives the searches and the structure.
 3. **Search.** One+ `WebSearch` per sub-question; bias toward Tier-1 domains; collect candidate URLs
    with publication dates. Run independent searches in parallel.
