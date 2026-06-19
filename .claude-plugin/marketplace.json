@@ -11,7 +11,7 @@
     },
     {
       "name": "workflow-toolkit",
-      "description": "Universal Claude Code workflow skills: project bootstrap, session retro, design system lookup, browser verification.",
+      "description": "Universal Claude Code workflow skills: project bootstrap, session retro, design system lookup, browser verification, web research (multi-source cited reports).",
       "source": "./plugins/workflow-toolkit"
     },
     {
