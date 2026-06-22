@@ -226,7 +226,10 @@ figma_list_open_files       // which files have Desktop Bridge plugin
 figma_navigate              // switch active file
 ```
 
-**Active-file model (read before multi-file work).** One MCP server per Claude session; the Desktop Bridge plugin — launched **per file** — connects to all servers. Each server has ONE active file: `figma_execute` always targets it, and the active file **follows the user's last click** (selection/page change broadcasts to every server). So: multiple files for reading/switching = fine; parallel **writing** to two files = race. Re-assert `figma_navigate` before a write batch; treat "active file" as session state that drifts. Full model → vault `Research/figma-console — praca na wielu plikach i wątkach`.
+**Active-file model (read before multi-file work).** One MCP server per Claude session; the Desktop Bridge plugin — launched **per file** — connects to all servers (port pool 9223–9232). Each server has ONE active file: `figma_execute` always targets it (no per-call `targetFileKey`), and the active file **follows the user's last click** (selection/page change broadcasts to every server). Treat "active file" as session state that drifts — re-assert `figma_navigate` before a write batch. Three cases:
+- **Several files, one project (screens + DS):** open each and **launch the bridge in each**. To use DS in the screens file, prefer `importComponentByKeyAsync(key)` + `createInstance()` over switching files. Work one file at a time (the active one); node IDs are per-file.
+- **Parallel work / two sessions on two files:** access works, isolation doesn't — every server's active file converges to the last-touched file, so parallel **writes** race. Read in parallel, **serialize writes**, and re-assert `figma_navigate(yourFile)` right before each write batch.
+- **Manual switching:** the active file follows your clicks — but don't switch while the agent is mid-build (its next command lands where you clicked), and a freshly opened file isn't connected until you launch the bridge in it.
 
 **Manual steps are the user's — ask loudly, don't work around.** If you need a specific file open, the Desktop Bridge launched in a file, an access granted, or a blocked action approved → state it plainly and wait. Asking is the best path, not a blocker.
 
