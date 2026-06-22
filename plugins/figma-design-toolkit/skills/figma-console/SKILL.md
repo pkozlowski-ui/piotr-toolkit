@@ -226,6 +226,10 @@ figma_list_open_files       // which files have Desktop Bridge plugin
 figma_navigate              // switch active file
 ```
 
+**Active-file model (read before multi-file work).** One MCP server per Claude session; the Desktop Bridge plugin — launched **per file** — connects to all servers. Each server has ONE active file: `figma_execute` always targets it, and the active file **follows the user's last click** (selection/page change broadcasts to every server). So: multiple files for reading/switching = fine; parallel **writing** to two files = race. Re-assert `figma_navigate` before a write batch; treat "active file" as session state that drifts. Full model → vault `Research/figma-console — praca na wielu plikach i wątkach`.
+
+**Manual steps are the user's — ask loudly, don't work around.** If you need a specific file open, the Desktop Bridge launched in a file, an access granted, or a blocked action approved → state it plainly and wait. Asking is the best path, not a blocker.
+
 ### Discover file structure
 ```javascript
 // Start with verbosity='summary', depth=1 — not 'full' (consumes tokens)
