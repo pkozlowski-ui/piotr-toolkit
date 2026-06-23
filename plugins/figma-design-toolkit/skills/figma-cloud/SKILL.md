@@ -109,22 +109,26 @@ cloud path, prefer `upload_assets`.
 ## Show the result in chat — MANDATORY (always screenshot + link)
 
 On the cloud path the user usually has **no Figma open** (phone, web) — the chat is their only view of
-the canvas. So after **every write**, and again when a task is done, report the result *in chat*:
+the canvas. So after **every write**, and again when a task is done, render the result **inside the chat**
++ always give the deep link.
 
-1. **Screenshot the node you created/changed** — `get_screenshot(fileKey, nodeId, maxDimension≈400–1024)`.
-2. **Render it inline in chat** — the tool returns a short-lived URL; `curl` it to a file and display that
-   file so the image shows in the conversation (don't just paste the raw URL — it expires and may not render):
+**The image must render in the user's chat — not just for you.** Two traps:
+- `Read`-ing a PNG file, or a tool's inline image output, shows the image **to the model**, *not* in the user's chat. The user won't see it.
+- The widget sandbox enforces a CSP allowlist — `figma.com` is **not** on it, so a short-lived `get_screenshot` URL in an `<img src>` is **silently blocked** and won't load.
+
+**Reliable recipe:**
+1. `get_screenshot(fileKey, nodeId, maxDimension≈300)` — keep it small (the base64 goes into the widget).
+2. Download + base64-encode it (resize so the base64 stays a few KB):
    ```bash
-   curl -s -o /tmp/figma_result.png "<image_url-from-get_screenshot>"
+   curl -s -o /tmp/f.png "<image_url-from-get_screenshot>"
+   sips -Z 300 /tmp/f.png --out /tmp/f.png >/dev/null; base64 -i /tmp/f.png | tr -d '\n' > /tmp/f.b64
    ```
-   then show `/tmp/figma_result.png` in the reply.
-3. **Always include the deep link** to the node — never omit it:
+3. Render it with the **visualize `show_widget`** tool as an inline `<img src="data:image/png;base64,…">` (a data URI is not a network request, so CSP allows it), with the deep link as an `<a>` beside it.
+4. **Always include the deep link** — never omit it:
    `https://www.figma.com/design/<fileKey>/<fileName>?node-id=<nodeId>`
    **Convert the nodeId `:` → `-`** (e.g. node `208:1568` → `node-id=208-1568`).
 
 This is non-negotiable on the cloud path: a write the user can't see or open is not a finished result.
-(On the desktop path the user can look at the app, so a screenshot is good practice but the chat-render
-+ link is specifically required here.)
 
 ## Cloud vs desktop — decision
 
