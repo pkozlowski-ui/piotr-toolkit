@@ -98,6 +98,12 @@ write rules). Fallback if the plugin skill isn't present: `skill://figma/figma-u
 8. **`resize()` BEFORE** setting sizing modes — `resize()` resets layout sizing to FIXED.
 9. **Top-level nodes default to (0,0)** — find free space so you don't stack on existing content.
 10. **`createPage()` only in Design files** (not FigJam/Slides).
+11. **Remote ≠ desktop-bridge runtime — don't port dynamic-page patterns.** The remote MCP runs with
+    **full document access**, not `documentAccess: dynamic-page`. So `figma.loadAllPagesAsync()` is **not a
+    supported API here** (throws) and the dynamic-page async-getter dance (`getMainComponentAsync`,
+    `getNodeByIdAsync` after a load, etc.) isn't required the same way. Just traverse `figma.root.children`
+    / `currentPage` directly. (Verified live 2026-06-23.) The `…Async` *page-switch* setter is still
+    correct: `await figma.setCurrentPageAsync(page)`.
 
 ## Images headless
 
@@ -124,16 +130,12 @@ loop forcing it — **the link is the deliverable.** If a screenshot is genuinel
 in-`show_widget` path is the only one that can work; otherwise just confirm in words + link. (Mobile app
 rendering still being evaluated — revisit if it proves reliable there.)
 
-## Resolving which file to work on (URL discovery)
+## Which file to work on
 
-The user refers to files by **rough working names** ("KIPP family portal"), not exact names or URLs.
-Before asking for a link:
-1. **Check the Figma file registry** in cross-project memory (`reference_figma_file_registry.md`) — match
-   the working name (alias-tolerant) → use its `fileKey`/URL directly.
-2. No confident match → ask the user for the file URL (a manual step — ask plainly, don't guess a key).
-3. **New file?** When the user pastes a URL not in the registry, **append it** there (working name +
-   fileKey + URL) so it resolves next time. Keep that registry private (sensitive org files) — never in
-   this public toolkit.
+The user normally **pastes the file URL** (on mobile, straight from the Figma app) — extract the
+`fileKey` from it. If they give only a rough name and you're not certain which file it is, **ask for the
+URL** — don't guess a `fileKey`. Watch for ambiguous names that map to different files (e.g. a "family
+portal" that could be a standalone file or a context inside another file) and confirm before writing.
 
 ## Cloud vs desktop — decision
 

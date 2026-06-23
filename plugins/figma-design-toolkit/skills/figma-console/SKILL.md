@@ -267,10 +267,6 @@ figma_list_open_files       // which files have Desktop Bridge plugin
 figma_navigate              // switch active file
 ```
 
-**File registry.** The user names files by rough working names. If you keep a Figma file registry in
-cross-project memory (`reference_figma_file_registry.md`), resolve names through it first; when
-`figma_list_open_files` surfaces a file not listed, append it (working name + fileKey + URL).
-
 **Active-file model (read before multi-file work).** One MCP server per Claude session; the Desktop Bridge plugin — launched **per file** — connects to all servers (port pool 9223–9232). Each server has ONE active file: `figma_execute` always targets it (no per-call `targetFileKey`), and the active file **follows the user's last click** (selection/page change broadcasts to every server). Treat "active file" as session state that drifts — re-assert `figma_navigate` before a write batch. Three cases:
 - **Several files, one project (screens + DS):** open each and **launch the bridge in each**. To use DS in the screens file, prefer `importComponentByKeyAsync(key)` + `createInstance()` over switching files. Work one file at a time (the active one); node IDs are per-file.
 - **Parallel work / two sessions on two files:** access works, isolation doesn't — every server's active file converges to the last-touched file, so parallel **writes** race. Read in parallel, **serialize writes**, and re-assert `figma_navigate(yourFile)` right before each write batch.
