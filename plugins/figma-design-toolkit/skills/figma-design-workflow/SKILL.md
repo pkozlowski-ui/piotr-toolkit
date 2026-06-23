@@ -985,7 +985,7 @@ Load both when designing screens: `/figma-design-toolkit:figma-design-workflow` 
 | `figma:figma-use` | Plugin API prerequisite for cloud write ops |
 | `figma:figma-generate-design` | Code/description → Figma screen (cloud) |
 | `figma:figma-generate-library` | Design system from code (cloud) |
-| `figma:figma-implement-design` | Figma design → production code |
+| `figma:figma-code-connect` | Map Figma components ↔ code components |
 
 > This skill (`figma-design-workflow`) is path-agnostic — the decision tree methodology
 > and pre-flight audit apply to both Desktop Bridge and Cloud path.
