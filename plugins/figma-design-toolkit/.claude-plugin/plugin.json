@@ -1,7 +1,7 @@
 {
   "name": "figma-design-toolkit",
-  "version": "1.7.0",
-  "description": "Figma design workflow skills: component-first methodology, Plugin API via Desktop Bridge, JSX CLI, headless cloud work via the official remote MCP, and a done-gate that enforces verification before claiming done. Works with any Figma design system.",
+  "version": "1.7.1",
+  "description": "Figma design workflow skills: component-first methodology, Plugin API via Desktop Bridge, JSX CLI, and headless cloud work via the official remote MCP (no desktop needed). Includes a verification gate built into the design workflow. Works with any Figma design system.",
   "author": {
     "name": "pkozlowski-ui",
     "email": "piotr.kozlowski@sunscrapers.com",
@@ -9,5 +9,5 @@
   },
   "repository": "https://github.com/pkozlowski-ui/piotr-toolkit",
   "license": "MIT",
-  "keywords": ["figma", "design-system", "workflow", "component-first", "design-tokens", "done-gate", "verification"]
+  "keywords": ["figma", "design-system", "workflow", "component-first", "design-tokens", "verification"]
 }

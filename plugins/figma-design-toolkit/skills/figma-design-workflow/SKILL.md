@@ -778,6 +778,20 @@ section.appendChild(newComponent);
 
 Run after completing every screen or component. Check each item before declaring done.
 
+**Definition of done — GATE (hard).** Before you say "done" / "gotowe" / "fixed" about a screen or component:
+run `gateScreen(<id>)` from the project `figma-build-kit.md` (token + instance-ratio + padding + fixed100 +
+copy) and **paste the returned JSON** — `pass:true` is required. `pass:false` = not done, fix per the fields
+(`token.issues` / `fixed100.issues` / `padding.issues` / `copy.issues` / `ratio.violations`). Proof = the JSON,
+not words and not a screenshot. (No build-kit in the project yet? Run the audits from the section below, or
+scaffold via `figma-ds-init`.) This enforces the cross-project rule "no done without proof".
+
+**Inspect-before-mutate.** Before hide/swap/delete/setText on an existing instance, read its children
+(`kids(node)`) and target by `find(c => c.name === …)` / type — NEVER by positional index (real bug: hid a
+Switch instead of an Input on assumed child order).
+
+**verifyInstances** (separate, after any structural fix): confirms instances didn't accumulate stale
+`primaryAxisAlignItems` / `itemSpacing` / sizing overrides — screenshots can't see this.
+
 ```
 STRUCTURE
 □ Every visible UI element = INSTANCE of DS component (not raw FRAME/RECT/GROUP)

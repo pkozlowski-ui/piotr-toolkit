@@ -56,8 +56,13 @@ This toolkit owns the inverse + the opinionated layer: **building/editing inside
 5. **Cheapest tool wins** — for Plugin API work, prefer figma-cli (greenfield) or the official Figma MCP (read/codegen/generation) over `figma_execute` where they fit; `figma_execute` is timeout-prone (hardcoded ~5 s budget). The matched skill's performance budget is mandatory — see `figma-console`.
 6. **Environment gates the tools** — on the **cloud path** (Step 0), `figma-cli` and `figma-console` do not exist; the only write path is the official remote MCP via `figma-cloud`. Don't try to reconnect a Desktop Bridge that isn't there — load `figma-cloud`.
 
-## Extension pattern
+## Extension pattern (anti-bloat — default is DON'T add a skill)
 
-Adding a new skill = 2 steps, no other changes:
+Before adding a skill, ask: **is this a genuinely new DOMAIN, or a section of an existing skill?**
+A cross-cutting concern (a gate, a checklist, a rule that fires *inside* another workflow) is **not** a
+domain — fold it into the relevant skill as a section. A standalone skill for it becomes an off-router
+orphan (no routing row, awkward trigger) — exactly the bloat to avoid. Prefer extending.
+
+Only when it's a true new domain (own trigger signals, own routing row) add a skill = 2 steps:
 1. Create `skills/<new-skill-name>/SKILL.md`
-2. Add one row to the routing table above
+2. Add one row to the routing table above (a skill with no routing row = a smell — fix or fold it)
