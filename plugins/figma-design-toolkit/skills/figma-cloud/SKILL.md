@@ -106,6 +106,26 @@ path and avoids the broken Desktop-Bridge base64 route (documented as unreliable
 manifest `allowedDomains` blocks, base64 corrupts at real sizes, `set_image_fill` times out). On the
 cloud path, prefer `upload_assets`.
 
+## Show the result in chat — MANDATORY (always screenshot + link)
+
+On the cloud path the user usually has **no Figma open** (phone, web) — the chat is their only view of
+the canvas. So after **every write**, and again when a task is done, report the result *in chat*:
+
+1. **Screenshot the node you created/changed** — `get_screenshot(fileKey, nodeId, maxDimension≈400–1024)`.
+2. **Render it inline in chat** — the tool returns a short-lived URL; `curl` it to a file and display that
+   file so the image shows in the conversation (don't just paste the raw URL — it expires and may not render):
+   ```bash
+   curl -s -o /tmp/figma_result.png "<image_url-from-get_screenshot>"
+   ```
+   then show `/tmp/figma_result.png` in the reply.
+3. **Always include the deep link** to the node — never omit it:
+   `https://www.figma.com/design/<fileKey>/<fileName>?node-id=<nodeId>`
+   **Convert the nodeId `:` → `-`** (e.g. node `208:1568` → `node-id=208-1568`).
+
+This is non-negotiable on the cloud path: a write the user can't see or open is not a finished result.
+(On the desktop path the user can look at the app, so a screenshot is good practice but the chat-render
++ link is specifically required here.)
+
 ## Cloud vs desktop — decision
 
 | Situation | Path |
