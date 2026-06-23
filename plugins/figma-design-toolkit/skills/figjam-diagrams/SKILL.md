@@ -80,6 +80,8 @@ Keep Mermaid diagrams **simple by default**. Add detail only if explicitly asked
 
 Use the `use_figma` tool from the Figma MCP server (commonly `mcp__claude_ai_Figma__use_figma` — exact prefix depends on your MCP server registration). Pass `fileKey` extracted from the FigJam URL.
 
+> **Write contract:** if the official Figma plugin is installed, load **`/figma-use-figjam`** (+ `/figma-use`) before these `use_figma` calls — it's the canonical FigJam write contract. The rich helpers, styled-scenario patterns, and constraints below sit *on top* of it.
+
 **URL patterns:**
 - FigJam board: `https://www.figma.com/board/FILEKEY/...` → fileKey is `FILEKEY`
 - Figma design: `https://www.figma.com/design/FILEKEY/...` → fileKey is `FILEKEY`

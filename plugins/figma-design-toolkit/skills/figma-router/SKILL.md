@@ -34,6 +34,19 @@ If unsure which environment you're in, check: are `figma_*` (Desktop Bridge) too
 
 The **Cloud / headless** row is an *environment* override (Step 0), not a separate domain: still pick the domain skill for methodology (usually `figma-design-workflow`), but execute through `figma-cloud` instead of `figma-cli`/`figma-console`.
 
+## Hand-off to the official Figma plugin (`figma@claude-plugins-official`)
+
+That plugin owns the **code↔design direction** and the low-level write contract. Don't reimplement these here — route OUT to it:
+
+| Request | Route to |
+|---|---|
+| "implement/build this Figma as code", design→code, pixel-perfect codegen | official plugin — `implement-design` steering |
+| Code Connect — map/connect/link a Figma component to code | official `/figma-code-connect` |
+| "create/generate design-system rules for my project" (code-side rules) | official `create_design_system_rules` |
+| canonical `use_figma` / `create_new_file` / `generate_*` write rules | official `/figma-use` & siblings (loaded by `figma-cloud` / execution skills) |
+
+This toolkit owns the inverse + the opinionated layer: **building/editing inside Figma** (figma-cli/figma-console/figma-cloud), DS audit/repair, prototype wiring, rich FigJam, a11y specs, and the house rules (INSTANT transitions, token discipline, ask-loudly). The official plugin is the engine; this toolkit is the orchestration on top. See `OVERVIEW.md` → "Relationship to the official Figma plugin".
+
 ## Rules
 
 1. **Route first, act second** — read the matched skill before touching Figma

@@ -4,6 +4,27 @@ A bundle of skills for bidirectional work with Figma. Designed to **steer execut
 
 > This file is documentation, not an auto-loaded skill. Read it when you want a map of the plugin.
 
+## Relationship to the official Figma plugin (`figma@claude-plugins-official`)
+
+This toolkit is built **on top of** the official Figma plugin, not instead of it.
+
+- **The official plugin is the engine + the code↔design direction.** It provides the **MCP server**
+  (`https://mcp.figma.com/mcp` — install the plugin, don't `claude mcp add` the same URL twice) and the
+  **canonical write-contract skills** (`figma-use`, `figma-create-new-file`, `figma-generate-design`,
+  `figma-generate-diagram`, `figma-generate-library`, `figma-use-figjam`, `figma-use-slides`,
+  `figma-code-connect`). It owns: design→code, **Code Connect**, `create_design_system_rules`, and the
+  low-level `use_figma` rules.
+- **This toolkit is the orchestration + building/editing inside Figma.** It owns: routing
+  (`figma-router`), opinionated methodology (`figma-design-workflow`), **Desktop Bridge** mechanics the
+  official plugin doesn't cover (`figma-cli`, `figma-console`), cloud routing (`figma-cloud` — *when/where*
+  + seat/limits + remote-vs-desktop gotcha + link-first, deferring the write contract to `figma-use`),
+  DS audit/repair (`figma-ds-tools`), prototype wiring (`figma-prototype`), rich FigJam
+  (`figjam-diagrams`), a11y specs (`figma-accessibility`), DS scaffolding (`figma-ds-init`), and the house
+  rules (INSTANT transitions, token discipline, ask-loudly).
+
+Rule of thumb: code↔design / Code Connect / canonical write rules → **official plugin**; everything about
+*how* to build, audit, and orchestrate in Figma → **this toolkit**.
+
 ## Skills in this plugin
 
 | Skill | When to load | What it covers |

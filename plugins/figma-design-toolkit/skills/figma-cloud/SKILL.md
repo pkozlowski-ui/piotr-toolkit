@@ -38,19 +38,15 @@ What does **not** work headless (don't waste time):
 
 ## Setup (one-time, per environment)
 
+**Preferred: install the official Figma plugin** — it bundles this MCP server *and* the canonical
+write-contract skills (`figma-use`, `figma-create-new-file`, `figma-generate-design`, etc.):
 ```bash
-claude mcp add --transport http figma https://mcp.figma.com/mcp
+claude plugin install figma@claude-plugins-official
 ```
-Then `/mcp` → `figma` → **Authenticate** (OAuth in browser) → "Authentication successful. Connected to figma".
+Then `/mcp` → `plugin:figma:figma` → **Authenticate** (OAuth in browser). Don't *also* `claude mcp add`
+the same URL — that's a duplicate server.
 
-Or via `.mcp.json` (project- or user-scoped):
-```json
-{
-  "mcpServers": {
-    "figma": { "type": "http", "url": "https://mcp.figma.com/mcp" }
-  }
-}
-```
+**Manual fallback** (only if you can't use the plugin): `claude mcp add --transport http figma https://mcp.figma.com/mcp` → `/mcp` → Authenticate.
 
 **Verify:** call `whoami`. You need a **Dev or Full seat** on a paid plan.
 - Starter / View / Collab seat → **6 tool calls / month** (effectively unusable agentically).
@@ -76,10 +72,26 @@ hashed prefix). Match by the logical name:
 | Search the design system / libraries | `search_design_system`, `get_libraries` |
 | Read FigJam | `get_figjam` |
 
-## MANDATORY before `use_figma`
+## MANDATORY — defer the write contract to the official skills
 
-Load the Figma server's own skill **`/figma-use`** before any `use_figma` call (it ships the canonical
-write rules). Fallback if the plugin skill isn't present: `skill://figma/figma-use/SKILL.md`.
+The official Figma plugin ships the **canonical write-contract skills** — they are the source of truth
+for the low-level `use_figma`/`create_new_file`/`generate_*` rules. **Load the matching one BEFORE the
+call:**
+
+| Before calling… | Load this official skill |
+|---|---|
+| `use_figma` (design file) | `/figma-use` |
+| `use_figma` on a FigJam board | `/figma-use-figjam` (+ `/figma-use`) |
+| `use_figma` on Slides | `/figma-use-slides` (+ `/figma-use`) |
+| `create_new_file` | `/figma-create-new-file` |
+| `generate_figma_design` (capture a web view → Figma) | `/figma-generate-design` |
+| `generate_diagram` (Mermaid → FigJam) | `/figma-generate-diagram` |
+| building a DS library in Figma from code | `/figma-generate-library` |
+| Code Connect mapping | `/figma-code-connect` |
+
+This skill (`figma-cloud`) does **not** restate those rules — it owns *when/where to use the cloud path*,
+seat/limits, the remote-vs-desktop gotcha, and link-first reporting. The footguns below are a quick
+cloud cheat-sheet; `/figma-use` is the full contract.
 
 ## Token-budget discipline (same spirit as figma-console)
 
