@@ -8,8 +8,17 @@ description: >
 
 # figma-router
 
-Detect the domain → load the matching skill → follow its instructions entirely.
-Do not act before routing is complete.
+Detect the **execution environment**, then the **domain** → load the matching skill → follow its
+instructions entirely. Do not act before routing is complete.
+
+## Step 0 — execution environment (decide before the domain)
+
+| Environment | Signals | Consequence |
+|---|---|---|
+| **Desktop Bridge available** (default) | macOS, Figma Desktop open, local file in play, `figma_*` tools present | Local path — `figma-cli` / `figma-console` are in play (fast, cheap). |
+| **Cloud / headless** | no Figma Desktop, phone, Claude Code on the web (`code.claude.com`), cloud container / restricted env, "nie mam otwartej Figmy" | **`figma-cli` and `figma-console` are unavailable.** Writes go only through the official remote MCP → load **`figma-cloud`** for the mechanics. |
+
+If unsure which environment you're in, check: are `figma_*` (Desktop Bridge) tools available? If not, you're on the cloud path.
 
 ## Routing table
 
@@ -21,6 +30,9 @@ Do not act before routing is complete.
 | **DS audit / repair** | drift, audit DS, hardcoded colors, odeszło od DS, podepnij do DS, token audit, detached instances | Read `figma-ds-tools/SKILL.md` |
 | **DS scaffold / init** | "załóż design system", zainicjalizuj DS, ustaw design system, scaffold DS docs, bootstrap figma docs, registry/build-kit | Read `figma-ds-init/SKILL.md` |
 | **Prototype / interakcje** | prototyp, prototype mode, połącz ekrany, tranzycje, overlay, back navigation, interactions | Read `figma-prototype/SKILL.md` |
+| **Cloud / headless** | no Figma Desktop, "z telefonu", "bez appki Figma", Claude Code on the web, cloud/restricted env, remote MCP | Read `figma-cloud/SKILL.md` (mechanics) + the domain skill above for methodology |
+
+The **Cloud / headless** row is an *environment* override (Step 0), not a separate domain: still pick the domain skill for methodology (usually `figma-design-workflow`), but execute through `figma-cloud` instead of `figma-cli`/`figma-console`.
 
 ## Rules
 
@@ -29,6 +41,7 @@ Do not act before routing is complete.
 3. **Cross-domain request** (e.g. "build accessible screen") → route to PRIMARY domain; that skill references the secondary where needed
 4. **Ambiguous request** → ask one clarifying question before routing
 5. **Cheapest tool wins** — for Plugin API work, prefer figma-cli (greenfield) or the official Figma MCP (read/codegen/generation) over `figma_execute` where they fit; `figma_execute` is timeout-prone (hardcoded ~5 s budget). The matched skill's performance budget is mandatory — see `figma-console`.
+6. **Environment gates the tools** — on the **cloud path** (Step 0), `figma-cli` and `figma-console` do not exist; the only write path is the official remote MCP via `figma-cloud`. Don't try to reconnect a Desktop Bridge that isn't there — load `figma-cloud`.
 
 ## Extension pattern
 
