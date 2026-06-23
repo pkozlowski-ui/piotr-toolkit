@@ -1,6 +1,6 @@
 {
   "name": "workflow-toolkit",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Universal Claude Code workflow skills: project bootstrap, machine bootstrap, session retro, design system lookup, browser verification, pre-deploy verification, coding principles, handoff, memory discipline, web research, Linear ticket drafts. Works across any project type.",
   "author": {
     "name": "pkozlowski-ui",

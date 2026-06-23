@@ -36,6 +36,15 @@ już zapisuje (struktura kodu, historia git, treść CLAUDE.md).
 
 Aktualizuj istniejący wpis zamiast tworzyć duplikat; usuń wpis, który okazał się błędny.
 
+### 3b — Sweep odpływu (retirement — lustro promocji, z `memory-discipline`)
+Promocja przesuwa wiedzę w górę; bez tego kroku pamięć tylko rośnie. Przejrzyj `MEMORY.md` i:
+- **Build-log zakończony** (`flow-*`/`man-*`/`fp-*`, shipped, brak open-items) → `mv` do `.claude/memory/_archive/` + usuń linię z indeksu.
+- **Pointer-only / restatement** (treść już kanonem w docs/CLAUDE.md) → usuń.
+- **„Pending" rozstrzygnięte** → zamknij/usuń.
+- **Cap:** aktywnych wpisów > ~40 → wymuś konsolidację zanim dodasz nowe.
+
+Build-logi **archiwizuj (`mv`), nie kasuj**. Propose-first przy niejasnych (czy na pewno brak open-items?).
+
 ### 4 — Zaproponuj commit
 Jeśli są zmiany w repo (`git status`) — pokaż skrót i **zaproponuj** commit (nie commituj sam, chyba że
 user prosił). Pamięć w `.claude/memory/` i ADR-y też idą do commita (są git-trwałe).

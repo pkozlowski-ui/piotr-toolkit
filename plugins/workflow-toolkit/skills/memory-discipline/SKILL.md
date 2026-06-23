@@ -89,6 +89,24 @@ Lokalna/projektowa pamięć to cache. Na koniec sesji (patrz `session-retro`):
 Rozróżnienie projekt vs globalny `CLAUDE.md`: reguła ważna tylko w jednym repo → projektowy; reguła
 work-style obowiązująca wszędzie → globalny.
 
+## Reguła odpływu / retirement (lustro promocji)
+
+Promocja przesuwa wiedzę W GÓRĘ; bez odpływu pamięć tylko rośnie — cache nigdy się nie opróżnia, index
+(`MEMORY.md`) puchnie, a dobre reguły toną w always-on. Dlatego na każdym retro rób też **sweep odpływu**:
+
+- **Build-log zakończony** (`flow-*`/`man-*`/`fp-*` — praca shipped, zweryfikowana, **brak otwartych itemów**)
+  → `mv` pliku do `.claude/memory/_archive/` + usuń linię z `MEMORY.md`. Zostaje w aktywnych tylko gdy ma żywe open-items.
+- **Wpis pointer-only / restatement** (treść jest już kanonem w docs/registry/CLAUDE.md; wpis tylko „reguła żyje w X")
+  → **usuń** — kanon + wskaźnik wystarczą.
+- **„Pending decision" rozstrzygnięte** → zamknij/usuń (lub `_archive/` jeśli ma wartość historyczną).
+- **Stale liczby/statusy inline** (np. „55 vs 74 wariantów") → przytnij do aktualnej; historia żyje w git.
+
+Mechanika: `_archive/` jest poza filtrem indeksu, więc wpis wypada z always-on, a treść żyje (git-trwała).
+**Archiwizuj (`mv`), nie kasuj** build-logów (zapis zrobionej roboty); pointer-only można usunąć (kanon istnieje).
+**Cap:** gdy aktywnych (poza `_archive/`) wpisów > ~40 → wymuś sweep konsolidacji ZANIM dodasz nowe.
+
+Symetria: promocja = w górę (trwała warstwa), odpływ = w bok (`_archive/`) lub usunięcie (gdy zredundowane).
+
 ### Wewnątrz `CLAUDE.md`: always-on vs on-demand (anti-bloat)
 
 `CLAUDE.md` (projektowy i globalny) jest **always-on** — ładowany co sesję, kosztuje kontekst. Docs
