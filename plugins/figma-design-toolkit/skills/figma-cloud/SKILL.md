@@ -106,29 +106,34 @@ path and avoids the broken Desktop-Bridge base64 route (documented as unreliable
 manifest `allowedDomains` blocks, base64 corrupts at real sizes, `set_image_fill` times out). On the
 cloud path, prefer `upload_assets`.
 
-## Show the result in chat — MANDATORY (always screenshot + link)
+## Report the result — ALWAYS give the deep link
 
-On the cloud path the user usually has **no Figma open** (phone, web) — the chat is their only view of
-the canvas. So after **every write**, and again when a task is done, render the result **inside the chat**
-+ always give the deep link.
+On the cloud path the user usually has **no Figma open** (phone, web) — the chat is their only handle on
+the result. So after **every write**, and again when a task is done:
 
-**The image must render in the user's chat — not just for you.** Two traps:
-- `Read`-ing a PNG file, or a tool's inline image output, shows the image **to the model**, *not* in the user's chat. The user won't see it.
-- The widget sandbox enforces a CSP allowlist — `figma.com` is **not** on it, so a short-lived `get_screenshot` URL in an `<img src>` is **silently blocked** and won't load.
+**The deep link is mandatory — never omit it:**
+`https://www.figma.com/design/<fileKey>/<fileName>?node-id=<nodeId>`
+**Convert the nodeId `:` → `-`** (e.g. node `208:1568` → `node-id=208-1568`). Point it at the node you
+created/changed, not the file root, so the user lands on it.
 
-**Reliable recipe:**
-1. `get_screenshot(fileKey, nodeId, maxDimension≈300)` — keep it small (the base64 goes into the widget).
-2. Download + base64-encode it (resize so the base64 stays a few KB):
-   ```bash
-   curl -s -o /tmp/f.png "<image_url-from-get_screenshot>"
-   sips -Z 300 /tmp/f.png --out /tmp/f.png >/dev/null; base64 -i /tmp/f.png | tr -d '\n' > /tmp/f.b64
-   ```
-3. Render it with the **visualize `show_widget`** tool as an inline `<img src="data:image/png;base64,…">` (a data URI is not a network request, so CSP allows it), with the deep link as an `<a>` beside it.
-4. **Always include the deep link** — never omit it:
-   `https://www.figma.com/design/<fileKey>/<fileName>?node-id=<nodeId>`
-   **Convert the nodeId `:` → `-`** (e.g. node `208:1568` → `node-id=208-1568`).
+**In-chat screenshot = best-effort, not required.** Rendering the canvas inline in the user's chat is
+unreliable across clients: `Read`-ing a PNG or a tool's inline image shows it **to the model, not in the
+user's chat**, and a `get_screenshot` URL in a widget `<img>` is **CSP-blocked** (`figma.com` isn't on the
+allowlist; only a base64 data-URI via `show_widget` renders, and even that varies by client). Don't burn a
+loop forcing it — **the link is the deliverable.** If a screenshot is genuinely wanted, the base64-data-URI-
+in-`show_widget` path is the only one that can work; otherwise just confirm in words + link. (Mobile app
+rendering still being evaluated — revisit if it proves reliable there.)
 
-This is non-negotiable on the cloud path: a write the user can't see or open is not a finished result.
+## Resolving which file to work on (URL discovery)
+
+The user refers to files by **rough working names** ("KIPP family portal"), not exact names or URLs.
+Before asking for a link:
+1. **Check the Figma file registry** in cross-project memory (`reference_figma_file_registry.md`) — match
+   the working name (alias-tolerant) → use its `fileKey`/URL directly.
+2. No confident match → ask the user for the file URL (a manual step — ask plainly, don't guess a key).
+3. **New file?** When the user pastes a URL not in the registry, **append it** there (working name +
+   fileKey + URL) so it resolves next time. Keep that registry private (sensitive org files) — never in
+   this public toolkit.
 
 ## Cloud vs desktop — decision
 
