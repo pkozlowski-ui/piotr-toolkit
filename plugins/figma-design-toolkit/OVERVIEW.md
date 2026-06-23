@@ -11,11 +11,12 @@ A bundle of skills for bidirectional work with Figma. Designed to **steer execut
 | `figma-design-workflow` | Designing any screen/UI in Figma | Methodology — component-first decision tree, pre-flight audit, variable binding, common pitfalls. **File-agnostic.** |
 | `figma-cli` | JSX render, shadcn/tailwind tokens, UI blocks via `var:` syntax | Reference for the local `figma-ds-cli` (custom CLI, daemon-connected) |
 | `figma-console` | `figma_execute` calls, variants, programmatic variable binding | Plugin API mechanics — script format, error recovery, placement |
+| `figma-cloud` | **No Figma Desktop** — phone, Claude Code on the web, cloud/restricted env | Headless write via the official remote MCP (`mcp.figma.com`) — setup, tool surface, cloud footguns |
 | `figjam-diagrams` | Generating diagrams in FigJam (flows, scenarios, decision trees) | Two modes: Mermaid (`generate_diagram`) and Plugin API (`use_figma`) |
 
 ## Decision: which path?
 
-Two execution paths, with very different speed and capability:
+First pick the **environment** (is Figma Desktop open?), then the tool. Three execution paths:
 
 ### Desktop Bridge (preferred — local, fast)
 Requires Figma Desktop open with the Desktop Bridge plugin running.
@@ -23,10 +24,15 @@ Requires Figma Desktop open with the Desktop Bridge plugin running.
 - **figma-cli** — JSX render, design tokens, UI blocks. Fastest.
 - **figma-console** — full Plugin API via `figma_execute`. Use when JSX falls short.
 
-### Cloud (fallback — slower, network-bound)
-Use when Desktop Bridge isn't available (no Figma Desktop, restricted env, or just a URL with no local file open).
+### Cloud / headless (no Figma Desktop — phone, web, container)
+The official **remote MCP** (`https://mcp.figma.com/mcp`, OAuth) — the only verified headless write path
+(needs a Dev/Full seat). Use when there's no desktop to bridge to.
 
-- claude.ai Figma MCP (`use_figma`, `generate_diagram`) — provided by the official Figma MCP server.
+- **figma-cloud** — `use_figma` / `create_new_file` / `generate_figma_design` + read tools. See the skill for setup + footguns.
+
+### Read / codegen (any environment)
+The official Figma MCP read tools (`get_metadata` → `get_design_context`, `get_screenshot`,
+`get_variable_defs`) work alongside either path.
 
 ## Tool selection cheat sheet
 
@@ -36,7 +42,8 @@ Use when Desktop Bridge isn't available (no Figma Desktop, restricted env, or ju
 | Set up shadcn or tailwind tokens | `figma-cli tokens preset shadcn` |
 | Insert a pre-made UI block (dashboard etc.) | `figma-cli blocks create` |
 | Variants, programmatic binding, multi-page ops | `figma-console figma_execute` |
-| Read design context for code generation | Figma desktop MCP read tools |
+| Build/edit a design with **no Figma Desktop** (phone/web/cloud) | `figma-cloud` → remote MCP `use_figma` |
+| Read design context for code generation | Figma MCP read tools (desktop or remote) |
 | FigJam diagram with pros/cons / scenario | `figjam-diagrams` (MODE B) |
 | Quick Mermaid diagram | `figjam-diagrams` (MODE A) |
 
@@ -48,6 +55,10 @@ Use when Desktop Bridge isn't available (no Figma Desktop, restricted env, or ju
 
 **figjam-diagrams** uses the Figma MCP server (typically `mcp__claude_ai_Figma__*`). Exact tool prefix depends on your MCP server registration.
 
+**figma-cloud** uses the official **remote** Figma MCP. Register it with
+`claude mcp add --transport http figma https://mcp.figma.com/mcp` → `/mcp` → Authenticate (OAuth).
+Verify with `whoami` (needs a Dev/Full seat). See the `figma-cloud` skill for the full setup + tool surface.
+
 ## File map
 
 ```
@@ -55,9 +66,15 @@ figma-design-toolkit/
 ├── OVERVIEW.md                       # this file
 ├── .claude-plugin/plugin.json
 └── skills/
+    ├── figma-router/SKILL.md         # entry point — routes by environment + domain
     ├── figma-design-workflow/SKILL.md
-    ├── figma-cli/SKILL.md
-    ├── figma-console/SKILL.md
+    ├── figma-cli/SKILL.md            # Desktop Bridge — JSX render
+    ├── figma-console/SKILL.md        # Desktop Bridge — figma_execute
+    ├── figma-cloud/SKILL.md          # headless — official remote MCP (mcp.figma.com)
+    ├── figma-accessibility/SKILL.md
+    ├── figma-ds-tools/SKILL.md
+    ├── figma-ds-init/SKILL.md
+    ├── figma-prototype/SKILL.md
     └── figjam-diagrams/
         ├── SKILL.md
         └── references/

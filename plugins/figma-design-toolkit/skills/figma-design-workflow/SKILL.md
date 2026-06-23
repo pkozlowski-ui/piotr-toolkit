@@ -23,11 +23,12 @@ Before doing anything, pick the execution path. **Don't funnel everything throug
 | New screen/component from JSX, shadcn/tailwind tokens, UI block | **figma-cli** | `figma-design-toolkit:figma-cli` |
 | Read design context / screenshot for code / generate-from-intent / FigJam | **official Figma MCP** (Dev Mode, `localhost:3845`, has write) | `figma:figma-use` (external) |
 | Variants, programmatic variable binding, multi-page ops, batch tokens, DS audit/parity, prototype reactions | **figma-console** (`figma_execute`, small scripts) | `figma-design-toolkit:figma-console` |
-| Desktop Bridge unavailable (no Figma Desktop, restricted env) | claude.ai Figma MCP | `figma:figma-use` (external) |
+| **No Desktop Bridge** (phone, Claude Code on the web, cloud/restricted env) | **official remote MCP** `mcp.figma.com` (headless write) | `figma-design-toolkit:figma-cloud` |
 
 - **Greenfield** (build new from scratch) → figma-cli.
 - **Assembling from an existing DS** (instantiate components, set variants, wire prototype reactions) → figma-console; this can't move to JSX render — just keep each call small.
 - Both MCP servers can run at once — split read/codegen (official Figma MCP) from DS/variant work (figma-console).
+- **Cloud / headless** (no Figma Desktop): figma-cli and figma-console are unavailable; this methodology still applies, but execute through `figma-cloud` (remote MCP). The decision tree, pre-flight audit and token rules below are path-agnostic.
 
 ---
 

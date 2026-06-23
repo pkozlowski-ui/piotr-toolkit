@@ -38,7 +38,7 @@ the tools won't exist until it's installed and registered.
 | Read design context, screenshot for code, generate-from-intent, FigJam | **official Figma MCP** (Dev Mode, `localhost:3845` — has write now, no 7s ceiling) |
 | Variants, programmatic variable binding, multi-page ops, DS audit/parity, prototype reactions | **figma-console** (`figma_execute`) — keep each call small |
 | Bulk variable create/update | **figma-console** `figma_batch_create_variables` / `figma_batch_update_variables` (not a loop in `execute`) |
-| Cloud fallback (no Desktop Bridge available) | claude.ai Figma MCP |
+| No Desktop Bridge (phone, web, cloud container) | **`figma-cloud`** → official remote MCP (`mcp.figma.com`) |
 
 Both MCP servers can run **simultaneously** — figma-console for DS/variant/parity work, official Figma MCP for read/codegen/generation. Assembling a prototype from an existing DS (instances + variants + reactions) stays in figma-console; that can't move to JSX render.
 
@@ -60,6 +60,24 @@ Both MCP servers can run **simultaneously** — figma-console for DS/variant/par
 4. **Screenshots: `figma_capture_screenshot` only** (~0.7 s). `figma_take_screenshot` is REST (~7–14 s, caches stale bytes) — see the validation section.
 5. **`figma_search_components` is the single slowest tool** (~19 s median, up to ~70 s). Call it rarely: prefer the project catalog (`docs/design-system/components.md`), search once at session start, reuse the IDs.
 
+**Pre-send self-check (do this before every `figma_execute`):**
+- Count the `await`s in the script — **> ~15? Split it.**
+- Any `findAll` on `figma.root` or the whole `currentPage`? **Scope it** to a section, or page it (below).
+- Holding a node from a previous call? Use `getNodeByIdAsync(id)` — don't re-search for it.
+
+**Chunked traversal (for genuinely large pages — avoids the timeout at the source):**
+```javascript
+// Page once via findAllWithCriteria (indexed), then process in small batches across calls.
+// Call 1 — collect IDs only (cheap), return them:
+const ids = figma.currentPage.findAllWithCriteria({ types: ['INSTANCE'] }).map(n => n.id);
+return { ids, total: ids.length };
+// Call 2..N — process a slice (e.g. 25) per call, pass the offset forward:
+const slice = BATCH_IDS;                 // ~25 ids from the previous return
+const nodes = await Promise.all(slice.map(id => figma.getNodeByIdAsync(id)));
+// …do the work on `nodes`… return progress { done, nextOffset }
+```
+This turns one doomed page-wide script into a chain of sub-5 s calls.
+
 **Genuinely un-splittable heavy op?** (rare). The ceiling can be raised by running a pinned, *patched* figma-console (`5000/7000 → 30000/32000`) instead of `npx …@latest` — but that's a maintained fork and 5 s is also a runaway-script guard. Ask the user before going there; first try splitting.
 
 ## Methodology — see figma-design-workflow
@@ -79,6 +97,22 @@ This skill covers **mechanics specific to `figma_execute`** — script format, e
 **Node IDs are stale between conversations** — never reuse IDs from a previous session without re-searching.
 
 ## figma_execute — critical rules
+
+> **⚠️ DYNAMIC-PAGE: sync getters/setters throw.** The bridge runs in `documentAccess: dynamic-page`.
+> Many synchronous accessors throw `Cannot call with documentAccess: dynamic-page. Use …Async instead.`
+> (the single most common avoidable error). Default to the **async** variant:
+>
+> | Sync (throws) | Async (use this) |
+> |---|---|
+> | `instance.mainComponent` | `await instance.getMainComponentAsync()` |
+> | `component.instances` | `await component.getInstancesAsync()` |
+> | `node.reactions = […]` | `await node.setReactionsAsync([…])` (read getter `node.reactions` still works) |
+> | `node.setTextStyleId(id)` | `await node.setTextStyleIdAsync(id)` |
+> | `figma.currentPage = page` | `await figma.setCurrentPageAsync(page)` |
+> | `figma.getNodeById(id)` | `await figma.getNodeByIdAsync(id)` |
+> | accessing other pages' nodes | `await figma.loadAllPagesAsync()` first |
+>
+> Rule of thumb: if a getter/setter touches a *component relationship*, *another page*, or *reactions*, reach for its `…Async` form.
 
 ### 1. JS code — format
 
@@ -214,11 +248,18 @@ Full automation only becomes possible if figma-console adds **local-file-path** 
 
 ## Session Management
 
-### Connection
-```
-figma_get_status            // check
-figma_reconnect             // if status not OK
-```
+### Connection — resilience protocol (don't loop reconnects)
+
+Bridge drops are the #1 session-start friction. Follow a **bounded** recovery, then hand off — never
+spin `figma_reconnect` or guess ports:
+
+1. `figma_get_status` — check.
+2. If down → **one** `figma_reconnect` (it already handles the 9223–9232 port pool itself — don't try ports by hand).
+3. `figma_get_status` again. Still down → **STOP and ask Piotr loudly**: "Open the Desktop Bridge in Figma Desktop (Plugins → Development → Figma Desktop Bridge), then tell me to continue." Wait. Asking is the correct path, not a workaround. (See "Manual steps are the user's" below.)
+
+**Distinguish two failures — they have different fixes:**
+- `figma_*` tools **don't exist at all** → the MCP **server isn't registered** (install problem). `figma_reconnect` won't help — see Install / Setup.
+- Tools exist but error `"Make sure the Desktop Bridge plugin is running"` / `"Cannot connect to Figma Desktop"` → the **plugin isn't running** in the app → the protocol above (ask Piotr to launch it).
 
 ### Multiple files
 ```
@@ -291,6 +332,9 @@ Step 7: Final validation of the whole screen
 
 | Error | Cause | Fix |
 |-------|-----------|-----|
+| `"Cannot call with documentAccess: dynamic-page. Use getMainComponentAsync instead"` | Sync `instance.mainComponent` | `await instance.getMainComponentAsync()` |
+| `"…Use getInstancesAsync instead"` | Sync `component.instances` | `await component.getInstancesAsync()` |
+| `"…dynamic-page"` on reactions / page set / node lookup | Any sync getter/setter in dynamic-page | Use the `…Async` variant (see the dynamic-page table above) |
 | "not implemented" | `figma.notify()` | Remove it, use `return` |
 | Text doesn't change, no error | Direct edit on instance | `setProperties()` or `figma_set_instance_properties` |
 | `"Setting figma.currentPage is not supported"` | Sync setter | `await figma.setCurrentPageAsync(page)` |
