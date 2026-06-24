@@ -86,8 +86,15 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 
 > Kluczowa lekcja: **oddziel Typ od Dyspozycji.** Jeden łączony tag ukrywa, kto musi zadziałać.
 
+## Karta-wskaźnik na tablicy (po KAŻDYM sweepie — stała reguła)
+Po wytworzeniu rejestru **utwórz lekką kartę-wskaźnik na tablicy zadań** (Kanban) z **linkiem `[[…]]` do rejestru** + 1-liniowym podsumowaniem (kto · ile wątków · klastry · routing). Cel: sweep widoczny i odhaczalny na tablicy, nie tylko w pipeline rejestrów.
+- Karta = **pointer**, NIE źródło prawdy — rejestr w folderze pipeline'u zostaje źródłem.
+- Frontmatter karty wg konwencji tablicy projektu (typowo `status` + tag `sweep-pointer`).
+- **Wiele rejestrów z jednego sweepu** (np. owner-separate, Tom osobno) → **jedna karta** linkująca wszystkie.
+- Lokalizacja/format karty + tag = **config per-projekt** (czytaj `CLAUDE.md` / `.claude/memory/`).
+
 ## Krok zamykający — `done` + archiwizacja
-Feedback-sweep jest **samodzielny** — nie zakłada ani nie rusza kart na tablicy zadań (Kanban). Domknięcie sweepu to dwie rzeczy w samym pipeline rejestrów:
+Feedback-sweep żyje w pipeline rejestrów (źródło prawdy) i **zostawia własną kartę-wskaźnik na tablicy** (patrz wyżej) — ale **nie rusza/nie przesuwa innych kart zadań**. Domknięcie sweepu to dwie rzeczy w samym pipeline rejestrów:
 1. **Wdrożone/odpowiedziane itemy → `status: done`** w rejestrze (źródło prawdy o stanie, nie nazwa pliku).
 2. Gdy cały sweep domknięty → **przenieś rejestr do podfolderu `Done/`** (patrz Schemat rejestru i ⚠️ niżej o `mv`).
 
