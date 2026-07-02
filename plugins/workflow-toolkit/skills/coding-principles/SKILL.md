@@ -20,7 +20,7 @@ Also invoke explicitly when:
 
 ---
 
-## Four Core Principles
+## Core Principles
 
 ### 1. Think Before Coding
 
@@ -69,6 +69,18 @@ For any non-trivial task (>3 files, unclear requirements, or significant logic c
 - **Refactor:** "Done = behavior identical, diff shows only structural changes"
 
 This creates a shared checkpoint. If the success criteria are wrong, the user can correct before any code is written.
+
+---
+
+### 5. Second-Opinion Before High-Stakes Moves
+
+Before an **irreversible or high-stakes** action — deleting/overwriting, a data/schema migration, an architectural commit, executing a multi-step plan, or declaring "done" on shared state — consider spawning a **read-only adversarial advisor** to pressure-test it first.
+
+- Gate on cost-of-being-wrong, not on every task — cheap-to-undo work doesn't need it.
+- Advisor must be read-only (`Explore` / `Plan`) — never `general-purpose` with a "don't touch files" prompt (the instruction isn't a guardrail).
+- Frame it to refute, not to agree.
+
+→ Mechanics + trigger test: `workflow-toolkit:second-opinion`.
 
 ---
 
