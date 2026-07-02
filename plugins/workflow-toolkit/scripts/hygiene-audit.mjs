@@ -45,9 +45,10 @@ add('memory-cap', 'wpisy memory', memFiles.length, cfg.memory.cap,
   memFiles.length <= cfg.memory.cap,
   memFiles.length > cfg.memory.cap ? `${memFiles.length - cfg.memory.cap} ponad cap → wymuś sweep konsolidacji` : null);
 
-// 2) build-logi kandydujące do archiwum
+// 2) build-logi kandydujące do archiwum (allowlist = świadome KEEP mylone przez prefiks, np. reference)
 const blRe = new RegExp(cfg.memory.buildLogPattern);
-const buildLogs = memFiles.filter(f => blRe.test(f));
+const blAllow = new Set((cfg.memory.buildLogAllowlist || []).map(n => n.endsWith('.md') ? n : `${n}.md`));
+const buildLogs = memFiles.filter(f => blRe.test(f) && !blAllow.has(f));
 add('build-logs', 'build-logi do przeglądu (flow-/man-/fp-)', buildLogs.length, 0,
   buildLogs.length === 0,
   buildLogs.length ? `sprawdź czy shipped bez open-items → mv do ${cfg.memory.archiveDir}/` : null);
