@@ -83,6 +83,24 @@ add('claudemd-size', `${cfg.claudeMd.path} (linie, always-on)`, cmLines, cfg.cla
   cmLines <= cfg.claudeMd.maxLines,
   cmLines > cfg.claudeMd.maxLines ? `${cmLines - cfg.claudeMd.maxLines} linii ponad próg → skróć/przenieś do DS-docs (skrót+wskaźnik)` : null);
 
+// 5) markery design-detalu w CLAUDE.md (anti-bloat treści, nie tylko rozmiaru)
+//    Proxy jakościowy: node-IDs / hex / surowe px to niemal zawsze design-detal,
+//    który należy do registry/canonical-patterns, nie do always-on CLAUDE.md.
+//    Baseline zamraża legit-gotchy; sygnał niesie WZROST (wpełzanie nowych).
+if (cfg.claudeMd.designMarkerBaseline != null && existsSync(cmPath)) {
+  const cm = readFileSync(cmPath, 'utf8');
+  const nodeIds = (cm.match(/[0-9]{3,4}:[0-9]{2,6}/g) || []).length;
+  const hex = (cm.match(/#[0-9a-fA-F]{6}/g) || []).length;
+  const px = (cm.match(/[0-9]+ ?px/g) || []).length;
+  const total = nodeIds + hex + px;
+  const base = cfg.claudeMd.designMarkerBaseline;
+  add('claudemd-design-markers', `${cfg.claudeMd.path} (markery design-detalu: nodeID+hex+px)`,
+    total, base, total <= base,
+    total > base
+      ? `+${total - base} ponad baseline (nodeID ${nodeIds}, hex ${hex}, px ${px}) → design-detal wpełzł; przenieś do registry/canonical-patterns lub podnieś baseline świadomie`
+      : null);
+}
+
 // 6) katalog _archive istnieje?
 const archPath = join(memDir, cfg.memory.archiveDir);
 add('archive-dir', `${cfg.memory.archiveDir}/ istnieje`, existsSync(archPath) ? 1 : 0, 1,
