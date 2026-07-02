@@ -36,11 +36,14 @@ the tools won't exist until it's installed and registered.
 |---|---|
 | New screen/component from JSX, shadcn/tailwind tokens, UI blocks | **figma-cli** (`render` / `blocks` / `tokens`) |
 | Read design context, screenshot for code, generate-from-intent, FigJam | **official Figma MCP** (Dev Mode, `localhost:3845` — has write now, no 7s ceiling) |
-| Variants, programmatic variable binding, multi-page ops, DS audit/parity, prototype reactions | **figma-console** (`figma_execute`) — keep each call small |
+| Variants, programmatic variable binding, multi-page ops, DS audit/parity, prototype reactions — **small/iterative** | **figma-console** (`figma_execute`) — keep each call small |
+| **Heavy / bulk node write** — a sweep over **≥~50 nodes**, or any write you'd otherwise have to *chunk* to dodge the 5 s cap | **`use_figma`** (official remote MCP, via `figma-cloud`) — **no 5 s ceiling, atomic.** Beats chunking `figma_execute`, and sidesteps the Bridge dying mid-sweep (Figma kills the plugin runtime every ~1–3 min). |
 | Bulk variable create/update | **figma-console** `figma_batch_create_variables` / `figma_batch_update_variables` (not a loop in `execute`) |
 | No Desktop Bridge (phone, web, cloud container) | **`figma-cloud`** → official remote MCP (`mcp.figma.com`) |
 
 Both MCP servers can run **simultaneously** — figma-console for DS/variant/parity work, official Figma MCP for read/codegen/generation. Assembling a prototype from an existing DS (instances + variants + reactions) stays in figma-console; that can't move to JSX render.
+
+**Threshold rule — don't chunk a doomed script, switch channels.** The 5 s/7 s cap is a hardcoded guard in *this* bridge, **not** a Figma Plugin API limit (the Plugin API has no forced kill — verified 2026-07-02). So a big sweep has two escapes: chunk it into sub-5 s `figma_execute` calls (fine for ~2–3 chunks), or — once it's genuinely large (**≥~50 nodes** or you're writing chunking scaffolding just to fit) — run it through **`use_figma`** instead: one atomic script, no ceiling, no partial-state, and immune to the mid-session Bridge drop. Keep `figma-console` for what it's best at: fast iterative edits, inspection, `figma_capture_screenshot`, the multi-file active-file model. (Load the `figma:figma-use` skill before the first `use_figma` call; see `figma-cloud` for remote mechanics — full doc access, not dynamic-page.)
 
 ## Performance & the timeout budget — READ FIRST
 
