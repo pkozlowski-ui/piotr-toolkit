@@ -47,9 +47,10 @@ Both MCP servers can run **simultaneously** — figma-console for DS/variant/par
 
 ## Performance & the timeout budget — READ FIRST
 
-`figma_execute` is hardcoded to a **two-layer timeout** (verified in figma-console-mcp source — **NOT configurable** by env var or tool param):
-- the plugin kills the script at **5000 ms**
-- the WebSocket command then fails at **7000 ms** → `WebSocket command EXECUTE_CODE timed out after 7000ms`
+`figma_execute` runs under a **two-layer timeout**:
+- **default:** the plugin kills the script at **5000 ms**, the WebSocket command fails at **7000 ms** → `WebSocket command EXECUTE_CODE timed out after 7000ms`. This is what unaware scripts hit.
+- **the tool accepts a per-call `timeout` param** that raises both layers — but only up to a **hard ceiling of ~30 000 ms** (verified live 2026-07-02: `timeout:30000` → WS waited 32000 ms). No env var or persistent config; ~30 s is the wall. Beyond that there is **no** `figma_execute` escape.
+- **`use_figma` (official remote MCP) has no ceiling at all** — verified: the same all-pages traversal that timed out `figma_execute` even at 30 s (workload genuinely ~78 s) completed cleanly through `use_figma`. So for anything that could exceed ~30 s, `use_figma` is the *only* path — see the "Heavy / bulk node write" row above.
 
 **Any single script needing more than ~5 s of plugin work ALWAYS times out** — and a timeout can leave **partial artifacts** (it is not reliably atomic). This is the #1 source of wasted loops. The median call is fast (~0.5 s); the pain comes entirely from heavy multi-task scripts and page-wide traversal. Stay under budget:
 
