@@ -255,7 +255,15 @@ spin `figma_reconnect` or guess ports:
 
 1. `figma_get_status` — check.
 2. If down → **one** `figma_reconnect` (it already handles the 9223–9232 port pool itself — don't try ports by hand).
-3. `figma_get_status` again. Still down → **STOP and ask Piotr loudly**: "Open the Desktop Bridge in Figma Desktop (Plugins → Development → Figma Desktop Bridge), then tell me to continue." Wait. Asking is the correct path, not a workaround. (See "Manual steps are the user's" below.)
+3. `figma_get_status` again. Still down → **before you block, consider the `use_figma` fallback** (next paragraph). If the pending work fits it, switch and keep going. If it genuinely needs the Desktop Bridge (`figma_capture_screenshot`, fast iterative inspection, active-file model) → **STOP and ask Piotr loudly**: "Open the Desktop Bridge in Figma Desktop (Plugins → Development → Figma Desktop Bridge), then tell me to continue." Wait. Asking is the correct path, not a workaround. (See "Manual steps are the user's" below.)
+
+**Bridge died mid-session → `use_figma` is a full write-fallback, not just a "no-Desktop" path.** When the Desktop Bridge drops and won't reconnect, you do **not** have to block on a relaunch to keep writing. The official remote MCP `use_figma` (`mcp__…__use_figma`, `fileKey` + `code`, same Plugin API) writes **headless/cloud, no Desktop Bridge** — and for heavy work it is often the *better* tool anyway:
+- **Atomic** — a bad script doesn't execute at all (zero partial-state, retry-safe), unlike `figma_execute`.
+- **No 5 s ceiling** — carries sync-loops over dozens of nodes + cross-page `getInstancesAsync`/`getNodeByIdAsync` without timing out. (Proven: KpiCard sweep, 275 instances, after a mid-session Bridge drop.)
+- Load the MANDATORY `figma:figma-use` skill before the first call, then follow `figma-cloud` mechanics (remote = full document access, **not** dynamic-page — don't port the async-getter dance; `loadAllPagesAsync()` throws there).
+- Gotchas: `figma.currentPage` resets to page 1 each call (`getNodeByIdAsync` still works cross-page without a set); multi-page = fan out N parallel calls (1 `setCurrentPageAsync`/call).
+
+**Rule:** Bridge down → don't loop reconnects or block a big sweep on a relaunch. If the work is a write (especially a large/atomic one), switch to `use_figma`. Keep the Desktop Bridge only for what needs it (`figma_capture_screenshot`, quick iterative inspection, multi-file active-file model).
 
 **Distinguish two failures — they have different fixes:**
 - `figma_*` tools **don't exist at all** → the MCP **server isn't registered** (install problem). `figma_reconnect` won't help — see Install / Setup.

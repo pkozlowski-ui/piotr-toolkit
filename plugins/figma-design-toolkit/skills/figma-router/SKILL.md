@@ -20,6 +20,8 @@ instructions entirely. Do not act before routing is complete.
 
 If unsure which environment you're in, check: are `figma_*` (Desktop Bridge) tools available? If not, you're on the cloud path.
 
+**Bridge dies mid-session = cloud path too.** The cloud row is not only "never had a Desktop" — if the Desktop Bridge **drops mid-session and won't reconnect**, the remote-MCP write path (`use_figma` via `figma-cloud`) is a full fallback. It's atomic and has no 5 s ceiling, so for a large/atomic write it's often the better tool regardless. Don't block a sweep on a Bridge relaunch — switch. Keep the Bridge only for what needs it (`figma_capture_screenshot`, quick iterative inspection, multi-file active-file model). See `figma-console` → "Connection — resilience protocol".
+
 ## Routing table
 
 | Domain | Trigger signals | Action |
@@ -54,7 +56,7 @@ This toolkit owns the inverse + the opinionated layer: **building/editing inside
 3. **Cross-domain request** (e.g. "build accessible screen") → route to PRIMARY domain; that skill references the secondary where needed
 4. **Ambiguous request** → ask one clarifying question before routing
 5. **Cheapest tool wins** — for Plugin API work, prefer figma-cli (greenfield) or the official Figma MCP (read/codegen/generation) over `figma_execute` where they fit; `figma_execute` is timeout-prone (hardcoded ~5 s budget). The matched skill's performance budget is mandatory — see `figma-console`.
-6. **Environment gates the tools** — on the **cloud path** (Step 0), `figma-cli` and `figma-console` do not exist; the only write path is the official remote MCP via `figma-cloud`. Don't try to reconnect a Desktop Bridge that isn't there — load `figma-cloud`.
+6. **Environment gates the tools** — on the **cloud path** (Step 0), `figma-cli` and `figma-console` do not exist; the only write path is the official remote MCP via `figma-cloud`. Don't try to reconnect a Desktop Bridge that isn't there — load `figma-cloud`. Same move when a Bridge that *was* there **dies mid-session and won't reconnect**: don't loop reconnects or block on a relaunch — fall over to `use_figma` (`figma-cloud`) for the write.
 
 ## Extension pattern (anti-bloat — default is DON'T add a skill)
 
