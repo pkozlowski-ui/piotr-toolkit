@@ -9,8 +9,9 @@
 //
 // Kontrakt: exit 0 zawsze (hook nie może blokować sesji). Sygnał niesie treść, nie kod wyjścia.
 
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { homedir } from 'node:os';
 
 // Skrypt jest reużywalny między projektami (żyje w piotr-toolkit), więc korzeniem
 // jest CWD — uruchamiaj z roota repo (hook i cron agent robią cd do repo najpierw).
@@ -105,6 +106,64 @@ if (cfg.claudeMd.designMarkerBaseline != null && existsSync(cmPath)) {
 const archPath = join(memDir, cfg.memory.archiveDir);
 add('archive-dir', `${cfg.memory.archiveDir}/ istnieje`, existsSync(archPath) ? 1 : 0, 1,
   existsSync(archPath), existsSync(archPath) ? null : 'brak — utwórz przy pierwszej archiwizacji');
+
+// 7) higiena reguły doboru modelu (delegacja vs mechanika w oknie) — gated na cfg.modelPolicy
+//    Proxy heurystyczny: liczy subagentów (rozbicie modeli) i sesje z mechaniczną robotą
+//    Figma ze transcriptów ~/.claude/projects/<slug>. ⚠️ tylko gdy była mechanika, a zero
+//    delegacji. Defensywne (try/catch) — brak transcriptów / błąd nigdy nie wywala hooka.
+if (cfg.modelPolicy) {
+  try {
+    const mp = cfg.modelPolicy;
+    const windowMs = (mp.windowDays || 3) * 86400e3;
+    const now = Date.now();
+    const slug = root.replace(/[^A-Za-z0-9]/g, '-'); // CWD → katalog projektu w ~/.claude/projects
+    const projRoot = join(homedir(), '.claude', 'projects', slug);
+    const inWindow = p => { try { return now - statSync(p).mtimeMs <= windowMs; } catch { return false; } };
+    const famOf = m => /haiku/i.test(m) ? 'haiku' : /sonnet/i.test(m) ? 'sonnet'
+      : /opus/i.test(m) ? 'opus' : /fable/i.test(m) ? 'fable' : 'other';
+
+    let mechSessions = 0;
+    const deleg = { haiku: 0, sonnet: 0, opus: 0, fable: 0, other: 0 };
+    let delegTotal = 0;
+
+    if (existsSync(projRoot)) {
+      const entries = readdirSync(projRoot, { withFileTypes: true });
+      // główne transcripty: <sessionId>.jsonl na top-levelu → mechanika = REALNE wywołanie
+      // figma_execute (tool_use "name"), NIE goła wzmianka 'figma_execute' (ta jest w liście
+      // deferred-tools każdego system-remindera → dałaby false-positive na każdej sesji)
+      const mechRe = /"name"\s*:\s*"mcp__figma-console__figma_execute"/;
+      for (const e of entries.filter(x => x.isFile() && x.name.endsWith('.jsonl'))) {
+        const p = join(projRoot, e.name);
+        if (!inWindow(p)) continue;
+        try { if (mechRe.test(readFileSync(p, 'utf8'))) mechSessions++; } catch { /* skip */ }
+      }
+      // subagenty: <sessionId>/subagents/agent-*.jsonl → rodzina modelu z pola "model"
+      for (const e of entries.filter(x => x.isDirectory())) {
+        const subDir = join(projRoot, e.name, 'subagents');
+        if (!existsSync(subDir)) continue;
+        let agents = [];
+        try { agents = readdirSync(subDir).filter(f => f.startsWith('agent-') && f.endsWith('.jsonl')); } catch { continue; }
+        for (const a of agents) {
+          const p = join(subDir, a);
+          if (!inWindow(p)) continue;
+          try {
+            const m = readFileSync(p, 'utf8').match(/"model"\s*:\s*"([^"]+)"/);
+            deleg[famOf(m ? m[1] : 'other')]++;
+            delegTotal++;
+          } catch { /* skip */ }
+        }
+      }
+    }
+
+    const minMech = mp.minMechSessionsToExpectDelegation ?? 2;
+    const ok = !(mechSessions >= minMech && delegTotal === 0);
+    const breakdown = `h:${deleg.haiku} s:${deleg.sonnet} o:${deleg.opus}` +
+      (deleg.fable ? ` f:${deleg.fable}` : '') + (deleg.other ? ` ?:${deleg.other}` : '');
+    add('model-delegation', `dobór modelu (deleg vs mechanika, ${mp.windowDays || 3}d)`,
+      `${delegTotal} deleg [${breakdown}] / ${mechSessions} mech-sesji`, null, ok,
+      ok ? null : `${mechSessions} sesji z mechaniczną robotą Figma, 0 delegacji → deleguj sweepy/audyty do Haiku/Sonnet (subagent), nie rób ich na modelu głównej sesji`);
+  } catch { /* higiena modelu nigdy nie blokuje audytu */ }
+}
 
 // --- output ---
 const warnings = checks.filter(c => !c.ok);
