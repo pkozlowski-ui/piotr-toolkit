@@ -51,3 +51,18 @@ user prosił). Pamięć w `.claude/memory/` i ADR-y też idą do commita (są gi
 
 ### 5 — Krótki raport
 Wypunktuj: co zapisano i gdzie (warstwa), co zaproponowano do commita, co zostaje otwarte na następną sesję.
+
+## Validation-gate — evolving a skill / rule / gate
+
+Source: Microsoft SkillOpt (https://github.com/microsoft/SkillOpt).
+
+Retro is where session lessons get folded into skills, gates, and rules — so this gate governs
+the fold-in step. Do not promote a lesson into canon just because a single session made it feel right.
+
+- **Harden a change to a skill / gate / rule ONLY when you have an objective check that the new
+  version beats the old — not when it "seems better".**
+- **When a check exists** (audit, test, metric): validate on examples NOT used to invent the change
+  (held-out), and accept only if it does not regress the rest.
+- **When no check exists**: it's judgment, not canon — mark it as a hypothesis, do not write it as a rule.
+- **Goal:** close the retro→fold-in loop — never fold a rule from a single case without confirming
+  it doesn't break others.
