@@ -92,7 +92,7 @@ work-style obowiązująca wszędzie → globalny.
 **Bramka na promocję do kanonu (validation-gate):** utwardzaj regułę/skill/gate w kanonie DOPIERO
 gdy masz obiektywny check, że nowa wersja jest lepsza (waliduj na przykładach held-out, nie regresuj
 reszty); bez checku to hipoteza, nie kanon. Pełna doktryna → `session-retro` („Validation-gate —
-evolving a skill / rule / gate", wg Microsoft SkillOpt).
+ewolucja skilla / reguły / gate'u", wg Microsoft SkillOpt).
 
 ## Reguła odpływu / retirement (lustro promocji)
 

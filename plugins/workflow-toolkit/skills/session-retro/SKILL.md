@@ -52,17 +52,18 @@ user prosił). Pamięć w `.claude/memory/` i ADR-y też idą do commita (są gi
 ### 5 — Krótki raport
 Wypunktuj: co zapisano i gdzie (warstwa), co zaproponowano do commita, co zostaje otwarte na następną sesję.
 
-## Validation-gate — evolving a skill / rule / gate
+## Validation-gate — ewolucja skilla / reguły / gate'u
 
-Source: Microsoft SkillOpt (https://github.com/microsoft/SkillOpt).
+Źródło: Microsoft SkillOpt (https://github.com/microsoft/SkillOpt).
 
-Retro is where session lessons get folded into skills, gates, and rules — so this gate governs
-the fold-in step. Do not promote a lesson into canon just because a single session made it feel right.
+Retro to miejsce, gdzie lekcje z sesji foldują się w skille, gate'y i reguły — więc ta bramka
+rządzi krokiem fold-inu. Nie promuj lekcji do kanonu tylko dlatego, że jedna sesja sprawiła, że
+„wydaje się słuszna".
 
-- **Harden a change to a skill / gate / rule ONLY when you have an objective check that the new
-  version beats the old — not when it "seems better".**
-- **When a check exists** (audit, test, metric): validate on examples NOT used to invent the change
-  (held-out), and accept only if it does not regress the rest.
-- **When no check exists**: it's judgment, not canon — mark it as a hypothesis, do not write it as a rule.
-- **Goal:** close the retro→fold-in loop — never fold a rule from a single case without confirming
-  it doesn't break others.
+- **Utwardzaj zmianę w skillu / gate'cie / regule DOPIERO gdy masz obiektywny check, że nowa wersja
+  jest lepsza od starej — nie „wydaje się lepsza".**
+- **Gdy check istnieje** (audyt, test, metryka): waliduj na przykładach NIEUŻYTYCH do wymyślenia
+  zmiany (held-out) i akceptuj tylko jeśli nie pogarsza reszty.
+- **Gdy checku brak**: to osąd, nie kanon — oznacz jako hipotezę, nie zapisuj jako regułę.
+- **Cel:** domknięcie pętli retro→fold-in — nie foldować reguły z jednego przypadku bez sprawdzenia,
+  że nie psuje innych.
