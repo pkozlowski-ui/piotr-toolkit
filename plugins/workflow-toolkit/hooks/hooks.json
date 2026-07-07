@@ -1,0 +1,27 @@
+{
+  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse) + re-injection twardych reguł co turę (UserPromptSubmit). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-claudemd-bloat.sh\"",
+            "statusMessage": "anty-bloat guard"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/reinject-rules.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
