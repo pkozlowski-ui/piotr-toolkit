@@ -34,7 +34,7 @@ Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki
 - **Lab** — lodówka/inbox: *do zbadania* · *przemyślenie* · *możliwy projekt* (3 różne cykle życia).
 - **To-do** — backlog rzeczy do zrobienia. Tagi: `blocked` (ktoś/coś blokuje — dopisz *co* w karcie) · `high-priority`.
 - **In progress** — **tylko to, nad czym realnie pracujesz.** „Zaraz zacznę" ≠ in-progress → trzymaj na **górze `To-do`** (kolejność = priorytet), żeby WIP był prawdziwy.
-- **To confirm** — zrobione, czeka na omówienie/feedback zespołu. Dwa wyjścia: feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`.
+- **To confirm** — **coś wisi na kimś / spodziewamy się lub chcemy follow-up**: nasza część gotowa, czekamy na czyjąś decyzję/odpowiedź, feedback zespołu, wysłane pytanie lub zewnętrzną blokadę. Rozróżnienie: **`In progress` = aktywnie robimy** · **`To confirm` = zrobione co po naszej stronie, czekamy na potwierdzenie/odpowiedź z zewnątrz.** Ustawiaj **odruchowo** przy domykaniu rundy, gdy zostaje open item na kimś (nie zostawiaj takiej karty na `In progress`). Dwa wyjścia: potwierdzenie/feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`.
 - **Done** — zrobione i **warte pamięci dla zespołu**. To kandydat do **promocji do vaultu** (`obsidian-capture`). Po domknięciu kartę **archiwizuj** (przenieś do folderu archiwum boardu) — **nie kasuj**: zachowujemy zapis tego, co zrobione.
 
 ## Operacje
@@ -110,6 +110,7 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 - **Archiwizacja przenosi plik — `mv` na filesystemie, nie REST copy+delete** (MCP nie ma move; copy+delete grozi osieroconym duplikatem — patrz sekcja archiwizacji + `obsidian-setup`). `mv` nie aktualizuje `[[backlinków]]` do karty (Obsidian robi to tylko przy move w UI). Karty Done zwykle są liśćmi (nikt do nich nie linkuje) — wtedy OK; jeśli karta jest celem linków, przenieś ją w UI Obsidiana.
 - **Token-safety:** do digestu czytaj frontmatter, nie pełne treści kart.
 - **Bases bywa wrażliwe** — po zmianach strukturalnych w `.base` zweryfikuj render w UI.
+- **`manage_frontmatter set` na stringu potrafi zapisać nadmiarowe cudzysłowy** (`status: '"To confirm"'` zamiast `status: To confirm`) → wartość nie matchuje słownika kolumny, karta wypada z grupy. Po secie zweryfikuj (`get_note format:section` na froncie) i popraw `obsidian_replace_in_note` na czysty `status: <kolumna>` (bez cudzysłowów, jak reszta kart).
 
 ## Raport
 Po operacji: co się zmieniło (utworzone/przesunięte karty, ztriażowane wrzutki), nowy rozkład kolumn,
