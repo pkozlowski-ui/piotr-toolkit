@@ -67,3 +67,7 @@ rządzi krokiem fold-inu. Nie promuj lekcji do kanonu tylko dlatego, że jedna s
 - **Gdy checku brak**: to osąd, nie kanon — oznacz jako hipotezę, nie zapisuj jako regułę.
 - **Cel:** domknięcie pętli retro→fold-in — nie foldować reguły z jednego przypadku bez sprawdzenia,
   że nie psuje innych.
+- **Wpadka z sesji → task w `evals/` skilla.** Gdy w sesji realnie zawiódł skill lub reguła
+  (nie jednorazowy błąd ludzki), dopisz task do `skills/<skill>/evals/` wg schematu z
+  `evals-convention.md` (katalog tego skilla). To materializuje held-out: przy następnej zmianie
+  skilla przechodzisz jego `evals/` ZANIM utwardzisz — a zbiór rośnie z życia, bez osobnego wysiłku.

@@ -1,6 +1,6 @@
 {
   "name": "obsidian-toolkit",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Obsidian vault workflow skills: turn the vault into the natural home for durable, human-facing documentation. feedback-sweep (Figma/FigJam review → classified, routed, answered register), obsidian-kanban (Bases task board: digest, create/move cards, triage inbox, promote backlog items), obsidian-capture (promote durable decisions/specs/research/meeting-notes into the right vault folder), and obsidian-setup (wire a vault to Claude Code via Local REST API + MCP). Vault-agnostic process; per-project config.",
   "author": {
     "name": "pkozlowski-ui",
@@ -9,5 +9,15 @@
   },
   "repository": "https://github.com/pkozlowski-ui/piotr-toolkit",
   "license": "MIT",
-  "keywords": ["obsidian", "vault", "feedback-sweep", "design-review", "figma", "figjam", "kanban", "documentation", "knowledge"]
+  "keywords": [
+    "obsidian",
+    "vault",
+    "feedback-sweep",
+    "design-review",
+    "figma",
+    "figjam",
+    "kanban",
+    "documentation",
+    "knowledge"
+  ]
 }

@@ -27,6 +27,12 @@ Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji
 Próg bloatu i treść reguł edytujesz w plikach `hooks/*.sh` — jedno miejsce, przenośne przez `${CLAUDE_PLUGIN_ROOT}`.
 **Świadomie NIE globalnie:** Stop-verify-gate (blok zakończenia przy niezweryfikowanym `git diff`) — fałszywe blokady w repo bez testów; wpinaj opt-in per repo kodowe.
 
+## Warstwa evals (EDD)
+Realne wpadki skilli materializują się jako taski w `skills/<skill>/evals/` — konwencja cross-plugin
+w `skills/session-retro/evals-convention.md`. Retro dopisuje taski (krok w `session-retro`); zmiana
+istniejącego skilla z `evals/` wymaga przejścia wszystkich aktywnych tasków PRZED utwardzeniem
+(doktryna validation-gate); wynik do commit message (`evals: N/N pass`).
+
 ## Doktryna pamięci
 Trwałość oparta na git (3 warstwy: kanon repo / konwencje / dane prywatne) — pełny model w `memory-discipline`.
 `init-project` zakłada pamięć git-trwałą, `session-retro` ją promuje, `bootstrap-machine` odtwarza po migracji.

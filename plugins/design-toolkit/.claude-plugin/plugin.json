@@ -1,6 +1,6 @@
 {
   "name": "design-toolkit",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Product-design quality skills: design-tweaker (full-stack UX/UI/look-&-feel/AI-slop audit across 7 lenses, reference-grounded, ranks by impact×effort) and mobile-audit. Diagnoses, prioritizes, and routes execution; works alongside impeccable and taste-skill.",
   "author": {
     "name": "pkozlowski-ui",
@@ -9,5 +9,12 @@
   },
   "repository": "https://github.com/pkozlowski-ui/piotr-toolkit",
   "license": "MIT",
-  "keywords": ["design", "ui-audit", "ux", "layout-diagnosis", "mobile-audit", "anti-patterns"]
+  "keywords": [
+    "design",
+    "ui-audit",
+    "ux",
+    "layout-diagnosis",
+    "mobile-audit",
+    "anti-patterns"
+  ]
 }
