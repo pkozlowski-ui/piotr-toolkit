@@ -1,0 +1,31 @@
+{
+  "project": "{{PROJECT_NAME}}",
+  "_note": "Progi higieny reguł pracy — per-projekt. Czytane przez scripts/hygiene-audit.mjs (warstwa 1, deterministyczny linter) i przez agent-audyt (warstwa 2, osąd). Kanon schematu: skill workflow-toolkit:project-audit. Wszystkie klucze zaczynające się od _ to komentarze — linter je ignoruje.",
+  "memory": {
+    "_note": "Higiena pamięci projektu (.claude/memory/). Patrz doktryna: skill memory-discipline.",
+    "dir": ".claude/memory",
+    "indexFile": "MEMORY.md",
+    "archiveDir": "_archive",
+    "_capNote": "Maksymalna liczba AKTYWNYCH wpisów (bez indeksu, README, _archive). Powyżej → linter wymusza sweep konsolidacji. Dobierz do skali projektu (mały: 20, średni: 30, duży z DS: 40).",
+    "cap": 30,
+    "_buildLogNote": "Regex nazw build-logów (efemeryczne notatki z budowy: flow-*, man-*, fp-*). Shipped bez open-items → kandydaci do _archive/. Allowlist = świadome KEEP mylone przez prefiks.",
+    "buildLogPattern": "^(flow-|man-|fp-)",
+    "buildLogAllowlist": []
+  },
+  "claudeMd": {
+    "_note": "Koszt always-on pliku instrukcji. Reguły cross-project → globalny ~/.claude/CLAUDE.md; reguły projektu → tu.",
+    "path": "CLAUDE.md",
+    "_maxLinesNote": "Próg linii CLAUDE.md (always-on koszt kontekstu). Dobierz jako uzasadniony baseline dla złożoności projektu — NIE tnij treści na siłę, podnieś próg świadomie gdy złożoność rośnie. Powyżej → skróć/przenieś do docs on-demand (skrót + wskaźnik). Domyślnie 250 dla lekkiego projektu.",
+    "maxLines": 250,
+    "_designMarkerNote": "OPCJONALNE (usuń klucz jeśli projekt nie ma design systemu). Baseline markerów design-detalu (node-IDs NNNN:NNNN + hex #RRGGBB + surowe NNpx) w CLAUDE.md. Alarm gdy suma ROŚNIE ponad baseline = nowy design-detal wpełzł do always-on zamiast do registry/canonical-patterns. Zamroź stan przy setupie; gdy świadomie dodasz przekrojową gotchę z liczbą → podnieś baseline w tym samym commicie.",
+    "designMarkerBaseline": 0
+  },
+  "modelPolicy": {
+    "_note": "OPCJONALNE (usuń cały blok jeśli projekt nie używa Figma). Higiena reguły 'Dobór modelu i effort' (globalny CLAUDE.md). Warstwa 1 liczy delegacje do subagentów (rozbicie modeli) vs sesje z mechaniczną robotą Figma w oknie windowDays, ze transcriptów ~/.claude/projects/<slug>. Proxy heurystyczny: ⚠️ tylko gdy mech-sesji >= minMechSessionsToExpectDelegation, a delegacji zero.",
+    "windowDays": 3,
+    "minMechSessionsToExpectDelegation": 2
+  },
+  "auditLogDir": "docs/audits",
+  "_judgementAuditNote": "Co ile dni chodzi audyt osądu (warstwa 2, scheduled agent). 3 = aktywny projekt; 7 = wolniejszy.",
+  "judgementAuditEveryDays": 3
+}

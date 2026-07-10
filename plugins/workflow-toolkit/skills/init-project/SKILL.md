@@ -1,6 +1,6 @@
 ---
 name: init-project
-description: Bootstrap nowego projektu — kopiuje template startowy, generuje CLAUDE.md per-projekt, inicjalizuje memory, rejestruje weekly audit. Uruchamia się gdy użytkownik mówi "zainicjalizuj projekt", "ustaw Claude dla tego projektu", "nowy projekt".
+description: Bootstrap nowego projektu — kopiuje template startowy, generuje CLAUDE.md per-projekt, inicjalizuje memory, zakłada audyt higieny (skill project-audit). Uruchamia się gdy użytkownik mówi "zainicjalizuj projekt", "ustaw Claude dla tego projektu", "nowy projekt".
 ---
 
 # Skill: init-project
@@ -8,7 +8,7 @@ description: Bootstrap nowego projektu — kopiuje template startowy, generuje C
 ## Cel
 Zaprogramować nowy projekt tak, żeby od razu działał z pełnym ekosystemem Piotra:
 globalne CLAUDE.md dziedziczy automatycznie, project CLAUDE.md dostaje odpowiedni
-preset, memory inicjalizowana, weekly audit zarejestrowany w /schedule.
+preset, memory inicjalizowana, audyt higieny założony (config + cron na skill `project-audit`).
 
 ## Auto-trigger
 Uruchamia się gdy użytkownik mówi (w katalogu nowego projektu):
@@ -56,7 +56,7 @@ Sprawdź obecny katalog:
 - Figma file — chcę podłączyć URL
 - Design system — scaffold docs/design-system/ z 4-warstwową hierarchią
 - Read-only text rule — nie dotykać copy marketingowego (hook ochronny)
-- Weekly audit — automatyczny raport co poniedziałek
+- Audyt higieny — linter warstwy 1 (auto na starcie sesji) + scheduled audyt osądu co ~3 dni (skill `project-audit`)
 - Memory — załóż `.claude/memory/` w repo + symlink (git-trwałe; patrz `memory-discipline`)
 
 **Pytanie 3: Stack techniczny (tylko jeśli Pytanie 1 = "Inne")**
@@ -106,11 +106,30 @@ Na podstawie odpowiedzi:
    - `project_context.md` zostaw z placeholderami (`{{...}}`) do wypełnienia w pierwszej sesji.
    - `.claude/memory/` jest wersjonowane w repo → przeżywa migrację (commit = backup).
 
-### Krok 4 — Weekly audit registration
+### Krok 4 — Audyt higieny (skill `project-audit`)
 
-Jeśli użytkownik wybrał weekly audit:
-- Wywołaj `/schedule` skill
-- Argument: `"co poniedziałek 10:00: uruchom weekly-audit dla projektu <nazwa-katalogu>"`
+Jeśli użytkownik wybrał audyt higieny — **NIE ma skilla `weekly-audit`** (to było widmo).
+Faktyczny setup to 2 rzeczy (patrz skill `project-audit` → sekcja „Setup nowego projektu"):
+
+1. **Config per-projekt** — skopiuj szablon progów i wypełnij nazwę projektu:
+   ```bash
+   TOOLKIT=$(ls -d ~/.claude/plugins/cache/*/workflow-toolkit/* 2>/dev/null | sort -V | tail -1)
+   mkdir -p .claude
+   cp "$TOOLKIT/skills/project-audit/audit-invariants.template.json" .claude/audit-invariants.json
+   # wypełnij "project" (nazwa katalogu) — sed lub ręcznie; dostrój progi do skali projektu
+   ```
+   Dobierz progi wg `_note` w każdym kluczu. Usuń bloki `modelPolicy` /
+   `claudeMd.designMarkerBaseline` jeśli projekt nie używa Figma / nie ma design systemu.
+   **Warstwa 1 (linter) aktywuje się sama** — global SessionStart hook w `~/.claude/settings.json`
+   odpala linter warunkowo od obecności tego configu, więc per-projekt nie ruszasz hooka.
+   (Jeśli global hook nie istnieje na tej maszynie → `bootstrap-machine`.)
+
+2. **Cron audytu osądu (warstwa 2)** — zarejestruj przez skill `schedule`. Prompt agenta:
+   weź `judgement-audit-agent.md` ze skilla `project-audit` i wypełnij placeholdery
+   (`{{PROJECT_NAME}}`, `{{REPO_PATH}}` = `pwd`, `{{TOOLKIT_PATH}}` = repo piotr-toolkit,
+   `{{EVERY_DAYS}}` = `judgementAuditEveryDays` z configu). Nazwa taska:
+   `hygiene-audit-<nazwa-katalogu>`. Częstotliwość: co `judgementAuditEveryDays` dni
+   (domyślnie 3). Raportuje do `docs/audits/`, propose-first, dostarcza tylko do repo.
 
 ### Krok 5 — Raport końcowy
 
@@ -119,7 +138,8 @@ Pokaż użytkownikowi:
 ✓ CLAUDE.md utworzony (typ: frontend prototype)
 ✓ .claude/ settings.json skopiowany
 ✓ Memory zainicjalizowana w .claude/memory/ (w repo) + symlink
-✓ Weekly audit zarejestrowany (poniedziałek 10:00)
+✓ Audyt higieny: .claude/audit-invariants.json założony (linter warstwy 1 auto na starcie sesji)
+✓ Cron audytu osądu zarejestrowany (hygiene-audit-<projekt>, co 3 dni → docs/audits/)
 
 Zalecane następne kroki:
 1. Jeśli istnieje Figma file — powiedz mi URL żebym go zapamiętał

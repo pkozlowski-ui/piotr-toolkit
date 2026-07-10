@@ -98,3 +98,13 @@ Po wszystkim: **restart sesji** (skille i pamięć ładują się na starcie). Za
 - Uzupełnić stub `~/Documents/claude-memory/CLAUDE.global.md` (globalne zasady przepadają przy migracji — to świadomy stub).
 - Ustawić `FIGMA_CLI_PATH` w `~/.zshrc` jeśli używasz figma-cli.
 - Zarejestrować MCP figma-console wg jego README (krok 5).
+- **Global SessionStart hook higieny** (dla skilla `project-audit`, warstwa 1) — jeśli brak w
+  `~/.claude/settings.json`, dodaj (idempotentnie, wymaga `jq`):
+  ```bash
+  TOOLKIT=~/Documents/piotr-toolkit
+  CMD="test -f .claude/audit-invariants.json && node $TOOLKIT/plugins/workflow-toolkit/scripts/hygiene-audit.mjs --hook 2>/dev/null || true"
+  grep -q "hygiene-audit.mjs" ~/.claude/settings.json 2>/dev/null || \
+    echo "Dodaj SessionStart hook do ~/.claude/settings.json: $CMD (statusMessage: 'hygiene audit', timeout 10)"
+  ```
+  Hook jest warunkowy od obecności `.claude/audit-invariants.json` → każdy projekt z configiem
+  dostaje linter za darmo, żaden bez configu nie płaci. Szczegóły: skill `project-audit`.

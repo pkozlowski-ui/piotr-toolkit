@@ -1,7 +1,7 @@
 {
   "name": "workflow-toolkit",
-  "version": "1.11.0",
-  "description": "Universal Claude Code workflow skills + reliability enforcement: anti-bloat guard on instruction files, per-turn hard-rule re-injection, independent verifier subagent, plus project bootstrap, machine bootstrap, session retro, design system lookup, browser verification, pre-deploy verification, coding principles, second-opinion advisor, handoff, memory discipline, web research, Linear ticket drafts. Works across any project type.",
+  "version": "1.12.0",
+  "description": "Universal Claude Code workflow skills + reliability enforcement: anti-bloat guard on instruction files, per-turn hard-rule re-injection, independent verifier subagent, plus project bootstrap, machine bootstrap, project hygiene audit (2-layer: deterministic linter + judgement agent), session retro, design system lookup, browser verification, pre-deploy verification, coding principles, second-opinion advisor, handoff, memory discipline, web research, Linear ticket drafts. Works across any project type.",
   "author": {
     "name": "pkozlowski-ui",
     "email": "piotr.kozlowski@sunscrapers.com",
@@ -9,5 +9,5 @@
   },
   "repository": "https://github.com/pkozlowski-ui/piotr-toolkit",
   "license": "MIT",
-  "keywords": ["workflow", "bootstrap", "bootstrap-machine", "memory", "memory-discipline", "session-retro", "design-system", "verification", "pre-deploy-vercel", "coding-principles", "second-opinion", "advisor", "review", "handoff", "web-research", "research", "linear", "linear-ticket-draft", "ticket", "hooks", "enforcement", "anti-bloat", "verifier", "reliability", "guardrails"]
+  "keywords": ["workflow", "bootstrap", "bootstrap-machine", "project-audit", "hygiene-audit", "audit", "memory", "memory-discipline", "session-retro", "design-system", "verification", "pre-deploy-vercel", "coding-principles", "second-opinion", "advisor", "review", "handoff", "web-research", "research", "linear", "linear-ticket-draft", "ticket", "hooks", "enforcement", "anti-bloat", "verifier", "reliability", "guardrails"]
 }
