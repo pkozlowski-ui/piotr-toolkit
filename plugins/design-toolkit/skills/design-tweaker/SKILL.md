@@ -144,7 +144,7 @@ Rules for the plan: order matters (system/token fixes before visual); structural
 ## Execution routing (you audit; others build)
 
 - **impeccable** → refine execution (`/impeccable typeset|colorize|layout|bolder|quieter|distill|harden|polish`). External: https://github.com/pbakaus/impeccable. Note: its CLI detectors scan **code/URL/HTML** — they don't run on Figma; for design files use its skill-critique only.
-- **taste-skill** → build new UI from scratch with strong aesthetic opinion. External: https://github.com/leonxlnx/taste-skill
+- **taste-skill** → build new UI from scratch with strong aesthetic opinion. **Best for web / landing / marketing; weak on condensed UI (dashboards, dense apps).** For dashboards/apps → `frontend-design` or a DS-driven build instead. External: https://github.com/leonxlnx/taste-skill
 - **frontend-design** → greenfield, no constraints (Anthropic plugin).
 - **mobile-audit** (this toolkit) → deep multi-viewport mobile review.
 - **browser-verify** (workflow-toolkit) → quick smoke-check after a UI change.
