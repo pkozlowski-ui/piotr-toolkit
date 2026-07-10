@@ -98,6 +98,8 @@ Na podstawie odpowiedzi:
    ```bash
    mkdir -p .claude/memory
    cp "$TEMPLATE_DIR/memory-bootstrap/." .claude/memory/ 2>/dev/null || cp -r "$TEMPLATE_DIR/memory-bootstrap/"* .claude/memory/
+   # _archive/ od startu — inaczej pierwszy audyt higieny rzuca ⚠️ "brak _archive"
+   mkdir -p .claude/memory/_archive && touch .claude/memory/_archive/.gitkeep
    # symlink: natywny katalog Claude Code → .claude/memory/ w repo
    DASHED=$(pwd | sed 's#/#-#g; s# #-#g')
    LINK="$HOME/.claude/projects/$DASHED/memory"
