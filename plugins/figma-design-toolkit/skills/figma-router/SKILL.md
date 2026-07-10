@@ -1,70 +1,60 @@
 ---
 name: figma-router
 description: >
-  Entry point for all Figma and design work. Load for any request involving Figma files,
-  FigJam boards, design systems, accessibility specs, component audits, or UI design.
-  Routes to the right skill automatically — no manual skill selection needed.
+  Tablica routingu domen Figma — referencja "które zadanie → który skill" + hand-off do
+  oficjalnego pluginu Figma i reguły doboru kanału zapisu. Load gdy nie wiesz, którym skillem
+  zrobić zadanie figmowe, albo przy pracy cloud/headless (bez Figma Desktop). UWAGA: to
+  referencja, nie gate — egzekucję triggerów robią twarde kanały (hook route-skills,
+  reguły per-projekt), nie ten opis.
 ---
 
-# figma-router
+# figma-router — tablica routingu (referencja)
 
-Detect the **execution environment**, then the **domain** → load the matching skill → follow its
-instructions entirely. Do not act before routing is complete.
+> Audyt użycia 2026-07: router jako "entry point ładowany przed każdą pracą figmową" nie
+> działał (1 wywołanie / 6 tyg. przy 97 sesjach figma-console) — i nie musi: środowisko jest
+> stałe (Desktop Bridge), a wejścia w metodologię egzekwują hook `route-skills.sh`
+> (workflow-toolkit) i reguły per-projekt. Ten plik zostaje jako mapa domen + wiedza
+> o kanałach zapisu i ścieżce cloud.
 
-## Step 0 — execution environment (decide before the domain)
+## Routing domen
 
-| Environment | Signals | Consequence |
+| Domena | Sygnały | Skill |
 |---|---|---|
-| **Desktop Bridge available** (default) | macOS, Figma Desktop open, local file in play, `figma_*` tools present | Local path — `figma-cli` / `figma-console` are in play (fast, cheap). |
-| **Cloud / headless** | no Figma Desktop, phone, Claude Code on the web (`code.claude.com`), cloud container / restricted env, "nie mam otwartej Figmy" | **`figma-cli` and `figma-console` are unavailable.** Writes go only through the official remote MCP → load **`figma-cloud`** for the mechanics. |
+| **Design / ekrany** | nowy ekran/layout, komponent, variables, auto layout, "zbuduj ekran" | `figma-design-workflow` |
+| **FigJam / diagramy** | diagram, flow, flowchart, board URL (`figma.com/board/…`) | `figjam-diagrams` |
+| **Accessibility** | WCAG, ARIA, kontrast, a11y, focus order | `figma-accessibility` |
+| **DS audit / naprawa** | drift, hardcoded colors, "podepnij do DS", token audit, detached | `figma-ds-tools` |
+| **DS scaffold / init** | "załóż design system", registry/build-kit | `figma-ds-init` |
+| **Prototyp** | prototype mode, połącz ekrany, tranzycje, overlay | `figma-prototype` |
+| **Cloud / headless** | brak Figma Desktop, telefon, web/cloud env | `figma-cloud` (mechanika) + skill domenowy (metodologia) |
 
-If unsure which environment you're in, check: are `figma_*` (Desktop Bridge) tools available? If not, you're on the cloud path.
+Cross-domain → skill domeny PRIMARY (on odsyła do secondary). Niejasne → jedno pytanie.
 
-**Bridge dies mid-session = cloud path too.** The cloud row is not only "never had a Desktop" — if the Desktop Bridge **drops mid-session and won't reconnect**, the remote-MCP write path (`use_figma` via `figma-cloud`) is a full fallback. It's atomic and has no 5 s ceiling, so for a large/atomic write it's often the better tool regardless. Don't block a sweep on a Bridge relaunch — switch. Keep the Bridge only for what needs it (`figma_capture_screenshot`, quick iterative inspection, multi-file active-file model). See `figma-console` → "Connection — resilience protocol".
+## Kanał zapisu (rozmiar gate'uje)
 
-## Routing table
+- Małe/iteracyjne edycje, inspekcja, screenshoty, multi-file → `figma-console`
+  (`figma_execute` ma twardy budżet ~5 s — guard bridge'a).
+- **Ciężki/bulk write (≥~50 node'ów albo cokolwiek, co trzeba by chunkować pod 5 s) →
+  `use_figma` przez `figma-cloud`** — atomowy, bez sufitu, odporny na padnięcie Bridge'a.
+- Greenfield JSX-style → `figma-cli`.
+- **Bridge pada mid-session i nie wstaje → nie pętlij reconnectów**: przełącz write na
+  `use_figma` (`figma-cloud`); Bridge zostaw do screenshotów/inspekcji. Szczegóły:
+  `figma-console` → "Connection — resilience protocol".
 
-| Domain | Trigger signals | Action |
-|---|---|---|
-| **Design / screens** | designing UI, new screen/layout, component, variables, token, auto layout, frame, build in Figma, "zaprojektuj", "zbuduj ekran" | Read `figma-design-workflow/SKILL.md` |
-| **FigJam / diagrams** | diagram, flow, FigJam, flowchart, scenariusz, schemat, board URL (`figma.com/board/…`) | Read `figjam-diagrams/SKILL.md` |
-| **Accessibility** | accessibility, dostępność, WCAG, ARIA, screen reader, kontrast, a11y, VoiceOver, TalkBack, focus order | Read `figma-accessibility/SKILL.md` |
-| **DS audit / repair** | drift, audit DS, hardcoded colors, odeszło od DS, podepnij do DS, token audit, detached instances | Read `figma-ds-tools/SKILL.md` |
-| **DS scaffold / init** | "załóż design system", zainicjalizuj DS, ustaw design system, scaffold DS docs, bootstrap figma docs, registry/build-kit | Read `figma-ds-init/SKILL.md` |
-| **Prototype / interakcje** | prototyp, prototype mode, połącz ekrany, tranzycje, overlay, back navigation, interactions | Read `figma-prototype/SKILL.md` |
-| **Cloud / headless** | no Figma Desktop, "z telefonu", "bez appki Figma", Claude Code on the web, cloud/restricted env, remote MCP | Read `figma-cloud/SKILL.md` (mechanics) + the domain skill above for methodology |
+## Hand-off do oficjalnego pluginu Figma (`figma@claude-plugins-official`)
 
-The **Cloud / headless** row is an *environment* override (Step 0), not a separate domain: still pick the domain skill for methodology (usually `figma-design-workflow`), but execute through `figma-cloud` instead of `figma-cli`/`figma-console`.
-
-## Hand-off to the official Figma plugin (`figma@claude-plugins-official`)
-
-That plugin owns the **code↔design direction** and the low-level write contract. Don't reimplement these here — route OUT to it:
-
-| Request | Route to |
+| Zadanie | Dokąd |
 |---|---|
-| "implement/build this Figma as code", design→code, pixel-perfect codegen | official plugin — `implement-design` steering |
-| Code Connect — map/connect/link a Figma component to code | official `/figma-code-connect` |
-| "create/generate design-system rules for my project" (code-side rules) | official `create_design_system_rules` |
-| canonical `use_figma` / `create_new_file` / `generate_*` write rules | official `/figma-use` & siblings (loaded by `figma-cloud` / execution skills) |
+| design→code, "zbuduj ten design jako kod" | oficjalny plugin — `implement-design` |
+| Code Connect (mapowanie komponentów na kod) | oficjalny `/figma-code-connect` |
+| reguły DS po stronie kodu | oficjalny `create_design_system_rules` |
+| kanoniczne zasady `use_figma` / `create_new_file` | oficjalny `/figma-use` (ładowane przez `figma-cloud`) |
 
-This toolkit owns the inverse + the opinionated layer: **building/editing inside Figma** (figma-cli/figma-console/figma-cloud), DS audit/repair, prototype wiring, rich FigJam, a11y specs, and the house rules (INSTANT transitions, token discipline, ask-loudly). The official plugin is the engine; this toolkit is the orchestration on top. See `OVERVIEW.md` → "Relationship to the official Figma plugin".
+Ten toolkit = budowanie/edycja WEWNĄTRZ Figmy + house rules (INSTANT transitions, dyscyplina
+tokenów, ask-loudly). Oficjalny plugin = silnik; toolkit = orkiestracja. Patrz `OVERVIEW.md`.
 
-## Rules
+## Extension pattern (anti-bloat — default: NIE dodawaj skilla)
 
-1. **Route first, act second** — read the matched skill before touching Figma
-2. **Load exactly one skill** per request — do not combine skills simultaneously
-3. **Cross-domain request** (e.g. "build accessible screen") → route to PRIMARY domain; that skill references the secondary where needed
-4. **Ambiguous request** → ask one clarifying question before routing
-5. **Cheapest tool wins, but size gates the write channel** — for Plugin API work, prefer figma-cli (greenfield) or the official Figma MCP (read/codegen/generation) over `figma_execute` where they fit; `figma_execute` is timeout-prone (hardcoded ~5 s budget — a *bridge* guard, not a Figma limit). **For a heavy/bulk write (≥~50 nodes, or one you'd have to chunk to fit 5 s), skip `figma_execute` and run it through `use_figma` (`figma-cloud`)** — no ceiling, atomic, immune to the mid-session Bridge drop. `figma-console` stays for small/iterative edits, inspection, screenshots, multi-file. The matched skill's performance budget is mandatory — see `figma-console`.
-6. **Environment gates the tools** — on the **cloud path** (Step 0), `figma-cli` and `figma-console` do not exist; the only write path is the official remote MCP via `figma-cloud`. Don't try to reconnect a Desktop Bridge that isn't there — load `figma-cloud`. Same move when a Bridge that *was* there **dies mid-session and won't reconnect**: don't loop reconnects or block on a relaunch — fall over to `use_figma` (`figma-cloud`) for the write.
-
-## Extension pattern (anti-bloat — default is DON'T add a skill)
-
-Before adding a skill, ask: **is this a genuinely new DOMAIN, or a section of an existing skill?**
-A cross-cutting concern (a gate, a checklist, a rule that fires *inside* another workflow) is **not** a
-domain — fold it into the relevant skill as a section. A standalone skill for it becomes an off-router
-orphan (no routing row, awkward trigger) — exactly the bloat to avoid. Prefer extending.
-
-Only when it's a true new domain (own trigger signals, own routing row) add a skill = 2 steps:
-1. Create `skills/<new-skill-name>/SKILL.md`
-2. Add one row to the routing table above (a skill with no routing row = a smell — fix or fold it)
+Nowy skill tylko dla prawdziwie nowej DOMENY (własne sygnały + własny wiersz w tabeli).
+Cross-cutting concern (gate, checklista, reguła działająca wewnątrz innego workflow) → sekcja
+istniejącego skilla, nie nowy skill. Skill bez wiersza w tabeli = smell — napraw albo scal.

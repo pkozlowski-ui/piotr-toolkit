@@ -1,64 +1,43 @@
 ---
 name: browser-verify
-description: Visual UI verification in browser (desktop + mobile) before marking a task done. Auto-triggers after any UI change.
+description: Gate weryfikacji UI w przeglądarce przed deklaracją "done/naprawione" — desktop + mobile + konsola + werdykt, przez natywne narzędzia Claude_Preview (zero-setup). Load przy zmianach UI we frontendzie zanim ogłosisz rezultat; także na frazy "zweryfikuj w przeglądarce", "sprawdź jak wygląda", "browser verify".
 ---
 
 # Skill: browser-verify
 
-## Auto-trigger
-After any UI change. Exception: logic/data-only changes with no visual impact.
+## Rola
+**Gate, nie mechanizm.** Weryfikacja i tak dzieje się oportunistycznie (audyt użycia 2026-07:
+model sam sięga po screenshot/eval przed „gotowe") — ten skill dokłada to, czego praktyka
+ad hoc NIE gwarantuje: **parę desktop+mobile, check konsoli i explicit werdykt** przed deklaracją.
 
-**Scope (vs `mobile-audit`):** browser-verify to **szybki smoke-check** przed „done" (desktop + mobile screenshot, błędy w konsoli). Pełny, wieloviewportowy audyt mobile z raportem → `mobile-audit` (design-toolkit).
+**Scope (vs `mobile-audit`):** browser-verify = szybki smoke-check przed „done". Pełny,
+wieloviewportowy audyt mobile z raportem → `mobile-audit` (design-toolkit).
 
-## Protocol
+## Protokół (narzędzia `mcp__Claude_Preview__*` — zero-setup, bez instalacji)
 
-### 0 — Pre-flight (Playwright)
-Sprawdź czy Playwright jest dostępny: `npx playwright --version` (lub `@playwright/test` w devDeps). Jeśli nie —
-powiedz to **od razu** i zaproponuj instalację, albo poproś o ręczne screenshoty (bez tego kroki 2–3 nie zadziałają):
-```bash
-npm install -D @playwright/test && npx playwright install chromium
-```
+1. **Serwer** — `preview_start` (czyta `.claude/launch.json`; brak configu → utwórz wg
+   schematu z opisu narzędzia). Reużywa działający serwer. NIE odpalaj dev-serwera przez
+   Bash, NIE zakładaj portu 3000 — port pochodzi z launch.json / outputu serwera.
+2. **Desktop** — `preview_resize` preset `desktop` → `preview_screenshot`.
+3. **Mobile** — `preview_resize` preset `mobile` → `preview_screenshot`. (Dark mode w grze →
+   dodatkowo `colorScheme: "dark"`.)
+4. **Konsola** — `preview_console_logs` z `level: "error"` — musi być czysto (nowe błędy = Issue).
+5. **Właściwości, nie piksele** — kolory/tokeny/spacing weryfikuj przez `preview_inspect` /
+   `preview_eval` (computed styles), NIE z rzutu oka na screenshot (globalna reguła:
+   „nie diagnozuj z rzutu oka" — screenshot to layout, inspect to prawda o wartościach).
+6. **Werdykt (explicit, zawsze):**
+   - **OK** → dopiero teraz „done"; pokaż screenshoty userowi,
+   - **Issue** → napraw, wróć do kroku 2,
+   - **Niejasne** → zapytaj usera, zanim zmienisz cokolwiek.
 
-### 1 — Dev server + resolve the URL
+## Check treści
+Przy sprawdzaniu layoutu zweryfikuj też:
+- elementy nachodzące / złamany grid/flex,
+- niespójne spacingi, regresje kolorów/tokenów (krok 5, nie screenshot),
+- tekst bez zmian, jeśli projekt ma regułę READ-ONLY TEXT.
 
-**Never assume port 3000.** Resolve the real port/URL in this order:
-
-1. **`.claude/launch.json`** (if present) — declares dev command + port per app. Source of truth in monorepos.
-2. **`package.json` → `scripts.dev`** — parse an explicit `-p`/`--port` flag if present.
-3. **Framework default** only as last resort: Next.js/React `3000`, Vite `5173`.
-
-Monorepo (npm workspaces): start the right app, e.g. `npm run dev --workspace=<app-name>` — different apps run on different ports (don't collide them).
-
-Check if already running first. Start if needed, then **capture the actual URL the server prints** (`Local: http://localhost:<port>`) — that printed value, not the assumed default, is ground truth:
-
-```bash
-BASE="http://localhost:<resolved-port>"   # from server output / launch.json
-PAGE="/"                                   # path of the changed page
-URL="$BASE$PAGE"
-```
-
-Wait for "Ready" / "Local:" before continuing.
-
-### 2 — Screenshots
-
-```bash
-# Desktop (1440px)
-npx playwright screenshot --viewport-size=1440,900 "$URL" /tmp/desktop.png
-# Mobile (375px)
-npx playwright screenshot --viewport-size=375,812 "$URL" /tmp/mobile.png
-```
-
-`$URL` already points at the resolved port + changed page (step 1).
-
-### 3 — Visual check
-Review both screenshots for:
-- overlapping elements
-- broken grid/flex layout
-- spacing inconsistencies
-- color/token regressions
-- text unchanged (if project has READ-ONLY TEXT rule)
-
-### 4 — Decision
-- **OK** → mark task done, show screenshots to user
-- **Issue found** → fix, repeat from step 2
-- **Unclear** → ask user before making changes
+## Fallbacki (tylko gdy `Claude_Preview` niedostępne)
+1. `claude-in-chrome` / `Control_Chrome` (jeśli podłączone) — nawigacja + screenshot.
+2. Playwright CLI (`npx playwright screenshot --viewport-size=1440,900 / 375,812`) — wymaga
+   instalacji (`npm i -D @playwright/test && npx playwright install chromium`); to ostatnia
+   deska, nie default (audyt: ten kanał miał 0 użyć, bo przegrywa z natywnym).
