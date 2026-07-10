@@ -44,7 +44,24 @@ w katalogu tego skilla obok — konwencja `evals/`), NIGDY automatyczne przepisy
   w `skills/<skill>/evals/` wg `evals-convention.md`. Zmiany w skillach tylko przez
   validation-gate.
 
-## Skrypty
+## Pętla ulepszania (kadencja i domknięcie cyklu)
+
+Audyt nie jest jednorazowy — działa w pętli **zmierz → porównaj → utwardź/wycofaj → zmierz**:
+
+1. **Kadencja: co ~2 tygodnie** (rytuał — karta na kanbanie, nie automat; rytuał usera to
+   empirycznie najskuteczniejszy kanał egzekucji). Minimum 2 tyg. świeżych transkryptów po
+   zmianach — wcześniejszy pomiar to szum, nie sygnał.
+2. **Przebieg porównawczy:** odpal warstwy 1–2 (deterministyczne, ~darmowe) i porównaj wyniki
+   z **tabelą baseline'ów z poprzedniego raportu** (`AUDIT-USAGE.local.md`). Warstwy 3–4
+   (subagenty) tylko dla metryk, które się nie poprawiły, i nowych anomalii.
+3. **Rozstrzygnięcia per hipoteza:**
+   - poprawa vs baseline → fix trzyma; eval zostaje jako regresyjny strażnik,
+   - brak zmiany / regres → hipoteza wraca do puli; następny fix **innym kanałem**
+     (wyżej w hierarchii egzekucji), nie mocniejszym sformułowaniem tego samego,
+   - nowa wpadka → nowy task w `evals/` + wiersz w tabeli baseline'ów.
+4. **Zaktualizuj raport** (nowe baseline'y = punkt odniesienia następnego przebiegu).
+5. **Saturacja = sygnał zdrowia:** gdy 2 kolejne przebiegi nie wnoszą nowych findingów,
+   wydłuż kadencję (miesiąc+). Nie generuj sztucznych hipotez, żeby pętla „miała co robić".
 
 - `scripts/adoption_scan.sh [SINCE=YYYY-MM-DD]` — env: `CLAUDE_PROJECTS` (default
   `~/.claude/projects`), `TOOLKIT_ROOT` (default `~/Documents/piotr-toolkit`).
