@@ -37,6 +37,11 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 ## Protokół — 5 faz
 
 ```
+0. RESUME    sprawdź, czy projekt ma rejestr sweepu ze `status: active` (przerwana runda).
+             Jest → WZNÓW go: dokończ fazy od miejsca przerwania i domknij (CLOSE), zamiast
+             otwierać nowy dated rejestr. Nowy rejestr tylko gdy brak aktywnego albo user
+             explicit każe zacząć od nowa. (Audyt użycia 2026-07: 2 rejestry „round 2"
+             wisiały jako active >2 tyg., kolejne sweepy otwierały nowe obok.)
 1. CAPTURE   INKREMENTALNIE — pobieraj tylko to, co nowe od ostatniego sweepu:
              a) ustal WATERMARK = `last-swept` z frontmatter poprzedniego rejestru
                 (fallback: jego `updated`/`collected`). Zbierz też set zalogowanych thread-id.
@@ -145,6 +150,10 @@ To wewnętrzny widok feedback-pipeline'u, odrębny od jakiejkolwiek tablicy zada
 W `reference/templates.md`: wiersz triage, blok detalu, Decision Ask. Użyj ich zamiast wymyślać format.
 
 ## Gotchas
+- **Cytat „verbatim" WYŁĄCZNIE z żywego fetcha** — nigdy z pamięci poprzedniego przebiegu, kontekstu
+  po kompakcie ani z wcześniejszego rejestru. Przy wznowieniu rejestru re-fetchnij komentarze
+  (`figma_get_comments`) ZANIM cokolwiek zacytujesz; każdy cytat musi mieć 1:1 odpowiednik w surowych
+  danych. (Audyt użycia 2026-07: potwierdzona konfabulacja „verbatim" cytatów w rejestrze z 06-29.)
 - **`obsidian_search_notes` (text) fuzzy-matchuje tokeny** — szukanie `"Flow 9b"` zwraca trafienia samego
   `"Flow"` i zawyżony licznik. Do precyzji: `obsidian_get_note` z `format:document-map` (nagłówki) /
   `format:section` (treść), podstawienia przez `obsidian_replace_in_note` na pełnych, unikalnych stringach.

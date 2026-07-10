@@ -1,5 +1,5 @@
 {
-  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse) + re-injection twardych reguł co turę (UserPromptSubmit). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji.",
+  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse) + re-injection twardych reguł co turę + deterministyczny routing intent→skill (UserPromptSubmit). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji.",
   "hooks": {
     "PreToolUse": [
       {
@@ -19,6 +19,10 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/reinject-rules.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/route-skills.sh\""
           }
         ]
       }

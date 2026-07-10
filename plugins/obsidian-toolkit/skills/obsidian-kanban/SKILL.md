@@ -79,6 +79,11 @@ Gdy karta trafia/jest w `Done` i jest potwierdzona, zaproponuj rozstrzygnięcie 
 - **Brak folderu archiwum** w configu boardu → zaproponuj jego utworzenie (propose-first), nie improwizuj.
 - **Brak kolumny „Trash"** na boardzie — to relikt; domknięcie idzie do folderu archiwum, nie do kolumny.
 
+**Egzekucja (twarda):** rozstrzygnięcie proponuj **od razu, w tej samej odpowiedzi**, w której karta
+przechodzi na `Done` — konkretna rekomendacja per karta (promuj / archiwizuj + dlaczego), propose-first.
+NIE otwarte „archiwizacja opcjonalna, daj znać jeśli chcesz posprzątać" (audyt użycia 2026-07: miękka
+wersja = 0 promocji przez 6 tygodni, `Done` puchnie).
+
 Cel: `Done` nie puchnie, a żaden zapis nie ginie.
 
 **Promocja `Open items` z feedback-sweepu (opcjonalna, inicjowana z kanbana — NIE automatyczna):** feedback-sweep nie tworzy żadnych kart na tablicy. Jeśli chcesz, możesz **ręcznie** wziąć leftovers z notatki `Open items …` (`type: concept-backlog`) i wypromować je na board operacją F.
@@ -110,6 +115,7 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 - **Archiwizacja przenosi plik — `mv` na filesystemie, nie REST copy+delete** (MCP nie ma move; copy+delete grozi osieroconym duplikatem — patrz sekcja archiwizacji + `obsidian-setup`). `mv` nie aktualizuje `[[backlinków]]` do karty (Obsidian robi to tylko przy move w UI). Karty Done zwykle są liśćmi (nikt do nich nie linkuje) — wtedy OK; jeśli karta jest celem linków, przenieś ją w UI Obsidiana.
 - **Token-safety:** do digestu czytaj frontmatter, nie pełne treści kart.
 - **Bases bywa wrażliwe** — po zmianach strukturalnych w `.base` zweryfikuj render w UI.
+- **Adresowanie notatek w MCP `obsidian_*` — ZAWSZE obiekt `target`**: `{"target":{"type":"path","path":"KANBAN/Karta.md"}}`, nigdy płaskie `{"path":...}` — płaski kształt to gwarantowany `MCP error -32602 Input validation error` i pusty przebieg (audyt użycia 2026-07: 0/8 operacji udanych za 1. podejściem przez ten błąd, rekord 5 nieudanych `write_note` z rzędu). Dotyczy `get_note`/`write_note`/`patch_note`/`append_to_note`/`replace_in_note`.
 - **`manage_frontmatter set` na stringu potrafi zapisać nadmiarowe cudzysłowy** (`status: '"To confirm"'` zamiast `status: To confirm`) → wartość nie matchuje słownika kolumny, karta wypada z grupy. Po secie zweryfikuj (`get_note format:section` na froncie) i popraw `obsidian_replace_in_note` na czysty `status: <kolumna>` (bez cudzysłowów, jak reszta kart).
 
 ## Raport
