@@ -23,6 +23,16 @@ Zastosuj je tutaj; nie wymyślaj własnego formatu.
 ### 1 — Podsumuj sesję
 2–4 zdania: co zrobiono, co zostało otwarte. Bez lania wody.
 
+### 1b — Sync kanbana (OBOWIĄZKOWY, jeśli sesja dotykała zadań z tablicy)
+Retro bez tego kroku = główna przyczyna kart-sierot na `In progress` (diagnoza 2026-07-14).
+Dla **każdej karty dotkniętej w tej sesji** zaproponuj rozstrzygnięcie wg semantyki kolumn
+(skill `obsidian-kanban`):
+- zrobione → `Done` (od razu z rekomendacją promote/archive),
+- nasza część gotowa, czeka na kogoś/feedback → `To confirm`,
+- niedokończone → `In progress` zostaje TYLKO gdy praca realnie wraca; inaczej **góra `To-do`**.
+Zdejmij `claimed` z każdej domykanej karty. Na końcu zaproponuj następne zadanie z tablicy
+(sekcja „Autonomia" w `obsidian-kanban`). User akceptuje całość w ramach retro — pokaż listę zmian, wykonaj po OK.
+
 ### 2 — Wyłap kandydatów do zapamiętania
 Przejrzyj sesję pod kątem wiedzy, która przepadnie jeśli jej nie zapiszesz: nowe konwencje,
 gotchy, decyzje „dlaczego tak", preferencje usera, nieoczywiste ścieżki/URL-e. Pomiń to, co repo

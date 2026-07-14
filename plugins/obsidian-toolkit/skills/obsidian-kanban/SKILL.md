@@ -16,8 +16,11 @@ podlinkować artefakty i **promować itemy z backlogu** (np. otwarte itemy z fee
 - "ztriażuj lab" / "zrób porządek na tablicy" / "ogarnij inbox"
 - "wrzuć te itemy na kanban" / promocja z backlogu/feedbacku
 
-## Wymagania
-- **MCP `obsidian`** (`mcp__obsidian__*`) do treści + **dostęp do plików vaultu** (`mv`/`bash` na lokalnej ścieżce) do przenoszenia kart. Brak `mcp__obsidian__*` → najpierw skill `obsidian-setup`.
+## Wymagania i kanał zapisu (TWARDY)
+- Karty to **zwykłe pliki markdown** — kanon zapisu to **bezpośrednia edycja pliku na ścieżce vaultu** (Read/Edit/`mv`), nie REST API. Powód: udokumentowana historia korupcji frontmattera przez Local REST API/MCP (quoted-string bug → `status: '"Done"'`, kolumny-duchy w `.base`; research 2026-07-14) + zero kosztu tokenowego roundtripów.
+- **MCP `obsidian`** (`mcp__obsidian__*`) zostaje jako kanał pomocniczy: search, `open_in_ui`, odczyt gdy wygodny. **Frontmattera (w tym `status`) NIGDY nie pisz przez `manage_frontmatter`.**
+- Brak dostępu do plików vaultu → najpierw skill `obsidian-setup`.
+- **`.base` edytuj tylko przy zamkniętym Obsidianie** — Bases trzyma stan widoku w pamięci i nadpisuje plik (edycja przy otwartej appce = po chwili cofnięta).
 - **Tablica = plik `.base`** z `kanban-view`. Skill **odkrywa strukturę z `.base`** — nie zakłada wcześniej kolumn. Brak `.base` w projekcie → nie zgaduj; powiedz userowi i zaproponuj utworzenie boardu (propose-first).
 
 ## Krok 0 — odczytaj board z `.base` (NIE hardcoduj kolumn)
@@ -37,6 +40,20 @@ Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki
 - **To confirm** — **coś wisi na kimś / spodziewamy się lub chcemy follow-up**: nasza część gotowa, czekamy na czyjąś decyzję/odpowiedź, feedback zespołu, wysłane pytanie lub zewnętrzną blokadę. Rozróżnienie: **`In progress` = aktywnie robimy** · **`To confirm` = zrobione co po naszej stronie, czekamy na potwierdzenie/odpowiedź z zewnątrz.** Ustawiaj **odruchowo** przy domykaniu rundy, gdy zostaje open item na kimś (nie zostawiaj takiej karty na `In progress`). Dwa wyjścia: potwierdzenie/feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`.
 - **Done** — zrobione i **warte pamięci dla zespołu**. To kandydat do **promocji do vaultu** (`obsidian-capture`). Po domknięciu kartę **archiwizuj** (przenieś do folderu archiwum boardu) — **nie kasuj**: zachowujemy zapis tego, co zrobione.
 
+## Współbieżność — protokół claim (TWARDY; sesje bywają równoległe)
+Równolegle chodzi 2–4 sesje na jednej tablicy — digest boardu w kontekście sesji jest natychmiast przeterminowany.
+- **Świeży odczyt przed wzięciem:** zanim weźmiesz kartę, przeczytaj jej frontmatter **z dysku, teraz** — nie z digestu/kontekstu sprzed N minut. Karta mogła w międzyczasie dostać status/claim z innej sesji.
+- **Wzięcie karty = claim:** jedną edycją pliku ustaw `status: In progress` **oraz** `claimed: <YYYY-MM-DD HH:MM · krótki opis sesji>`. Dopiero potem pracuj.
+- **Karta z cudzym claimem = nietykalna** — nie bierz jej i nie proponuj jako następnego zadania. Wyjątek: user wprost każe przejąć.
+- **Zdjęcie claima:** przy każdym domknięciu rundy (→ `Done` / `To confirm` / powrót do `To-do`) usuń pole `claimed`. Krok kanbanowy `session-retro` egzekwuje to na koniec sesji.
+- **Stary claim** (>~2 dni) → nie ignoruj i nie przejmuj sam: pokaż userowi i zapytaj, czy tamta sesja jeszcze żyje.
+
+## Autonomia — proponuj następne zadanie (domyślnie, bez proszenia)
+Kanban ma działać bez usera-operatora. **Po każdym domknięciu karty (`Done`/`To confirm`) — w tej samej odpowiedzi — zaproponuj następną:**
+1. Kandydat: najpierw karta `In progress` **bez claima** (wisząca robota), potem **góra `To-do`** (kolejność = priorytet, `high-priority` przed resztą). Pomijaj `blocked` i cudze claimy.
+2. Dobierz kanał: temat pokrewny bieżącej sesji → kontynuacja tutaj; temat odległy → zaproponuj **świeżą sesję** (czysty, tańszy kontekst).
+3. To propozycja (propose-first) — nie zaczynaj nowej karty bez OK usera.
+
 ## Operacje
 
 ### A) Digest stanu (read-only, token-safe)
@@ -44,7 +61,10 @@ Czytaj **tylko frontmatter** kart (status, tags, tytuł) — nie całe treści (
 Zbuduj podsumowanie **per kolumna** w kolejności z `.base`. Wyróżnij:
 - **In progress** (realny WIP) i **To confirm** (kolejka usera — czeka na omówienie/feedback),
 - karty z tagiem `high-priority` oraz **`blocked`** (te ostatnie wypisz osobno — co je blokuje),
-- **Lab** = inbox (policz ile czeka na triage), **Done** = ilu kandydatów do promocji/archiwizacji.
+- **Lab** = inbox (policz ile czeka na triage), **Done** = ilu kandydatów do promocji/archiwizacji,
+- karty z `claimed` — wypisz kto/kiedy (widok WIP między sesjami).
+
+**Lint statusów (obowiązkowa część digestu):** porównaj `status` każdej karty ze słownikiem `columnOrders` z `.base` — dokładny match, case-sensitive, bez cudzysłowów. Wartość spoza słownika → ⚠️ z propozycją poprawki; kolumny-duchy w `cardOrders` (np. `'"Done"'`, `To-Do`) → zaproponuj sprzątnięcie (przy zamkniętym Obsidianie).
 
 ### B) Utwórz kartę (propose-first)
 Nowa notatka w folderze tablicy, frontmatter `status: <kolumna>` (+ opcjonalne `tags`). Tytuł = nazwa pliku.
@@ -75,7 +95,7 @@ Gdy karta trafia/jest w `Done` i jest potwierdzona, zaproponuj rozstrzygnięcie 
 
 **Archiwizacja = przenieś plik karty do folderu archiwum boardu** (per-board config, np. `<folder boardu>/Archive`) — **nigdy nie kasuj do Trash ani nie usuwaj pliku**. Zasada: *archiwizuj, nie kasuj* — nie tracimy zapisu tego, co zrobione (karty Done często mają w treści cenny status realizacji).
 - **Mechanizm:** board filtruje po **dokładnym** folderze (`file.folder == "<folder>"`), więc karta w podfolderze archiwum **automatycznie wypada z tablicy**, a notatka żyje. Status we frontmatter staje się wtedy martwy — ustaw go na `Done` (czytelny ślad), nie zostawiaj `Trash`.
-- **⚠️ Jak przenieść — `mv` na filesystemie, NIE „write nowej ścieżki + delete starej".** MCP `obsidian` **nie ma operacji move/rename**; emulacja przez `write_note(nowa ścieżka)` + `delete_note(stara)` to dwa kroki i ryzyko **osieroconego duplikatu**, gdy destrukcyjny `delete` zostanie anulowany. Zamiast tego: najpierw ustaw `status: Done` przez MCP (`manage_frontmatter`), **potem** `mv "<vault>/<folder>/Karta.md" "<vault>/<folder>/Archive/"` — jeden atomowy ruch (Google Drive/iCloud zsynchronizuje). Mechanika dwóch kanałów: skill `obsidian-setup`.
+- **⚠️ Jak przenieść — `mv` na filesystemie, NIE „write nowej ścieżki + delete starej".** MCP `obsidian` **nie ma operacji move/rename**; emulacja przez `write_note(nowa ścieżka)` + `delete_note(stara)` to dwa kroki i ryzyko **osieroconego duplikatu**, gdy destrukcyjny `delete` zostanie anulowany. Zamiast tego: najpierw ustaw `status: Done` bezpośrednią edycją pliku, **potem** `mv "<vault>/<folder>/Karta.md" "<vault>/<folder>/Archive/"` — jeden atomowy ruch (sync zrobi resztę). Mechanika dwóch kanałów: skill `obsidian-setup`.
 - **Brak folderu archiwum** w configu boardu → zaproponuj jego utworzenie (propose-first), nie improwizuj.
 - **Brak kolumny „Trash"** na boardzie — to relikt; domknięcie idzie do folderu archiwum, nie do kolumny.
 
@@ -97,6 +117,7 @@ To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, 
 ```
 ---
 status: <kolumna ze słownika boardu>
+claimed: <YYYY-MM-DD HH:MM · sesja>   # tylko gdy karta jest w toku w jakiejś sesji; zdejmij przy domknięciu
 tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w cudzysłowach
 ---
 
@@ -116,7 +137,7 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 - **Token-safety:** do digestu czytaj frontmatter, nie pełne treści kart.
 - **Bases bywa wrażliwe** — po zmianach strukturalnych w `.base` zweryfikuj render w UI.
 - **Adresowanie notatek w MCP `obsidian_*` — ZAWSZE obiekt `target`**: `{"target":{"type":"path","path":"KANBAN/Karta.md"}}`, nigdy płaskie `{"path":...}` — płaski kształt to gwarantowany `MCP error -32602 Input validation error` i pusty przebieg (audyt użycia 2026-07: 0/8 operacji udanych za 1. podejściem przez ten błąd, rekord 5 nieudanych `write_note` z rzędu). Dotyczy `get_note`/`write_note`/`patch_note`/`append_to_note`/`replace_in_note`.
-- **`manage_frontmatter set` na stringu potrafi zapisać nadmiarowe cudzysłowy** (`status: '"To confirm"'` zamiast `status: To confirm`) → wartość nie matchuje słownika kolumny, karta wypada z grupy. Po secie zweryfikuj (`get_note format:section` na froncie) i popraw `obsidian_replace_in_note` na czysty `status: <kolumna>` (bez cudzysłowów, jak reszta kart).
+- **Frontmatter (w tym `status`) pisz WYŁĄCZNIE bezpośrednią edycją pliku — NIGDY `manage_frontmatter set`.** Udokumentowany bug REST API zapisuje quoted string (`status: '"To confirm"'`) → wartość nie matchuje słownika, karta wypada z grupy, a Bases utrwala kolumnę-ducha w `.base` (sprzątane 2026-07-14). Kanał zapisu: sekcja „Wymagania".
 
 ## Raport
 Po operacji: co się zmieniło (utworzone/przesunięte karty, ztriażowane wrzutki), nowy rozkład kolumn,
