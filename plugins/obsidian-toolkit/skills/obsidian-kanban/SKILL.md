@@ -127,7 +127,7 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 ## Gotchas
 - **Odkryj kolumny z `.base`** — nie hardcoduj; boardy różnią się słownikiem (Manta: Lab/To-do/In progress/To confirm/Done).
 - **Status = frontmatter, nie nazwa pliku.** Rename do sygnalizacji stanu psuje linki.
-- **Nowy status musi trafić do `columnOrders`** w `.base`, inaczej kolumna nie pojawi się w kolejności.
+- **Słownik statusów jest ZAMKNIĘTY — nie wymyślaj nowych kolumn.** Karta dostaje status wyłącznie ze słownika `columnOrders` w `.base`. „Zrobię później / de facto backlog" = **`To-do`** (kolejność = priorytet), NIE nowy status typu „Backlog" (realny przypadek 2026-07-14: sesja dodała kolumnę `Backlog` samowolnie). Nową kolumnę wolno dodać tylko na wyraźne polecenie usera — wtedy status + wpis do `columnOrders` (inaczej nie pojawi się w kolejności).
 - **Wikilinki w YAML** — `klucz: [[A]], [[B]]` to niepoprawny YAML → notatka traci property → wypada z boardu.
   Zawsze listą: `klucz:\n  - "[[A]]"`.
 - **Karta bez property grupującego** → „Uncategorized". Na create zawsze ustaw status.
