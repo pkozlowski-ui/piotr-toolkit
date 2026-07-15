@@ -80,7 +80,22 @@ Keep Mermaid diagrams **simple by default**. Add detail only if explicitly asked
 
 Use the `use_figma` tool from the Figma MCP server (commonly `mcp__claude_ai_Figma__use_figma` — exact prefix depends on your MCP server registration). Pass `fileKey` extracted from the FigJam URL.
 
-> **Write contract:** if the official Figma plugin is installed, load **`/figma-use-figjam`** (+ `/figma-use`) before these `use_figma` calls — it's the canonical FigJam write contract. The rich helpers, styled-scenario patterns, and constraints below sit *on top* of it.
+> **Write contract — delegate, don't duplicate.** If the official Figma plugin is installed, load
+> **`/figma-use-figjam`** (+ `/figma-use`) before these `use_figma` calls AND pass `figma-use-figjam`
+> in the tool's comma-separated `skillNames` parameter (prefix `resource:` if loaded via MCP). That
+> skill is the canonical, version-tracked FigJam write contract — treat its per-primitive references as
+> source of truth for anything this file doesn't cover:
+> - **Primitives we don't teach here** — labels (`create-label`), code blocks (`create-code-block`),
+>   native stickies + batch stickies (`create-sticky`), tables (`create-table`), standalone text and
+>   in-place text edits (`create-text` / `edit-text`), batched mutations (`batch-modify`).
+> - **Images** — its `upload_assets` guidance is canonical (see MODE C and `references/editing-existing-boards.md §4`).
+> - **General (non-diagram) board composition** — for workshop maps, brainstorm boards, or any board that
+>   isn't a styled flow/scenario, follow its `plan-board-content.md` (spacing grid, typography scale,
+>   colour semantics, wrapper-section). This file's constants are tuned for dense diagram scenarios and
+>   deliberately differ — don't cross-apply them to general boards.
+>
+> The rich helpers, styled-scenario patterns, visual grammar, and editing gotchas below sit *on top* of
+> that contract — they're our diagram doctrine, not a re-implementation of the primitives.
 
 **URL patterns:**
 - FigJam board: `https://www.figma.com/board/FILEKEY/...` → fileKey is `FILEKEY`
@@ -423,8 +438,10 @@ user-uploaded screenshots), the rules differ from greenfield creation. **Read
 - **Re-flow sections from y=0** after any add/remove/resize — layout is by absolute Y, not tree order.
 - **No debugging via logs** — `use_figma` returns nothing; verify with `get_figjam` / `get_screenshot`.
 - **`get_metadata` doesn't work on FigJam** — use `get_figjam` for structure.
-- **Images: placeholder → swap** — the API can't upload rasters; build named placeholder frames, have
-  the user drag PNGs in, then map images onto placeholders by name and delete the placeholders.
+- **Images: use `upload_assets`** — the `upload_assets` tool uploads PNG/JPG/GIF/WebP into a `/board/`
+  file and places them automatically (with `nodeId` → sets the image as a fill on an existing node).
+  This replaces the old "placeholder → user drags PNGs in" dance, which is now only a fallback (see
+  `references/editing-existing-boards.md §4`).
 - **Re-parenting needs coordinate conversion** — after `appendChild`, convert absolute→section-relative
   via `absoluteTransform`.
 - **Remove the stray upload container** left behind by drag-drop once images are placed.

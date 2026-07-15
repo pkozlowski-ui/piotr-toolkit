@@ -1,6 +1,6 @@
 {
   "name": "figma-design-toolkit",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "Figma design workflow skills: component-first methodology, Plugin API via Desktop Bridge, JSX CLI, and headless cloud work via the official remote MCP (no desktop needed). Includes a verification gate built into the design workflow. Works with any Figma design system.",
   "author": {
     "name": "pkozlowski-ui",

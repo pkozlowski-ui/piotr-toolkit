@@ -54,22 +54,31 @@ get_screenshot"). For structure use `get_figjam`; for pixels use `get_screenshot
 
 ---
 
-## 4. Ingesting user-uploaded images: the placeholder → swap pattern
+## 4. Adding raster images: use the `upload_assets` tool
 
-The Plugin API **cannot upload raster images** onto a board, and there is no tool to push a
-binary from Claude's container to Figma. So the reliable flow when the diagram needs real
-screenshots is:
+**Primary path — `upload_assets`.** The `upload_assets` MCP tool uploads PNG/JPG/GIF/WebP into a
+FigJam `/board/` file and handles storage, commit, and canvas placement automatically (max 10MB per
+asset; SVGs are NOT supported — for those use `use_figma` + `figma.createNodeFromSvg()`). Two modes:
+
+- **Onto an existing node** — pass `count: 1` + `nodeId` → the image is set as a fill on that node.
+  This is the clean way to fill a placeholder frame you already positioned: build the frame, then
+  drop the image straight onto it, no manual drag and no coordinate-snapping.
+- **New frames** — omit `nodeId` → each asset lands as a new frame with an image fill on the page.
+  You then reposition/re-parent them (see §5 for the coordinate conversion when moving into a section).
+
+> ⚠ Verified against the tool contract (it explicitly lists `/board/` support), not yet re-confirmed
+> on a live FigJam board in this skill's test history. If a call unexpectedly fails on a board, fall
+> back to the manual pattern below and note it.
+
+**Fallback — placeholder → user drags PNGs in** (use only if `upload_assets` is unavailable or fails):
 
 1. **Build named placeholders** — a `ROUNDED_RECTANGLE` shape-with-text whose *name* matches
-   the intended image filename (e.g. `G1_template_title 1`). Lay them out where the images
-   should go.
+   the intended image filename (e.g. `G1_template_title 1`). Lay them out where the images should go.
 2. **User drags the actual PNGs onto the board** themselves (one bulk drag-drop). They land as
    loose `rounded-rectangle` image fills, usually grouped in a stray auto-created Section far
    off-canvas, named after the files (`… 2`).
-3. **Map images onto placeholders by name** and delete the placeholders (next section).
-
-Tell the user explicitly: "I've placed labelled frames; drag the matching PNGs anywhere on the
-board and I'll snap them into place." Filenames should be designed to match placeholder names.
+3. **Map images onto placeholders by name** and delete the placeholders (§5), then remove the stray
+   upload container (§6).
 
 ---
 
