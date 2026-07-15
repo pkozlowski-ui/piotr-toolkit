@@ -34,6 +34,7 @@ Rule of thumb: code↔design / Code Connect / canonical write rules → **offici
 | `figma-console` | `figma_execute` calls, variants, programmatic variable binding | Plugin API mechanics — script format, error recovery, placement |
 | `figma-cloud` | **No Figma Desktop** — phone, Claude Code on the web, cloud/restricted env | Headless write via the official remote MCP (`mcp.figma.com`) — setup, tool surface, cloud footguns |
 | `figjam-diagrams` | Generating diagrams in FigJam (flows, scenarios, decision trees) | Two modes: Mermaid (`generate_diagram`) and Plugin API (`use_figma`) |
+| `prototype-to-review` | Turning a working **code prototype** into a reviewable Figma file | Orchestration — one frame per interaction state, DS-match-or-primitive, node-attached annotations, capability tiers. Uses `figma-generate-design` as the engine. |
 
 ## Decision: which path?
 
@@ -96,6 +97,9 @@ figma-design-toolkit/
     ├── figma-ds-tools/SKILL.md
     ├── figma-ds-init/SKILL.md
     ├── figma-prototype/SKILL.md
+    ├── prototype-to-review/         # code prototype -> reviewable Figma (frames per state + annotations)
+    │   ├── SKILL.md
+    │   └── evals/001-reguly-review-frames.md
     └── figjam-diagrams/
         ├── SKILL.md
         └── references/

@@ -26,6 +26,7 @@ description: >
 | **DS audit / naprawa** | drift, hardcoded colors, "podepnij do DS", token audit, detached | `figma-ds-tools` |
 | **DS scaffold / init** | "załóż design system", registry/build-kit | `figma-ds-init` |
 | **Prototyp** | prototype mode, połącz ekrany, tranzycje, overlay | `figma-prototype` |
+| **Prototyp kodu → review** | działający prototyp w kodzie → klatki-stany do async review, "zrób reviewable", "rozbij na flow", "Figma specs z kodu" | `prototype-to-review` |
 | **Cloud / headless** | brak Figma Desktop, telefon, web/cloud env | `figma-cloud` (mechanika) + skill domenowy (metodologia) |
 
 Cross-domain → skill domeny PRIMARY (on odsyła do secondary). Niejasne → jedno pytanie.
