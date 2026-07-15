@@ -66,9 +66,11 @@ asset; SVGs are NOT supported — for those use `use_figma` + `figma.createNodeF
 - **New frames** — omit `nodeId` → each asset lands as a new frame with an image fill on the page.
   You then reposition/re-parent them (see §5 for the coordinate conversion when moving into a section).
 
-> ⚠ Verified against the tool contract (it explicitly lists `/board/` support), not yet re-confirmed
-> on a live FigJam board in this skill's test history. If a call unexpectedly fails on a board, fall
-> back to the manual pattern below and note it.
+> ✅ Verified live on a FigJam `/board/` (2026-07-15): `upload_assets(count:1)` → POST the PNG bytes to
+> the returned `submitUrl` (multipart `file=@…` is preferred — the filename becomes the layer name) →
+> the tool auto-creates a placed frame and returns `imageHash` + `placedOnNodeId`. Confirmed via
+> `get_figjam` (new `<frame name="…">`) and `get_screenshot`. If a call ever fails, fall back to the
+> manual pattern below.
 
 **Fallback — placeholder → user drags PNGs in** (use only if `upload_assets` is unavailable or fails):
 
