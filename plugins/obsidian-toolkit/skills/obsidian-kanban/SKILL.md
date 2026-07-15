@@ -22,6 +22,7 @@ podlinkować artefakty i **promować itemy z backlogu** (np. otwarte itemy z fee
 - Brak dostępu do plików vaultu → najpierw skill `obsidian-setup`.
 - **`.base` edytuj tylko przy zamkniętym Obsidianie** — Bases trzyma stan widoku w pamięci i nadpisuje plik (edycja przy otwartej appce = po chwili cofnięta).
 - **Tablica = plik `.base`** z `kanban-view`. Skill **odkrywa strukturę z `.base`** — nie zakłada wcześniej kolumn. Brak `.base` w projekcie → nie zgaduj; powiedz userowi i zaproponuj utworzenie boardu (propose-first).
+- **Tryb chmurowy (Claude Code na web) — kanał zapisu to git, nie ścieżka vaultu.** Gdy vault jest sklonowanym repo git (brak Local REST API i lokalnej ścieżki vaultu), kartę tworzysz/przesuwasz **edycją pliku w klonie → commit → push → MERGE do `main`**. **Karta pojawi się na desktopie DOPIERO po merge do `main`** — sam push na gałąź `claude/...` nie wystarczy (Obsidian Git ciągnie tylko bieżącą gałąź desktopu i nie przełącza jej sam). Mechanika kanału chmurowego + ustawienia Obsidian Git: skill `obsidian-setup`.
 
 ## Krok 0 — odczytaj board z `.base` (NIE hardcoduj kolumn)
 Tablice różnią się per-projekt. Zanim cokolwiek zrobisz, przeczytaj plik `.base` i ustal:
