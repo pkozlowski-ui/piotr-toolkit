@@ -52,6 +52,24 @@ ln -s "<repo>/.claude/memory" "$HOME/.claude/projects/<repo-path-z-myślnikami>/
 ```
 (`<repo-path-z-myślnikami>` = bezwzględna ścieżka repo z `/` i spacjami zamienionymi na `-`).
 
+### Gdzie żyje pamięć projektu, gdy repo jest publiczne / współdzielone
+
+Domyślnie pamięć projektu (warstwa 1) idzie do `.claude/memory/` **repo projektu**. Ale gdy to repo
+jest **publiczne** (np. `piotr-toolkit`) albo współdzielone firmowo, jego pamięć projektu jest
+wewnętrzna (usage baseline'y, nazwy wewnętrzne, ID sesji, konteksty robocze) i tam trafić **nie może**.
+
+**Reguła doboru (zawsze):** repo projektu prywatne → pamięć w repo projektu; repo **publiczne /
+współdzielone** → pamięć tego projektu w **prywatnym `claude-memory`** jako samowystarczalny
+podkatalog `projects/<slug>/` (z własnym `MEMORY.md`), symlinkowany z natywnej ścieżki harnessa:
+
+```bash
+ln -s "<claude-memory>/projects/<slug>" "$HOME/.claude/projects/<repo-path-z-myślnikami>/memory"
+```
+
+To rozszerzenie zasady „dane wrażliwe → tylko warstwa 3": nie chodzi tylko o sekrety, ale o **całą
+wewnętrzną pamięć projektu**, gdy repo tego projektu jest widoczne publicznie/szerzej. (Ustanowione
+2026-07-15: piotr-toolkit jest public, więc jego project-memory poszła do `claude-memory/projects/piotr-toolkit/`, nie do repo.)
+
 ## Schemat wpisu pamięci (kanoniczny)
 
 Jeden plik = jeden fakt. Frontmatter:
