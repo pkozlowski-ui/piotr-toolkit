@@ -61,6 +61,45 @@ Vault jest osiągalny **dwiema drogami**; dobierz ją do operacji:
 - Wyjątek: gdy przy przenoszeniu chcesz też **zmienić frontmatter** (np. `status: open → done`, `closed:`) — zrób to osobno przez MCP (`manage_frontmatter`/`patch_note`) **przed** `mv`. `mv` nie dotyka treści.
 - Ścieżkę lokalną vaultu znajdź raz: `find ~/Library/CloudStorage -maxdepth 4 -type d -name "<nazwa vaultu>"` (typowo `~/Library/CloudStorage/GoogleDrive-<konto>/Mój dysk/<Vault>`).
 
+## Tryb chmurowy — Claude Code na web (git ↔ Obsidian Git), BEZ MCP/REST
+Gdy Claude Code działa **w chmurze** (claude.ai/code, GitHub Action, kontener) — nie na maszynie z
+Obsidianem — **nie ma dostępu do Local REST API ani do ścieżki vaultu na dysku**. Oba kanały wyżej
+(MCP-treść, `mv`-pliki) zakładają Claude'a lokalnie i **tu nie działają**. Jedyny most to **git**:
+
+```
+Claude (cloud) edytuje pliki w klonie repo + commit + push na gałąź
+   →  MERGE do gałęzi domyślnej (`main`)
+   →  desktop: plugin Obsidian Git robi pull
+   →  zmiana w vaulcie
+```
+
+**Warunek konieczny:** vault jest **repozytorium git** zsynchronizowanym z GitHubem (zamiast/obok
+Google Drive/iCloud), a na desktopie działa plugin **Obsidian Git** (denolehov).
+
+**Reguła nr 1 (najczęstsza wpadka):** zmiana z chmury pojawia się na desktopie **dopiero po merge do
+gałęzi domyślnej**. Sam push na gałąź `claude/...` nie wystarczy — Obsidian Git ciągnie **tylko gałąź,
+na której desktop aktualnie jest** (zwykle `main`) i **nie przełącza gałęzi sam**. Więc: każda zmiana,
+która ma dojechać na tablicę/do notatek, musi wylądować w `main` (zmergowany PR).
+
+**Ustawienia Obsidian Git na desktopie (żeby zmiany z chmury przychodziły same):**
+
+| Ustawienie | Wartość | Po co |
+|---|---|---|
+| Pull on startup | ON | pobiera zmiany przy starcie Obsidian |
+| Auto pull interval (min) | 5 | dociąga zmiany z `main` w tle |
+| Auto commit-and-sync interval (min) | 5 | wypycha lokalne edycje z powrotem |
+| Push / Pull on commit-and-sync | ON / ON | pełny cykl: stage → commit → pull → push |
+| Merge strategy | Merge | integracja zdalnych commitów |
+
+Sekcja **Advanced** — bez zmian (git w PATH, repo w roocie vaultu).
+
+**Gotchas (chmura):**
+- Świeżej gałęzi nie widać w *Switch branch* zanim desktop nie zrobi **Obsidian Git: Fetch** (lokalny git musi się o niej dowiedzieć). W normalnym flow i tak zostajesz na `main` — gałęzie są tylko po drodze w PR-ach.
+- **Nie twórz realnego `CLAUDE.md`/plików, które lokalnie są symlinkami** z repo pamięci (`claude-memory`) — commit realnego pliku koliduje z symlinkiem przy pullu na desktopie.
+- Dwukierunkowo (edytujesz na desktopie *i* w chmurze) → ustaw **Merge strategy on conflicts** świadomie; domyślne `None` zostawia znaczniki konfliktu w plikach.
+
+Zweryfikowane 2026-07-15 (vault `obsidian-manta-vault`): karta założona przez Claude w chmurze → merge do `main` → pull → pojawiła się na tablicy Bases; usunięcie tą samą drogą też się przeniosło.
+
 ## Gotchas
 - Wymaga **działającego Obsidiana** z otwartym vaultem — serwer to most do uruchomionej aplikacji.
 - `obsidian_search_notes` (text) **fuzzy-matchuje** — do precyzji `get_note` (`document-map`/`section`) + `replace_in_note` na unikalnych stringach.
