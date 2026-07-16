@@ -122,6 +122,7 @@ Promocja przesuwa wiedzę W GÓRĘ; bez odpływu pamięć tylko rośnie — cach
 - **Wpis pointer-only / restatement** (treść jest już kanonem w docs/registry/CLAUDE.md; wpis tylko „reguła żyje w X")
   → **usuń** — kanon + wskaźnik wystarczą.
 - **„Pending decision" rozstrzygnięte** → zamknij/usuń (lub `_archive/` jeśli ma wartość historyczną).
+- **External-blocked (czeka na cudzą decyzję/odpowiedź)** — wpis, którego JEDYNA żywa treść to „zablokowane na kimś, wróci gdy owner zareaguje", NIE ma wartości always-on (płaci slot cap co sesję, uśpiony do reakcji). Trigger: „czy jedyny open-item jest external-blocked?". → wyprowadź wątek do **rejestru natywnego** (Linear / Kanban / feedback-pipeline — tam gdzie nastąpi rozwiązanie) + **cienki pointer-index** (np. Obsidian `Waiting On.md`: `temat · na kim czekamy · czego · link`; NIE nowy content-store — anti-fragmentacja), potem `mv` pliku → `_archive/`. **Wpis MIESZANY** (blocked + niesie aktywną wiedzę designową) ZOSTAJE w pamięci; do rejestru idzie tylko sam wątek-czekanie. **Rozróżnij od luźnego „może kiedyś"** — to NIE wchodzi do rejestru „czekania" (→ tylko `_archive/` lub Lab/backlog; odżyje samo gdy temat wróci).
 - **Stale liczby/statusy inline** (np. „55 vs 74 wariantów") → przytnij do aktualnej; historia żyje w git.
 
 Mechanika: `_archive/` jest poza filtrem indeksu, więc wpis wypada z always-on, a treść żyje (git-trwała).
