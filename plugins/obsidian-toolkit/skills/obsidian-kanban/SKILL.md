@@ -42,18 +42,42 @@ Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki
 - **Done** — zrobione i **warte pamięci dla zespołu**. To kandydat do **promocji do vaultu** (`obsidian-capture`). Po domknięciu kartę **archiwizuj** (przenieś do folderu archiwum boardu) — **nie kasuj**: zachowujemy zapis tego, co zrobione.
 
 ## Współbieżność — protokół claim (TWARDY; sesje bywają równoległe)
-Równolegle chodzi 2–4 sesje na jednej tablicy — digest boardu w kontekście sesji jest natychmiast przeterminowany.
-- **Świeży odczyt przed wzięciem:** zanim weźmiesz kartę, przeczytaj jej frontmatter **z dysku, teraz** — nie z digestu/kontekstu sprzed N minut. Karta mogła w międzyczasie dostać status/claim z innej sesji.
-- **Wzięcie karty = claim:** jedną edycją pliku ustaw `status: In progress` **oraz** `claimed: <YYYY-MM-DD HH:MM · krótki opis sesji>`. Dopiero potem pracuj.
-- **Karta z cudzym claimem = nietykalna** — nie bierz jej i nie proponuj jako następnego zadania. Wyjątek: user wprost każe przejąć.
-- **Zdjęcie claima:** przy każdym domknięciu rundy (→ `Done` / `To confirm` / powrót do `To-do`) usuń pole `claimed`. Krok kanbanowy `session-retro` egzekwuje to na koniec sesji.
-- **Stary claim** (>~2 dni) → nie ignoruj i nie przejmuj sam: pokaż userowi i zapytaj, czy tamta sesja jeszcze żyje.
+Równolegle chodzi 2–4 sesje na jednej tablicy — digest boardu w kontekście sesji jest natychmiast przeterminowany. **Sama edycja frontmattera to za mało** (read-then-write race: dwie sesje czytają „wolne" i obie piszą claim; sesja która pominie claim — realny przypadek 2026-07-20 — omija protokół i robi duplikat). Dlatego mutex to **atomowy lock**, nie pole w YAML.
+
+**Mechanizm = `kanban-claim.sh` (mkdir-lock we wspólnym vaultcie).** `mkdir` jest atomowy — druga sesja dostaje błąd, nie „obie widzą wolne". Frontmatter `claimed:` zostaje jako **czytelne lustro dla człowieka** (widok WIP w digest), ale ŹRÓDŁEM PRAWDY jest lock. Ścieżka helpera (absolutna, cross-project): `/Users/piotrkozlowski/Documents/piotr-toolkit/plugins/obsidian-toolkit/scripts/kanban-claim.sh`. `<kanban_dir>` = folder kart z Kroku 0. `<session_id>` = id tej sesji (hook zna je z `.session_id`; gdy odpalasz ręcznie — dowolny stabilny znacznik sesji).
+
+- **Wzięcie karty (KAŻDE — „następne z kanban" I bezpośredni handoff):**
+  1. `kanban-claim.sh claim "<kanban_dir>" "<nazwa karty bez .md>" "<session_id>" "krótki opis"`
+  2. **exit 0** → lock Twój: ustaw `status: In progress` + `claimed: <YYYY-MM-DD HH:MM · sesja>` w pliku, pracuj.
+  3. **exit 3** (TAKEN — cudzy żywy lock) → **STOP.** Nie bierz, nie proponuj. Powiedz userowi „karta zajęta przez inną sesję".
+  4. **exit 4** (STALE — cudzy lock >2 dni) → pokaż userowi, zapytaj czy tamta sesja żyje; przejęcie tylko na jego OK: `kanban-claim.sh steal …`.
+- **Enforcement (nie licz na dyscyplinę):** projekt wpina `kanban-claim-guard.sh` jako **UserPromptSubmit** hook — na 1. turze wykrywa kartę w promptcie handoffu i zakłada lock atomowo; kolizja z żywą sesją = twardy STOP zanim ruszysz. Skill dokłada claim dla pickupów mid-session i ścieżek, których hook nie złapie.
+- **Karta z cudzym claimem/lockiem = nietykalna** — nie bierz i nie proponuj jako następnej. Wyjątek: user wprost każe przejąć.
+- **Zdjęcie locka:** przy każdym domknięciu rundy (→ `Done` / `To confirm` / powrót do `To-do`) uruchom `kanban-claim.sh release "<kanban_dir>" "<karta>" "<session_id>"` **oraz** usuń pole `claimed` z frontmattera. Stop-hook projektu dodatkowo **auto-zwalnia własne locki** kart, które nie są już `In progress` (siatka bezpieczeństwa gdy zapomnisz). Krok `session-retro` egzekwuje to na koniec sesji.
+- **Tryb chmurowy / inna maszyna:** lock jest lokalny na maszynie (gitignored `.claims/`). Chroni sesje na **tej samej maszynie** (główny przypadek Piotra). Równoległa edycja tej samej tablicy z DWÓCH maszyn naraz nie jest chroniona lockiem — tam polegaj na świeżym odczycie + kanale git-merge.
 
 ## Autonomia — proponuj następne zadanie (domyślnie, bez proszenia)
 Kanban ma działać bez usera-operatora. **Po każdym domknięciu karty (`Done`/`To confirm`) — w tej samej odpowiedzi — zaproponuj następną:**
-1. Kandydat: najpierw karta `In progress` **bez claima** (wisząca robota), potem **góra `To-do`** (kolejność = priorytet, `high-priority` przed resztą). Pomijaj `blocked` i cudze claimy.
+1. Kandydat: **jeśli domknięta karta należy do epica → najpierw następny otwarty sub-task TEGO epica** (patrz „Epiki" niżej). W przeciwnym razie: karta `In progress` **bez claima** (wisząca robota), potem **góra `To-do`** (kolejność = priorytet, `high-priority` przed resztą). Pomijaj `blocked` i cudze locki/claimy.
 2. Dobierz kanał: temat pokrewny bieżącej sesji → kontynuacja tutaj; temat odległy → zaproponuj **świeżą sesję** (czysty, tańszy kontekst).
 3. To propozycja (propose-first) — nie zaczynaj nowej karty bez OK usera.
+
+## Epiki — łańcuchowanie sub-tasków i domknięcie (zadania wielowątkowe)
+Epic = duży temat rozbity na kilka kart. **Model:**
+- **Karta-epic** `EPIC · <nazwa>` (`status: In progress` dopóki żyje którykolwiek sub-task) = indeks + sekwencja; realna robota żyje w kartach granularnych.
+- **Sub-task** = osobna karta z polem frontmattera **`epic: "[[EPIC · <nazwa>]]"`** (wikilink w cudzysłowach — patrz gotcha YAML) + backlink w treści. To pole czyni łańcuch **queryowalny** bez parsowania treści.
+- Kolejność sub-tasków: jeśli karta-epic ma w treści listę/sekwencję — trzymaj się jej; inaczej priorytet = kolejność w `To-do` (`high-priority` pierwsze).
+
+**Przy domknięciu sub-taska (`Done`/`To confirm`) — w tej samej odpowiedzi:**
+1. Odczytaj `epic:` z domykanej karty. Zbierz rodzeństwo: karty z tym samym `epic:`.
+2. **Zostały otwarte sub-taski** (`To-do`/`In progress`, bez cudzego locka, nie `blocked`)? → zaproponuj **następny** (sekwencja epica lub góra `To-do`). Dobór kanału (kontynuacja vs świeża sesja) jak w „Autonomia".
+3. **Wszystkie sub-taski domknięte** (brak otwartego rodzeństwa)? → zaproponuj **domknięcie epica**: karta-epic → `Done`/`To confirm`, potem rozstrzygnięcie promote/archive (operacja G). Propose-first — nie zamykaj epica sam.
+4. Zdejmij lock sub-taska (release, patrz protokół claim).
+
+**Gotchy epica:**
+- Karta-epic nie jest „claimowalną robotą" — nie bierz jej jako zadania do wykonania; to indeks. Lock zakładaj na sub-taski.
+- Nie zamykaj epica póki wisi choć jeden otwarty sub-task (nawet `blocked` — wtedy epic zostaje `In progress`, zgłoś blokadę).
+- Sub-task bez pola `epic:` ale z `[[EPIC · …]]` tylko w treści → przy okazji dopisz `epic:` do frontmattera (łańcuch ma działać z pola, nie z parsowania prozy).
 
 ## Operacje
 
@@ -118,7 +142,8 @@ To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, 
 ```
 ---
 status: <kolumna ze słownika boardu>
-claimed: <YYYY-MM-DD HH:MM · sesja>   # tylko gdy karta jest w toku w jakiejś sesji; zdejmij przy domknięciu
+claimed: <YYYY-MM-DD HH:MM · sesja>   # lustro locka (źródło prawdy = kanban-claim.sh); zdejmij przy domknięciu
+epic: "[[EPIC · <nazwa>]]"            # tylko sub-task epica — czyni łańcuch queryowalnym
 tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w cudzysłowach
 ---
 
