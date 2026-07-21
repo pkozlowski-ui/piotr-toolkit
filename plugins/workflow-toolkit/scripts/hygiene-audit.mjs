@@ -191,6 +191,23 @@ if (mode !== 'hook') {
   } catch { /* nie-repo / brak gita → świadomie brak checku */ }
 }
 
+// 9) kadencja audytu promptowania (jednorazowy sweep ~kwartalny) — gated na cfg.promptingAudit
+//    Nie odpala sweepa (za drogi na SessionStart) — tylko przypomina o kadencji, licząc dni
+//    od cfg.promptingAudit.lastRun (data trzymana w configu, aktualizowana po każdym przebiegu).
+//    Analogicznie do stopki 'audyt osądu co ~N dni', ale jako pełny check z progiem.
+if (cfg.promptingAudit && cfg.promptingAudit.lastRun) {
+  const everyDays = cfg.promptingAudit.everyDays || 90;
+  const last = Date.parse(cfg.promptingAudit.lastRun);
+  if (!Number.isNaN(last)) {
+    const days = Math.floor((Date.now() - last) / 86400e3);
+    add('prompting-audit', 'audyt promptowania (dni od ostatniego)', days, everyDays,
+      days <= everyDays,
+      days > everyDays
+        ? `${days} dni od ostatniego (próg ${everyDays}) → odpal audyt promptowania w świeżej sesji (/clear): sweep transcriptów ~/.claude/projects/*/*.jsonl, potem ustaw promptingAudit.lastRun`
+        : null);
+  }
+}
+
 // --- output ---
 const warnings = checks.filter(c => !c.ok);
 
