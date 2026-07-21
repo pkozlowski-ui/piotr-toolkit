@@ -92,11 +92,15 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 > Kluczowa lekcja: **oddziel Typ od Dyspozycji.** Jeden łączony tag ukrywa, kto musi zadziałać.
 
 ## Karta-wskaźnik na tablicy (po KAŻDYM sweepie — stała reguła)
-Po wytworzeniu rejestru **utwórz lekką kartę-wskaźnik na tablicy zadań** (Kanban) z **linkiem `[[…]]` do rejestru** + 1-liniowym podsumowaniem (kto · ile wątków · klastry · routing). Cel: sweep widoczny i odhaczalny na tablicy, nie tylko w pipeline rejestrów.
+Po wytworzeniu rejestru **utwórz lekką kartę-wskaźnik na tablicy zadań** (Kanban) z **linkiem `[[…]]` do rejestru** + 1-liniowym podsumowaniem (kto · ile wątków · klastry · routing). Cel: sweep widoczny i **odhaczalny jako trigger do pracy**, nie tylko w pipeline rejestrów.
 - Karta = **pointer**, NIE źródło prawdy — rejestr w folderze pipeline'u zostaje źródłem.
 - Frontmatter karty wg konwencji tablicy projektu (typowo `status` + tag `sweep-pointer`).
 - **Wiele rejestrów z jednego sweepu** (np. owner-separate, Tom osobno) → **jedna karta** linkująca wszystkie.
 - Lokalizacja/format karty + tag = **config per-projekt** (czytaj `CLAUDE.md` / `.claude/memory/`).
+
+**Kolumna docelowa = robocza (`To-do`), NIGDY „To confirm" (TWARDE).** Świeża karta-wskaźnik = trigger do wzięcia → ląduje w kolumnie roboczej gotowej do pracy (`To-do`, kolejność = priorytet). **„To confirm" jest zarezerwowane** — status wchodzi TYLKO po tym, jak ktoś już nad kartą pracował, i wymaga **potwierdzenia** (user pisze wprost albo Ty rekomendujesz przejście). Nic nie wskakuje do „To confirm" samo, bez choćby zaczętej pracy. Gdy sweep to czekanie na cudzą decyzję, a robota po naszej stronie już ruszyła → `In progress` + tag `blocked` (co blokuje w treści), nie „To confirm". (Semantyka kolumn: skill `obsidian-kanban`.)
+
+**Krok raportu (TWARDE — siatka bezpieczeństwa, żeby rezultaty nie umknęły).** Closeout sweepu **musi** zawierać wprost linię: „karta-trigger: `[[nazwa]]` → kolumna `To-do`". To human-notification niezależny od renderu tablicy. Powód: karta tworzona **zapisem pliku** (kanoniczny kanał — patrz `obsidian-kanban`) dostaje poprawny `status`, ale Bases wpina ją do `cardOrders` (`.base`) dopiero przy interakcji UI — do tego czasu renderuje się **nieuporządkowana na dole kolumny** i łatwo ją przeoczyć. Realny przypadek 2026-07-21: karta powstała 28 s po rejestrze, ale była jedyną z 109 nieobecną w `cardOrders`, wylądowała w „To confirm" i nie została zgłoszona w raporcie → user uznał, że nie powstała. Bez wypchnięcia w raporcie sweep może zniknąć.
 
 ## Krok zamykający — `done` + archiwizacja
 Feedback-sweep żyje w pipeline rejestrów (źródło prawdy) i **zostawia własną kartę-wskaźnik na tablicy** (patrz wyżej) — ale **nie rusza/nie przesuwa innych kart zadań**. Domknięcie sweepu to dwie rzeczy w samym pipeline rejestrów:
