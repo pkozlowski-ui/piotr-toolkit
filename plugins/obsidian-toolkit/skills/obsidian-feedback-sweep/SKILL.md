@@ -1,6 +1,6 @@
 ---
 name: obsidian-feedback-sweep
-description: Turn scattered design-review comments from Figma & FigJam into one classified, routed, answered register in Obsidian — type + disposition axes, owner routing (RACI-lite), ready reply drafts. Use after a design/review session to triage unresolved comment threads. Triggers EN+PL — "feedback sweep", "sweep the feedback", "triage Figma/FigJam comments", "go through the review comments", "process review feedback", "zrób sweep feedbacku", "przejrzyj feedback", "triage komentarzy z Figmy/FigJam", "ogarnij komentarze z review", "feedback z review" — and on the intent even when unnamed: new unresolved comment threads on a Figma file or FigJam board to process after a review. NOT for: code-review/PR feedback, written feedback on a doc, user/customer feedback analysis, or one-off comment replies. Needs a per-project config (decision-owner matrix, register folder); if missing, proposes setup from the template (propose-first).
+description: Turn scattered design-review comments from Figma & FigJam into one classified, routed, answered register in Obsidian — type + disposition axes, owner routing (RACI-lite), ready reply drafts. Use after a design/review session to triage unresolved comment threads. Also captures positive signal & inspiration (praise, references stakeholders point to) into a separate persistent Delight registry — building per-stakeholder profiles of what lands and how to reuse it. Triggers EN+PL — "feedback sweep", "sweep the feedback", "triage Figma/FigJam comments", "go through the review comments", "process review feedback", "zrób sweep feedbacku", "przejrzyj feedback", "triage komentarzy z Figmy/FigJam", "ogarnij komentarze z review", "feedback z review", plus manual delight capture "zapisz do delight", "to się spodobało", "save to delight", "add to delight" — and on the intent even when unnamed: new unresolved comment threads on a Figma file or FigJam board to process after a review, or a positive/inspiration signal from a stakeholder worth keeping. NOT for: code-review/PR feedback, written feedback on a doc, user/customer feedback analysis, or one-off comment replies. Needs a per-project config (decision-owner matrix, register folder, delight folder); if missing, proposes setup from the template (propose-first).
 ---
 
 # Skill: obsidian-feedback-sweep
@@ -11,12 +11,20 @@ sklasyfikowane na 2 osiach, zrouowane do decydentów, z gotowymi draftami odpowi
 vaulcie; **człowiek decyduje, co wkleić z powrotem do Figmy** — to kuratorowany kanał review, osobny od
 szybkich wrzutek (Slack→Linear).
 
+**Druga misja — pozytyw NIE jest szumem.** Pochwała i podrzucona inspiracja („o, to jest super", „zróbmy
+jak tu") to sygnał ulotny i cenny — który w czystym triażu ląduje w koszu „No action". Sweep zamiast tego
+**promuje go do osobnej, trwałej kolekcji Delight** (baza „co ląduje u kogo i jak to reużyć"). Rejestr
+feedbacku jest przepływowy (rotuje, archiwizuje się); Delight jest **kumulatywny** — rośnie i buduje
+profil preferencji per-stakeholder. Dlatego mieszka osobno, nie w rotowanym rejestrze. Patrz „Delight
+Registry" niżej.
+
 ## Auto-trigger
 Uruchamia się gdy user mówi (EN+PL — bramką jest pole `description`, ta lista jest jej lustrem):
 - "feedback sweep" / "sweep the feedback" / "zrób sweep feedbacku" / "ogarnij feedback"
 - "triage Figma/FigJam comments" / "go through the review comments" / "process review feedback"
 - "przejrzyj feedback" / "przejrzyj komentarze z Figmy" / "triage komentarzy" / "feedback z review"
 - **na samą intencję** (nawet bez słowa „sweep"): po sesji review pojawiły się nowe nierozwiązane wątki na pliku Figma / boardzie FigJam do przerobienia
+- **ręczny wrzut do Delight** (osobne wejście, bez pełnego sweepu): „zapisz do delight" / „to się spodobało" / „save to delight" / „add to delight" — pozytyw/inspiracja spoza kanałów, które sweep przemiata (Slack, call, DM). Idź prosto do fazy CAPTURE-DELIGHT (patrz „Delight Registry"), pomiń resztę protokołu.
 - **NIE dla:** feedbacku z code-review/PR, feedbacku do tekstu/dokumentu, analizy user/customer feedback, jednorazowej odpowiedzi na pojedynczy komentarz
 
 ## Wymagania
@@ -29,6 +37,7 @@ Uruchamia się gdy user mówi (EN+PL — bramką jest pole `description`, ta lis
 Skill koduje **proces**. To, co specyficzne dla projektu, czytaj z `CLAUDE.md` / `.claude/memory/`:
 - **Macierz decydentów** (kto jest Ownerem jakiej domeny decyzji) — bez niej routing się nie domknie.
 - **Folder rejestru** w vaulcie (np. `Feedback Pipeline/`) + nazwa żywego rejestru.
+- **Folder Delight** (np. `Delight/`) + nazwa żywej kolekcji — trwała baza pozytywu (patrz „Delight Registry").
 - **Scope kanału** — czy to Obsidian-only (drafty, człowiek wkleja ręcznie) czy mirror do Linear/Figmy.
 - **Reguły domenowe** do uzasadniania klasyfikacji (np. reguły design systemu, brand, terminologia).
 
@@ -56,10 +65,12 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
              e) node_id → ekran/Flow przez figma_execute. FigJam (board) = osobny file_key → osobny pull.
 2. CLASSIFY  Oś A (Typ) + Oś B (Dyspozycja), uzasadnione regułami domenowymi projektu
 3. ROUTE     Dyspozycja = "Needs decision" → przypisz Ownera (macierz) + Consulted (RACI-lite, 1 primary)
-4. ACT       Answer & close → draft odpowiedzi (odpowiedz na pytanie)
-             Do now         → wykonaj/zaproponuj zmianę designu (wg build-philosophy projektu)
-             Needs decision → zbuduj jasną część UI + draft Decision Ask dla Ownera
-             Defer/Phase-2  → zaloguj + tag fazy (zaznacz intencję, nie tylko odłóż)
+4. ACT       Answer & close  → draft odpowiedzi (odpowiedz na pytanie)
+             Do now          → wykonaj/zaproponuj zmianę designu (wg build-philosophy projektu)
+             Needs decision  → zbuduj jasną część UI + draft Decision Ask dla Ownera
+             Defer/Phase-2   → zaloguj + tag fazy (zaznacz intencję, nie tylko odłóż)
+             Capture→Delight → dopisz wpis do Delight Registry (Kto·Co·Na czym·Dlaczego·Jak reużyć·Źródło);
+                               tag per-osoba. To promocja do trwałej bazy, nie zamknięcie w tym rejestrze.
 5. CLOSE     zaktualizuj rejestr; człowiek wkleja odpowiedzi + resolve'uje w Figmie;
              potem re-pull (active-only = mniejszy output; wątek z triażu którego NIE ma w active = resolved/zamknięty;
              sprawdź ostatniego autora + czy właściciel kanału odpisał). Leftovers (czekają na decyzję innych) →
@@ -78,6 +89,7 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 | 🎨 | Pomysł designowy |
 | 📦 | Pomysł produktowy (scope / feature / model danych) |
 | 💬 | Notka / pochwała |
+| ✨ | Inspiracja / referencja (podrzucony przykład „zróbmy jak tu", link do referencji) |
 
 **Oś B · Dyspozycja** (co dzieje się dalej):
 
@@ -87,9 +99,13 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 | **Answer & close** | Pytanie, na które odpowiadamy wprost. |
 | **Needs decision** | Routuj do Ownera zanim zadziałasz. |
 | **Defer / Phase-2** | Zalogowane, zaparkowane, otagowane fazą. |
-| **No action** | Pochwała / kontekst. |
+| **Capture → Delight** | Pozytyw / pochwała / inspiracja z realną wartością → **promuj do Delight Registry** (trwała baza), nie zostawiaj w rotowanym rejestrze. |
+| **No action** | Czysty kontekst / szum bez wartości do reużycia (odhacz i zostaw). |
 
 > Kluczowa lekcja: **oddziel Typ od Dyspozycji.** Jeden łączony tag ukrywa, kto musi zadziałać.
+> **Pozytyw ma teraz własną ścieżkę:** ✨/💬 z wartością → `Capture → Delight` (nie `No action`). Zasada
+> podziału: da się z tego wyciągnąć *dlaczego zadziałało* i *jak reużyć*? → Delight. Zwykłe „ok, dzięki"
+> bez treści → `No action`.
 
 ## Karta-wskaźnik na tablicy (po KAŻDYM sweepie — stała reguła)
 Po wytworzeniu rejestru **utwórz lekką kartę-wskaźnik na tablicy zadań** (Kanban) z **linkiem `[[…]]` do rejestru** + 1-liniowym podsumowaniem (kto · ile wątków · klastry · routing). Cel: sweep widoczny i **odhaczalny jako trigger do pracy**, nie tylko w pipeline rejestrów.
@@ -108,6 +124,45 @@ Feedback-sweep żyje w pipeline rejestrów (źródło prawdy) i **zostawia włas
 2. Gdy cały sweep domknięty → **przenieś rejestr do podfolderu `Done/`** (patrz Schemat rejestru i ⚠️ niżej o `mv`).
 
 Leftovers (czekają na decyzję innych / na przyszłość) **wydziel do osobnych notatek tematycznych** (`Open items`, `type: concept-backlog`) z 1-liniowym pointerem + backlinkiem — żeby rejestr mógł zostać czysto domknięty.
+
+## Delight Registry — trwała baza pozytywu
+Osobna od rejestru feedbacku, bo ma **odwrotną naturę**: feedback rotuje i archiwizuje się (przepływ);
+Delight **kumuluje się i nigdy nie jest archiwizowany** (baza wiedzy, która rośnie). Cel: zamiast gubić
+pochwały i inspiracje w koszu „No action", zbierać je w profil **„co ląduje u kogo i jak to reużyć"** —
+narzędzie do świadomego podnoszenia zadowolenia stakeholderów, nie pamiętnik anegdot.
+
+**Gdzie:** osobny folder (config per-projekt, typowo `Delight/`), jedna **żywa kolekcja** (`type: delight-log`)
+z widokiem `*.base` **grupowanym per-osoba** (`groupByProperty: person`) — profile budują się same.
+
+**Dwa wejścia:**
+1. **Auto — z fazy ACT sweepu.** Dyspozycja `Capture → Delight` dopisuje wpis. Źródło = link do node/wątku Figmy.
+2. **Ręczny gest** — „zapisz do delight" (Slack, call, DM — kanały, których sweep nie czyta). Idź prosto tu,
+   pomiń resztę protokołu; źródło = skąd sygnał (np. „Slack #design 07-21", „call z Tomem").
+
+**Wpis (MUST — 6 pól; bez dwóch ostatnich to pamiętnik, nie narzędzie):**
+| Pole | Co |
+|---|---|
+| **Kto** | osoba z teamu — tag `#osoba` (buduje profil; np. `#tom` `#dominique`) |
+| **Co się spodobało** | verbatim komentarz (z żywego fetcha) lub zwięzły opis sygnału |
+| **Na czym** | ekran / decyzja / element / deliverable (+ link do node Figmy jeśli jest) |
+| **Dlaczego zadziałało** | interpretacja — sedno wartości, nie sam cytat |
+| **Jak reużyć** | konkretny pattern do powtórzenia gdzie indziej |
+| **Data + źródło** | `YYYY-MM-DD` + skąd (link Figma / kanał) |
+
+**Zasady:**
+- **Trwałość:** nigdy nie oznaczaj `done`, nie przenoś do `Done/`, nie kasuj. Kolekcja rośnie w nieskończoność.
+- **Verbatim tylko z żywego fetcha** (ta sama reguła co w rejestrze — patrz Gotchas), nie z pamięci.
+- **Frontmatter** wg schematu niżej; `person` jako property (nie tylko tag inline) → działa `groupByProperty`.
+- **Propose-first** — wpis pokaż przed zapisem, jak każdy zapis do vaultu.
+- Delight **nie** tworzy karty na Kanbanie (to nie trigger do pracy) i **nie** rusza rejestru feedbacku.
+
+**Frontmatter kolekcji:**
+```yaml
+type: delight-log
+scope: <projekt / zakres>        # np. "antisis — internal team"
+updated: <ISO>                   # ostatni dopisany wpis
+```
+(Brak `status`/`last-swept`/`closed` — kolekcja nie ma cyklu życia; jest wieczna.)
 
 ## Propose-first (dyscyplina zapisu)
 Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK.
@@ -179,3 +234,5 @@ Powtarzający się nowy element → komponentyzuj i zarejestruj w DS projektu. R
 ## Raport końcowy
 Wypunktuj: ile wątków przetworzono (active/skipped), rozkład Typ × Dyspozycja, co zrouowano do kogo,
 ile draftów gotowych do wklejenia, co czeka na decyzję. Zaznacz **wyraźnie, co jest done** w rejestrze.
+Jeśli sweep promował pozytyw → linia: „**Delight: N wpisów → `[[Delight — …]]`** (kto)", żeby te sygnały
+nie umknęły tak samo jak karta-wskaźnik.

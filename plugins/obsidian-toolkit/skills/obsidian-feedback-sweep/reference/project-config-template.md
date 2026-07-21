@@ -8,11 +8,17 @@ Skill `obsidian-feedback-sweep` czyta to stąd — bez tego nie zgaduje ludzi an
 - **Żywy rejestr:** `<YYYY-MM-DD> - <nazwa>.md` (jedyne źródło prawdy)
 - **Runbook:** `Feedback Sweep — Runbook & Template.md`
 
-## 2. Scope kanału
+## 2. Folder Delight (Obsidian — trwała baza pozytywu)
+- **Folder:** `Delight/`
+- **Żywa kolekcja:** `Delight — <projekt>.md` (kumulatywna, nigdy nie archiwizowana)
+- **Widok:** `Delight.base` (`groupByProperty: person`) — jeśli wpisy jako osobne pliki; inaczej grupuj sekcjami `## #osoba` w notatce.
+- **Target:** kto (team wewnętrzny / klient / oba) — decyduje, czyj delight zbieramy.
+
+## 3. Scope kanału
 - `Obsidian-only` — drafty w rejestrze, człowiek ręcznie wkleja odpowiedzi i resolve'uje wątki w Figmie.
   (Osobno od szybkich wrzutek typu Slack→Linear, jeśli projekt taki ma.)
 
-## 3. Macierz decydentów (Owner + Consulted, RACI-lite)
+## 4. Macierz decydentów (Owner + Consulted, RACI-lite)
 | Domena decyzji | Owner | Zwykle konsultowani |
 |---|---|---|
 | Technologia · model danych · integracje · feasibility | <imię> | … |
@@ -21,18 +27,19 @@ Skill `obsidian-feedback-sweep` czyta to stąd — bez tego nie zgaduje ludzi an
 | Sales · rynek · pozycjonowanie · wartość dla klienta | <imię> | … |
 | Design · UI · copy (bez zewnętrznego ownera) | <imię> | … |
 
-## 4. Reguły domenowe (do uzasadniania klasyfikacji)
+## 5. Reguły domenowe (do uzasadniania klasyfikacji)
 - Reguły design systemu / brandu, które czynią item „Do now" vs „Needs decision".
 - Terminologia i reguły domenowe (do uzasadnień w kolumnie Reakcja).
 
-## 5. Build philosophy (opcjonalnie)
+## 6. Build philosophy (opcjonalnie)
 - Czy projekt to concept-prototype (niski próg „buduj", wysoka wartość pokazania)?
 - Definicja „done": np. token audit `count:0` + screenshot validation, build z instancji DS.
 
 ---
 
 ### Przykład wypełniony — projekt antisis (Manta Vault)
-- **Folder:** `Feedback Pipeline/` · rejestr `Figma & Figjam Feedbacks.md`
+- **Folder rejestru:** `Feedback Pipeline/` · rejestr `Figma & Figjam Feedbacks.md`
+- **Folder Delight:** `Delight/` · kolekcja `Delight — Manta.md` · target = **team wewnętrzny** (Manta).
 - **Scope:** Obsidian-only (Piotr wkleja ręcznie); osobny `Anti Feeback Bot` = Slack→Linear.
 - **Macierz:** Tech/data → **Matt** · Produkt/scope → **Tom & Will** · Substancja/szkoły → **Dominique** ·
   Sales → **Courtney & Kara** · Design/UI/copy → **Piotr** (Dominique = domain check).

@@ -40,3 +40,41 @@ created: YYYY-MM-DDTHH:MM
 # closed: YYYY-MM-DD     # dopisz gdy status: done
 ---
 ```
+
+## Delight — wpis (dopisywany do żywej kolekcji)
+```
+### ✨ <YYYY-MM-DD> · <osoba> — <jednoliniowy tytuł>
+- **Kto:** #<osoba>
+- **Co się spodobało:** "<verbatim z żywego fetcha>" — lub zwięzły opis sygnału
+- **Na czym:** <ekran / decyzja / element / deliverable> (`node-id` jeśli jest)
+- **Dlaczego zadziałało:** <interpretacja — sedno, nie cytat>
+- **Jak reużyć:** <konkretny pattern do powtórzenia>
+- **Źródło:** <link Figma / "Slack #kanał" / "call"> · <YYYY-MM-DD>
+```
+
+## Delight — nagłówek żywej kolekcji (frontmatter, wieczny — bez statusu)
+```
+---
+type: delight-log
+scope: <projekt — np. "antisis — internal team">
+updated: <ISO>          # ostatni dopisany wpis
+created: YYYY-MM-DDTHH:MM
+---
+```
+Uwaga: `#<osoba>` w treści + property `person:` na wpisie (jeśli rozbijasz wpisy na osobne notatki)
+napędza `groupByProperty: person` w `*.base`. W jednej żywej notatce grupuj sekcjami per-osoba (`## #tom`).
+
+## Delight — widok Bases (`Delight.base`, grupowanie per-osoba)
+```yaml
+filters:
+  and:
+    - file.hasProperty("type")
+    - note.type == "delight-log"
+views:
+  - type: table
+    name: Delight
+    groupByProperty: person
+    order: [person, "Co się spodobało", "Jak reużyć", updated]
+```
+(Gdy trzymasz wszystko w jednej notatce zamiast wpis-per-plik: pomiń `.base`, grupuj nagłówkami `## #osoba`
+w samej notatce — profile i tak się czytają. `.base` opłaca się dopiero przy wpisach jako osobne pliki.)
