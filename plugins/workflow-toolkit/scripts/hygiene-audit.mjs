@@ -12,6 +12,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { execSync } from 'node:child_process';
 
 // Skrypt jest reużywalny między projektami (żyje w piotr-toolkit), więc korzeniem
 // jest CWD — uruchamiaj z roota repo (hook i cron agent robią cd do repo najpierw).
@@ -163,6 +164,31 @@ if (cfg.modelPolicy) {
       `${delegTotal} deleg [${breakdown}] / ${mechSessions} mech-sesji`, null, ok,
       ok ? null : `${mechSessions} sesji z mechaniczną robotą Figma, 0 delegacji → deleguj sweepy/audyty do Haiku/Sonnet (subagent), nie rób ich na modelu głównej sesji`);
   } catch { /* higiena modelu nigdy nie blokuje audytu */ }
+}
+
+// 8) świeżość gita — czy audyt nie idzie po nieaktualnym drzewie (stale checkout)
+//    Realny bug 2026-07-21: agent-audyt (warstwa 2) czytał pliki na lokalnym HEAD 8 commitów
+//    za origin → wygenerował fałszywe znalezisko „sprzeczność" (kanon był już naprawiony zdalnie).
+//    Fetch tylko w json/human (agent-audyt + ręczny) — w trybie --hook (SessionStart) pomijamy,
+//    żeby nie dokładać latencji/sieci do startu sesji. Pełny try/catch: brak gita/sieci = skip, nigdy nie wywala.
+if (mode !== 'hook') {
+  try {
+    const git = (args, opts = {}) => execSync(`git ${args}`, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 8000, ...opts }).trim();
+    git('rev-parse --is-inside-work-tree'); // rzuci jeśli nie-repo → skip
+    // gałąź zdalna: origin/HEAD → fallback origin/main
+    let remoteRef = 'origin/main';
+    try { remoteRef = git('rev-parse --abbrev-ref origin/HEAD'); } catch { /* fallback */ }
+    try { git('fetch --quiet origin', { timeout: 8000 }); } catch { /* offline → porównaj wg cache remote-ref */ }
+    let behind = 0, ahead = 0;
+    try {
+      const counts = git(`rev-list --left-right --count HEAD...${remoteRef}`).split(/\s+/);
+      ahead = parseInt(counts[0], 10) || 0;
+      behind = parseInt(counts[1], 10) || 0;
+    } catch { /* brak remote-tracking ref → skip poniżej */ }
+    add('git-freshness', `świeżość drzewa (vs ${remoteRef})`, behind === 0 ? 'aktualne' : `${behind} za`, 0,
+      behind === 0,
+      behind > 0 ? `lokalne ${behind} commitów ZA ${remoteRef} (ahead ${ahead}) → \`git pull --rebase\` PRZED czytaniem stanu; audyt na stale checkout = fałszywe znaleziska (bug 2026-07-21)` : null);
+  } catch { /* nie-repo / brak gita → świadomie brak checku */ }
 }
 
 // --- output ---

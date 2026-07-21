@@ -110,6 +110,7 @@ Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK.
 - Pokaż diff/wstawkę zanim utworzysz lub nadpiszesz notatkę rejestru.
 - **Nie** postuj odpowiedzi ani nie resolve'uj wątków w Figmie sam — to robi człowiek.
 - Drafty odpowiedzi przygotuj w rejestrze; właściciel kanału decyduje, co i kiedy wklei.
+- **Komentarz należący do aktywnego epica/wątku (otwarte sub-taski) → wstrzymaj draft opisujący rozwiązanie do KOŃCA wątku.** Zaloguj i sklasyfikuj item, ale finalny draft odpowiedzi (opis rozwiązania) twórz dopiero gdy cały wątek jest zbudowany — inaczej odpowiedź się zdezaktualizuje, gdy rozwiązanie się zmieni. (Reguła epica: skill `obsidian-kanban` → „Epiki".)
 - **Drafty pisz w języku kanału review** — jeśli komentarze w Figmie są po angielsku, drafty TEŻ po angielsku (lądują wprost w komentarzach Figmy). Metki/struktura rejestru mogą zostać w języku roboczym. (Cudzysłowy w eksporcie komentarzy Figmy bywają mieszane: otwierający `„` U+201E + zamykający prosty `"` U+0022 — przy `replace` mapuj dokładny znak.)
 - Nowe notatki tematyczne → propozycja; zmiany w istniejącym rejestrze → też pokaż przed zapisem.
 

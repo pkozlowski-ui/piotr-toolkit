@@ -21,6 +21,7 @@ w czacie. Nic nie wysyłać.
    „wyślij" zadaj **jedno** pytanie: **komentarz czy podmiana opisu (description)?** — i wtedy użyj
    Linear MCP (`save_comment` / `save_issue`).
 2. Prośba o poprawkę draftu (krócej, inny ton, inne sekcje) ≠ zgoda na wysyłkę.
+3. **Timing przy epicu/wątku (TWARDE):** jeśli ticket należy do **aktywnego epica z otwartymi sub-taskami** (patrz skill `obsidian-kanban` → „Epiki") — **NIE draftuj teraz**. Draft opisu/komentarza opisującego rozwiązanie powstaje **dopiero gdy cały wątek jest zbudowany** (wszystkie sub-taski domknięte). Powód: komentarz z opisem rozwiązania, po którym rozwiązanie się jeszcze zmienia, dezaktualizuje się. Gdy wątek trwa — zbieraj materiał, ale wstrzymaj draft do końca.
 
 ## Styl (domyślny)
 - **Język: ENG** (Linear/produkt). Rozmowa ze mną dalej PL.
