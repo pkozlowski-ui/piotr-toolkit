@@ -35,11 +35,11 @@ Przykład (Manta): `KANBAN/-Kanban Board.base` · grupa `note.status` · kolumny
 
 ## Semantyka kolumn (czytaj z configu boardu — nie zakładaj)
 Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki / `CLAUDE.md`. Wzorzec (Manta):
-- **Lab** — lodówka/inbox: *do zbadania* · *przemyślenie* · *możliwy projekt* (3 różne cykle życia).
-- **To-do** — backlog rzeczy do zrobienia. Tagi: `blocked` (ktoś/coś blokuje — dopisz *co* w karcie) · `high-priority`.
-- **In progress** — **tylko to, nad czym realnie pracujesz.** „Zaraz zacznę" ≠ in-progress → trzymaj na **górze `To-do`** (kolejność = priorytet), żeby WIP był prawdziwy.
-- **To confirm** — **coś wisi na kimś / spodziewamy się lub chcemy follow-up**: nasza część gotowa, czekamy na czyjąś decyzję/odpowiedź, feedback zespołu, wysłane pytanie lub zewnętrzną blokadę. Rozróżnienie: **`In progress` = aktywnie robimy** · **`To confirm` = zrobione co po naszej stronie, czekamy na potwierdzenie/odpowiedź z zewnątrz.** Ustawiaj **odruchowo** przy domykaniu rundy, gdy zostaje open item na kimś (nie zostawiaj takiej karty na `In progress`). Dwa wyjścia: potwierdzenie/feedback OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`.
-- **Done** — zrobione i **warte pamięci dla zespołu**. To kandydat do **promocji do vaultu** (`obsidian-capture`). Po domknięciu kartę **archiwizuj** (przenieś do folderu archiwum boardu) — **nie kasuj**: zachowujemy zapis tego, co zrobione.
+- **Lab** — lodówka/inbox pomysłów: *do zbadania* · *przemyślenie* · *możliwy projekt*. **NIE backlog do zrobienia** — dopóki item nie jest gotowy do uruchomienia, zostaje w Lab.
+- **To-do** — zadania **gotowe do uruchomienia**: opisane na tyle, że agent/sesja może wziąć i realizować **bez dopytywania** (jasny cel + zakres). Kolejność = priorytet. Tagi: `blocked` (ktoś/coś blokuje — dopisz *co* w karcie) · `high-priority`. **Bramka Lab→To-do:** „czy da się to wziąć do pracy jak jest?" — jeśli nie, zostaje w Lab.
+- **In progress** — **dopiero gdy karta jest wzięta do pracy lub realizowana.** Wzięcie = claim lockiem (`kanban-claim.sh`) + pole `claimed:` we frontmatterze → widać, że pracuje nad nią agent/sesja (wątek wieloagentowy). „Zaraz zacznę" ≠ In progress → trzymaj na **górze `To-do`**.
+- **To confirm** — **wynik wymaga istotnego potwierdzenia/decyzji** (nie ogólny feedback): świadoma akceptacja Piotra lub stakeholdera jest **bramką do Done**. **NIE dla zwykłego „czekam na kogoś"** — nie-krytyczne czekanie (ogólny feedback, wysłane pytanie, zewnętrzna blokada) zostaje w **`In progress` z tagiem `blocked`** (+ co blokuje w treści), bo robota po naszej stronie nie jest domknięta do decyzji. Dwa wyjścia z To confirm: potwierdzenie OK → `Done`; „zmień X" → wraca do `To-do`/`In progress`.
+- **Done** — zrobione, karta **opisana rezultatem**: sekcja `## Rezultat` (co zrobione + link do artefaktu/PR/Figma). Przy przejściu na Done stempluj **`done_at: YYYY-MM-DD`**. Kandydat do **promocji do vaultu** (`obsidian-capture`). **Auto-archiwum:** karta Done starsza niż **30 dni** (od `done_at`) jest **automatycznie** przenoszona do folderu archiwum przez cron (`kanban-archive.sh`) — patrz operacja G. Archiwizacja nieniszcząca (`mv`), notatka żyje. **Nie kasuj.**
 
 ## Współbieżność — protokół claim (TWARDY; sesje bywają równoległe)
 Równolegle chodzi 2–4 sesje na jednej tablicy — digest boardu w kontekście sesji jest natychmiast przeterminowany. **Sama edycja frontmattera to za mało** (read-then-write race: dwie sesje czytają „wolne" i obie piszą claim; sesja która pominie claim — realny przypadek 2026-07-20 — omija protokół i robi duplikat). Dlatego mutex to **atomowy lock**, nie pole w YAML.
@@ -63,9 +63,13 @@ Kanban ma działać bez usera-operatora. **Po każdym domknięciu karty (`Done`/
 3. To propozycja (propose-first) — nie zaczynaj nowej karty bez OK usera.
 
 ## Epiki — łańcuchowanie sub-tasków i domknięcie (zadania wielowątkowe)
-Epic = duży temat rozbity na kilka kart. **Model:**
-- **Karta-epic** `EPIC · <nazwa>` (`status: In progress` dopóki żyje którykolwiek sub-task) = indeks + sekwencja; realna robota żyje w kartach granularnych.
-- **Sub-task** = osobna karta z polem frontmattera **`epic: "[[EPIC · <nazwa>]]"`** (wikilink w cudzysłowach — patrz gotcha YAML) + backlink w treści. To pole czyni łańcuch **queryowalny** bez parsowania treści.
+Epic = duży temat rozbity na kilka kart. Cel z perspektywy pracy agentów: **zachować wspólny kontekst między drobnymi zmianami i pozwolić kolejnym sesjom realizować zadania z jednego wątku** — bez re-odkrywania kontekstu za każdym razem.
+
+**Kiedy tworzyć epic (bramka):** temat wymaga **> 2–3 kart** **lub** będzie realizowany przez **wiele sesji sekwencyjnie** **lub** chcesz **zachować wspólny kontekst** między powiązanymi drobnymi zmianami. Pojedynczy task → **nie** epic (nadmiarowy overhead). Zwykle epic wyłania się, gdy jedna karta pączkuje w kilka powiązanych — wtedy zakładasz kartę-epic i podpinasz istniejące pod nią.
+
+**Model:**
+- **Karta-epic** `EPIC · <nazwa>` (`status: In progress` dopóki żyje którykolwiek sub-task) = **indeks + wspólna pamięć wątku**, nie robota. W treści trzyma: **cel epica, listę sub-tasków w kolejności, wspólne decyzje i kontekst** — to jest to, co **czyta każda następna sesja** zanim weźmie kolejny sub-task (żeby nie odtwarzać kontekstu od zera). Aktualizuj tę treść przy domykaniu każdego sub-taska (co zrobione, co dalej).
+- **Sub-task** = osobna karta z polem frontmattera **`epic: "[[EPIC · <nazwa>]]"`** (wikilink w cudzysłowach — patrz gotcha YAML) + backlink w treści. To pole czyni łańcuch **queryowalny** bez parsowania treści. Realna robota (i claim/lock) żyje **tu**, nie na karcie-epicu.
 - Kolejność sub-tasków: jeśli karta-epic ma w treści listę/sekwencję — trzymaj się jej; inaczej priorytet = kolejność w `To-do` (`high-priority` pierwsze).
 
 **Przy domknięciu sub-taska (`Done`/`To confirm`) — w tej samej odpowiedzi:**
@@ -98,6 +102,8 @@ Jeśli nadajesz **nowy** status (spoza słownika) — dopisz go do `columnOrders
 ### C) Przesuń kartę (propose-first)
 Zmień **wartość property grupującego** we frontmatter (np. `status: To-do` → `In progress`).
 **Nie zmieniaj nazwy pliku** do sygnalizacji stanu — stan żyje w property (rename psuje `[[linki]]`).
+- **→ In progress:** karta jest wzięta do pracy → claim lockiem + ustaw `claimed:` (patrz protokół claim).
+- **→ Done (TWARDE):** (1) wypełnij sekcję `## Rezultat` — co zrobione + link do artefaktu; (2) ustaw `done_at: <dziś>`; (3) zdejmij lock (release) i usuń `claimed`. Bez `## Rezultat` i `done_at` karta jest niekompletna — `done_at` napędza auto-archiwum, rezultat to pamięć zespołu.
 
 ### D) Triage inboxu „Lab" (3 kubełki)
 Dla każdej wrzutki (często goły link) w jednej linii **co to jest** → przypisz kubełek + rekomendacja:
@@ -131,6 +137,13 @@ wersja = 0 promocji przez 6 tygodni, `Done` puchnie).
 
 Cel: `Done` nie puchnie, a żaden zapis nie ginie.
 
+**Auto-archiwum Done po 30 dniach (mechanizm cron — nie ręczny):** karty w `Done` z `done_at` starszym niż 30 dni są **automatycznie** przenoszone do folderu archiwum boardu. Realizuje to skrypt `kanban-archive.sh` (obok `kanban-claim.sh` w `…/obsidian-toolkit/scripts/`), odpalany codziennie przez cron/launchd na maszynie Piotra. Zasada działania:
+- skanuje folder kart boardu, dla każdej `status: Done`:
+  - **brak `done_at`** (karta legacy) → stempluje `done_at: <dziś>` (rusza zegar; NIE archiwizuje od razu),
+  - **`done_at` starsze niż 30 dni** → `mv` do `<folder boardu>/Archive/` (nieniszcząco; karta wypada z tablicy przez filtr `file.folder`).
+- **Skrypt jest nieniszczący** (tylko `mv` + stempel daty) i idempotentny — bezpieczny do codziennego runu. **Ręczna archiwizacja z operacji G nadal obowiązuje** dla świeżo domkniętych kart wartych natychmiastowego sprzątnięcia; cron to siatka bezpieczeństwa na to, co zostanie.
+- Setup crona per-maszyna (crontab/launchd) + weryfikacja: patrz nagłówek skryptu `kanban-archive.sh`.
+
 **Promocja `Open items` z feedback-sweepu (opcjonalna, inicjowana z kanbana — NIE automatyczna):** feedback-sweep nie tworzy żadnych kart na tablicy. Jeśli chcesz, możesz **ręcznie** wziąć leftovers z notatki `Open items …` (`type: concept-backlog`) i wypromować je na board operacją F.
 
 ## Propose-first (dyscyplina zapisu)
@@ -144,10 +157,13 @@ To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, 
 status: <kolumna ze słownika boardu>
 claimed: <YYYY-MM-DD HH:MM · sesja>   # lustro locka (źródło prawdy = kanban-claim.sh); zdejmij przy domknięciu
 epic: "[[EPIC · <nazwa>]]"            # tylko sub-task epica — czyni łańcuch queryowalnym
+done_at: <YYYY-MM-DD>                 # tylko karta Done — stempel wejścia w Done; auto-archiwum liczy 30 dni od tej daty
 tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w cudzysłowach
 ---
 
 <treść: 1-liniowy opis + linki do artefaktów ([[doc]], Figma URL, repo)>
+
+## Rezultat        <!-- wypełniane przy przejściu na Done: co zrobione + link do artefaktu/PR/Figma -->
 ```
 
 ## Gotchas
