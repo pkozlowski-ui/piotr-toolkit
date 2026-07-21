@@ -205,7 +205,10 @@ if (mode === 'hook' && warnings.length === 0) process.exit(0); // czysto → cis
 const icon = c => c.ok ? '✅' : '⚠️';
 const lines = [];
 lines.push(`🧹 Hygiene audit — ${cfg.project}`);
-for (const c of checks) {
+// --hook (SessionStart) = pokazuj TYLKO ⚠️ wymagające uwagi/decyzji — bez ściany ✅.
+// human (ręczny) + json (agent-audyt) = pełny raport wszystkich checków.
+const shown = mode === 'hook' ? warnings : checks;
+for (const c of shown) {
   const val = c.limit != null && c.id !== 'archive-dir' ? `${c.value} / ${c.limit}` : `${c.value}`;
   lines.push(`  ${icon(c)} ${c.label}: ${val}${c.detail ? `\n       → ${c.detail}` : ''}`);
 }
