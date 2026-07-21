@@ -355,6 +355,27 @@ Step 7: Final validation of the whole screen
 | Font error | Missing loadFontAsync | Add `await figma.loadFontAsync(...)` before text ops |
 | `"Cannot move node. New parent is an instance or is inside of an instance"` | Appending to a plain FRAME inside an instance | The target frame must be a SLOT node. In the DS component use `componentNode.createSlot()` instead of `createFrame()`. Then in instances: `instance.findOne(n => n.type === 'SLOT').appendChild(newChild)` |
 
+## Reversibility & destructive edits — there is NO programmatic undo
+
+The Plugin API has **no `figma.triggerUndo()`**. A script mutation is undoable ONLY by the user pressing **Cmd/Ctrl+Z in Figma Desktop** — which is **global and sequential** (undoes your most recent op first; can't target one node/screen). And **Cmd+Z stops being a clean option the moment you make a new edit** — further scripting would be peeled off first. So "just undo it" expires fast.
+
+⚠️ **Deleting an instance destroys its per-instance overrides permanently (as far as scripting goes).** Instances carry overrides — text content, variant state, swaps, position — that live ONLY on the instance, not the master. `node.remove()` loses them for good; re-instantiating the master gives the **master default** (often blank/generic), NOT the deleted content. (Real case: deleted per-screen ViewSwitcher instances whose whole dropdown menu — group labels, rows, captions — was per-instance; master held only the trigger → the menu was unrecoverable by script.)
+
+**Rules:**
+- **Snapshot before ANY destructive / replacing edit** (`remove`, replace-by-clone, `detachInstance`, bulk variant change). Capture what you'd need to rebuild — into your `return` (or a screenshot). Cheap insurance:
+  ```js
+  const snap = { name:node.name, x:node.x, y:node.y,
+    texts: node.findAll(n=>n.type==='TEXT').map(t=>({id:t.id, s:t.characters})),
+    props: (()=>{ try{ return node.componentProperties; }catch(e){ return null; } })() };
+  return snap;   // keep it, THEN mutate in the next call
+  ```
+- **Prefer non-destructive edits so state stays recoverable** — `visible=false` or repurpose-in-place instead of `remove()`; change text/variant on the existing instance instead of delete+recreate. Reversible by construction.
+- **Recovery hierarchy (best → worst):**
+  1. **User Cmd+Z** — perfect restore, but only *before* you make new edits, and global.
+  2. **Reconstruct from snapshot/screenshot** — a *build*, not a restore: clone a known-good sibling that shares the master (e.g. an intact instance on another screen), re-apply the snapshotted content, then `figma_capture_screenshot` to confirm. Residual risk — call it "reconstructed", never "restored".
+  3. **Version history** (`figma_get_file_versions` + restore) — heavy, last resort.
+- **If you've already deleted and can't restore risk-free — SAY SO.** Don't silently reconstruct and declare it fixed. Offer the user their Cmd+Z (if still valid) or a flagged reconstruction, and let them choose which.
+
 ## Pre-flight checklist (before figma_execute)
 
 - `return` used as output (not `console.log`, not `figma.notify`)
