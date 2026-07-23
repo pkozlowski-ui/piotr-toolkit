@@ -1,7 +1,7 @@
 {
   "name": "workflow-toolkit",
-  "version": "1.20.0",
-  "description": "Universal Claude Code workflow skills + reliability enforcement: anti-bloat guard on instruction files, per-turn hard-rule re-injection, independent verifier subagent, plus project bootstrap, machine bootstrap, project hygiene audit (2-layer: deterministic linter + judgement agent), skill usage audit (adoption, trigger fidelity, dead-skill triage on session transcripts), session retro, design system lookup, browser verification, pre-deploy verification, coding principles, second-opinion advisor, structured divergent ideation (isolated frames → adversarial critic → deepen), handoff, memory discipline, web research, Linear ticket drafts. Works across any project type.",
+  "version": "1.21.0",
+  "description": "Universal Claude Code workflow skills + reliability enforcement: anti-bloat guard on instruction files, per-turn hard-rule re-injection, independent verifier subagent, plus project bootstrap, machine bootstrap, project hygiene audit (2-layer: deterministic linter + judgement agent), skill usage audit (adoption, trigger fidelity, dead-skill triage on session transcripts), session retro, design system lookup, browser verification, claude.ai Artifact prototyping (CSP transform, base64-safe embed, Figma asset extraction), pre-deploy verification, coding principles, second-opinion advisor, structured divergent ideation (isolated frames → adversarial critic → deepen), handoff, memory discipline, web research, Linear ticket drafts. Works across any project type.",
   "author": {
     "name": "pkozlowski-ui",
     "email": "piotr.kozlowski@sunscrapers.com",
@@ -24,6 +24,10 @@
     "session-retro",
     "design-system",
     "verification",
+    "artifact",
+    "claude-artifact-prototype",
+    "prototype",
+    "csp",
     "pre-deploy-vercel",
     "coding-principles",
     "second-opinion",
