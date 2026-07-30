@@ -208,6 +208,38 @@ if (cfg.promptingAudit && cfg.promptingAudit.lastRun) {
   }
 }
 
+// 10) rejestry node-ID vs realny plik designu — kadencja + stan ostatniego biegu
+//     Sam check wymaga Figmy (`use_figma`), więc NIE odpala się tutaj: hook czyta tylko
+//     RAPORT z dysku (offline). Dwa sygnały, świadomie rozdzielone — `dangling` to zmierzony
+//     defekt, a przestarzały raport to BRAK POMIARU; ten drugi wygląda identycznie jak
+//     „czysto", więc musi mieć własny komunikat.
+if (cfg.registryNodeIds && cfg.registryNodeIds.reportPath) {
+  const rnPath = join(root, cfg.registryNodeIds.reportPath);
+  const everyDays = cfg.registryNodeIds.everyDays || 7;
+  if (!existsSync(rnPath)) {
+    add('registry-node-ids', 'rejestry node-ID (raport)', 'brak', 0, false,
+      `nigdy nie mierzone → odpal: node .claude/scripts/registry-node-ids.mjs --extract, sonda w Figmie, --verdict (runbook: ${cfg.registryNodeIds.runbook || 'docs/audits/README.md'})`);
+  } else {
+    try {
+      const rep = JSON.parse(readFileSync(rnPath, 'utf8'));
+      const ageDays = Math.floor((Date.now() - statSync(rnPath).mtimeMs) / 86400e3);
+      const s = rep.summary || {};
+      const bad = (s.dangling || 0) + (s.unresolved || 0);
+      if (bad > 0) {
+        add('registry-node-ids', 'rejestry node-ID (dangling + unresolved)', bad, 0, false,
+          `${s.dangling || 0} dangling, ${s.unresolved || 0} bez pomiaru (raport z przed ${ageDays} dni) → napraw rejestr albo dopisz nagrobek; szczegóły w ${cfg.registryNodeIds.reportPath}`);
+      } else {
+        add('registry-node-ids', `rejestry node-ID (dni od pomiaru, próg ${everyDays})`, ageDays, everyDays,
+          ageDays <= everyDays,
+          ageDays > everyDays ? `raport starszy niż ${everyDays} dni → przemierz (rejestr mógł zgnić po kasowaniu masterów)` : null);
+      }
+    } catch {
+      add('registry-node-ids', 'rejestry node-ID (raport)', 'nieczytelny', 0, false,
+        `${cfg.registryNodeIds.reportPath} nie parsuje się → przemierz check`);
+    }
+  }
+}
+
 // --- output ---
 const warnings = checks.filter(c => !c.ok);
 
