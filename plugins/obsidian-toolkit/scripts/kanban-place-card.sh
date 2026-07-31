@@ -120,7 +120,13 @@ if card in existing:
     i_end -= 1
 
 item_indent = " " * (col_indent + 2)
-quoted = f'"{card}"' if (":" in card or card.strip() != card) else card
+
+# Quote unless the path is plain-safe. `:` is the obvious one, but `#` is the dangerous one:
+# an unquoted `- KANBAN/Card (po #131).md` is a YAML comment from `#` onward, so the next
+# reader gets the path truncated to `KANBAN/Card (po` and can materialise a phantom card
+# under that name (measured on the Manta board 2026-07-31 — one card, three files).
+UNSAFE = set(':#"\'[]{},&*?|>!%@`\n\t')
+quoted = f'"{card}"' if (UNSAFE & set(card) or card.strip() != card) else card
 new_line = f"{item_indent}- {quoted}"
 
 insert_at = (entries[0][0] if entries else i_col + 1) if where == "top" else i_end
