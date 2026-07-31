@@ -24,15 +24,25 @@
 #
 # Exit: 0 OK · 2 błąd użycia
 #
-# --- Setup crona na macOS (launchd — przeżywa reboot, nie wymaga otwartego terminala) ---
-#   Utwórz ~/Library/LaunchAgents/com.piotr.kanban-archive.plist z ProgramArguments:
-#     [ "/bin/bash",
-#       "/Users/piotrkozlowski/Documents/piotr-toolkit/plugins/obsidian-toolkit/scripts/kanban-archive.sh",
-#       "/Users/piotrkozlowski/Documents/Manta Vault/KANBAN" ]
-#   + StartCalendarInterval (Hour 9, Minute 0) → codziennie 9:00.
-#   Załaduj: launchctl load ~/Library/LaunchAgents/com.piotr.kanban-archive.plist
-#   (Alternatywa: wpis w `crontab -e`:  0 9 * * *  /bin/bash <ścieżka skryptu> "<kanban_dir>")
-#   Weryfikacja przed podpięciem: KANBAN_ARCHIVE_DRYRUN=1 kanban-archive.sh "<kanban_dir>"
+# --- Jak to odpalać cyklicznie ---
+#   ⚠️ NIE przez LaunchAgent, jeśli vault leży w ~/Documents (albo Desktop/Downloads).
+#   macOS TCC blokuje procesy spod `launchd` na katalogach chronionych. Instrukcja, która tu
+#   wcześniej stała, kazała założyć com.piotr.kanban-archive.plist — i tak zrobiono: agent był
+#   załadowany, odpalał się codziennie o 9:00 i przez cały ten czas NIE ZROBIŁ NIC. Cały jego
+#   log to `Operation not permitted` (zmierzone 2026-07-31, plist wyłączony i przeniesiony do
+#   ~/Library/LaunchAgents/disabled/). Zaplanowany automat, którego logu nikt nie przeczytał,
+#   jest nieodróżnialny od działającego-cichego.
+#
+#   Uwaga przy diagnozie: `[ -r "$plik" ]` zwraca PRAWDĘ pod TCC, mimo że realny odczyt pada.
+#   Testuj operacją (`head -c`, `ls`), nie warunkiem — inaczej mierzysz proxy, nie właściwość.
+#
+#   Kanał, który działa: zadanie w `scheduled-tasks` aplikacji Claude (task `kanban-archive-done`,
+#   codziennie 9:00) — aplikacja ma dostęp do dysku, więc skrypt czyta i przenosi normalnie.
+#   Alternatywa: Full Disk Access dla tego, co odpala skrypt — szerokie uprawnienie systemowe,
+#   świadoma decyzja, nie ciche obejście.
+#
+#   Weryfikacja przed podpięciem GDZIEKOLWIEK: KANBAN_ARCHIVE_DRYRUN=1 kanban-archive.sh "<kanban_dir>"
+#   i przeczytaj log po PIERWSZYM realnym odpaleniu, zanim uznasz automat za zrobiony.
 set -uo pipefail
 
 kdir="${1:-}"
