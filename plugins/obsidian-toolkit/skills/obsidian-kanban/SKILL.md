@@ -40,7 +40,7 @@ Każdy board ma swoje znaczenia; dla danego boardu czytaj je z notatki semantyki
 - **In progress** — **dopiero gdy karta jest wzięta do pracy lub realizowana.** Wzięcie = claim lockiem (`kanban-claim.sh`) + pole `claimed:` we frontmatterze → widać, że pracuje nad nią agent/sesja (wątek wieloagentowy). „Zaraz zacznę" ≠ In progress → trzymaj na **górze `To-do`**.
 - **To confirm** — **wszystko, co czeka na czyjś ruch, a nie na mój**: potwierdzenie/decyzja Piotra lub stakeholdera, zebranie feedbacku, ORAZ **każda karta `blocked`** (zewnętrzna blokada, wysłane pytanie, cudza odpowiedź) — **niezależnie od tego, czy robota po naszej stronie jest domknięta**. W karcie **zawsze** dopisz *co/kto* blokuje. Dwa wyjścia z To confirm: potwierdzenie OK / blokada spadła → `Done` albo powrót do `To-do`/`In progress` (zdejmij wtedy tag `blocked`); „zmień X" → `To-do`/`In progress`.
   - **Dlaczego blocked NIE zostaje w `In progress`** (decyzja Piotra 2026-07-29, odwrócenie wcześniejszej reguły): `In progress` ma pokazywać **realny WIP**. Karty stojące na czyjejś odpowiedzi zaśmiecały widok tego, nad czym faktycznie się pracuje, i kolumna przestawała być wiarygodna. `To confirm` = jeden kubełek na „nie jest w moich rękach".
-- **Done** — zrobione, karta **opisana rezultatem**: sekcja `## Rezultat` (co zrobione + link do artefaktu/PR/Figma). Przy przejściu na Done stempluj **`done_at: YYYY-MM-DD`**. Kandydat do **promocji do vaultu** (`obsidian-capture`). **Auto-archiwum:** karta Done starsza niż **30 dni** (od `done_at`) jest **automatycznie** przenoszona do folderu archiwum przez cron (`kanban-archive.sh`) — patrz operacja G. Archiwizacja nieniszcząca (`mv`), notatka żyje. **Nie kasuj.**
+- **Done** — zrobione, karta **opisana rezultatem**: sekcja `## Rezultat` (co zrobione + link do artefaktu/PR/Figma). Przy przejściu na Done stempluj **`done_at: YYYY-MM-DD`**. Kandydat do **promocji do vaultu** (`obsidian-capture`). **Auto-archiwum:** karta Done starsza niż **30 dni** (od `done_at`) ma być przenoszona do folderu archiwum przez `kanban-archive.sh` — ale **na 2026-07-31 ten automat NIE DZIAŁA** (LaunchAgent zablokowany przez TCC, patrz operacja G); do czasu przepięcia na działający kanał archiwizuj ręcznie. Archiwizacja nieniszcząca (`mv`), notatka żyje. **Nie kasuj.**
 
 ## Współbieżność — protokół claim (TWARDY; sesje bywają równoległe)
 Równolegle chodzi 2–4 sesje na jednej tablicy — digest boardu w kontekście sesji jest natychmiast przeterminowany. **Sama edycja frontmattera to za mało** (read-then-write race: dwie sesje czytają „wolne" i obie piszą claim; sesja która pominie claim — realny przypadek 2026-07-20 — omija protokół i robi duplikat). Dlatego mutex to **atomowy lock**, nie pole w YAML.
@@ -149,6 +149,17 @@ Cel: `Done` nie puchnie, a żaden zapis nie ginie.
   - **`done_at` starsze niż 30 dni** → `mv` do `<folder boardu>/Archive/` (nieniszcząco; karta wypada z tablicy przez filtr `file.folder`).
 - **Skrypt jest nieniszczący** (tylko `mv` + stempel daty) i idempotentny — bezpieczny do codziennego runu. **Ręczna archiwizacja z operacji G nadal obowiązuje** dla świeżo domkniętych kart wartych natychmiastowego sprzątnięcia; cron to siatka bezpieczeństwa na to, co zostanie.
 - Setup crona per-maszyna (crontab/launchd) + weryfikacja: patrz nagłówek skryptu `kanban-archive.sh`.
+- **⚠️ LaunchAgent NIE JEST działającym kanałem dla vaultu w `~/Documents` (zmierzone 2026-07-31).**
+  macOS TCC blokuje procesy odpalone przez `launchd` na katalogach chronionych — probe z realnymi
+  operacjami (nie `[ -r ]`, które **kłamie** pod TCC) dał `read: DENIED`, `list dir: DENIED`.
+  `com.piotr.kanban-archive.plist` był załadowany i odpalał się codziennie, a jego log zawiera
+  wyłącznie `Operation not permitted` — czyli **auto-archiwum nigdy nie zadziałało**, wyglądając
+  na skonfigurowane. To ta sama klasa co „martwy check": zaplanowany automat bez sprawdzonego
+  logu jest nieodróżnialny od działającego-cichego.
+  **Działający kanał = zadanie w `scheduled-tasks` aplikacji Claude** (aplikacja ma dostęp do
+  dysku, więc czyta i zapisuje vault normalnie) albo nadanie Full Disk Access temu, co odpala
+  skrypt — to drugie jest szerokim uprawnieniem i wymaga świadomej zgody, nie cichego obejścia.
+  **Zakładasz automat na vault → sprawdź LOG po pierwszym odpaleniu, zanim uznasz go za zrobiony.**
 
 **Promocja `Open items` z feedback-sweepu (opcjonalna, inicjowana z kanbana — NIE automatyczna):** feedback-sweep nie tworzy żadnych kart na tablicy. Jeśli chcesz, możesz **ręcznie** wziąć leftovers z notatki `Open items …` (`type: concept-backlog`) i wypromować je na board operacją F.
 
