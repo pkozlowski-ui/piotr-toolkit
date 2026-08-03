@@ -41,6 +41,21 @@ Cross-domain → skill domeny PRIMARY (on odsyła do secondary). Niejasne → je
 - **Bridge pada mid-session i nie wstaje → nie pętlij reconnectów**: przełącz write na
   `use_figma` (`figma-cloud`); Bridge zostaw do screenshotów/inspekcji. Szczegóły:
   `figma-console` → "Connection — resilience protocol".
+- **⚠️ `use_figma` nie ma sufitu CZASU, ale ma twardy sufit ROZMIARU: `code` = 50 000 znaków
+  (ze schematu narzędzia).** Dlatego kierunek „bulk → `use_figma`" NIE przenosi się na
+  wklejane bloki audytowe/gate'owe projektu: gdy taki blok przerośnie 50k, `use_figma`
+  przestaje być jego kanałem — i **minifikacja to tylko odroczenie** (antisys 2026-07-31:
+  blok gate'a 104 852 znaki, `terser --module` bez compress/mangle → 59 095, dalej nad capem).
+  Wtedy gate jedzie WYŁĄCZNIE przez Bridge (`figma_execute`: bez capa, `globalThis`
+  persystuje między callami, ale ~5 s → dziel EKRANY na partie), a **sesja cloud/telefon
+  buduje i raportuje, ale nie domyka** („done" wypowiada sesja desktopowa).
+  **Nigdy nie składaj krótszego zestawu checków, żeby weszło w cap** — brakująca soczewka
+  daje zielone nieodróżnialne od czystego. Per-projekt kanon gate'a rozstrzyga projektowy
+  `CLAUDE.md`/build-kit, nie ten plik.
+- **`globalThis` persystuje TYLKO w `figma_execute`; `use_figma` daje świeży sandbox per call**
+  (zmierzone z kontrolą negatywną: zapis w callu A → odczyt w B = `undefined`, przy działającym
+  zapisie w samym B). Trick „wyślij blok raz, potem `globalThis.__gate(id)`" jest więc
+  własnością Bridge'a — w `use_figma` blok leci w KAŻDYM wywołaniu i to on wyczerpuje cap.
 
 ## Hand-off do oficjalnego pluginu Figma (`figma@claude-plugins-official`)
 
