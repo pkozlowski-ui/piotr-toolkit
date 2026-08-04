@@ -85,6 +85,20 @@ add('claudemd-size', `${cfg.claudeMd.path} (linie, always-on)`, cmLines, cfg.cla
   cmLines <= cfg.claudeMd.maxLines,
   cmLines > cfg.claudeMd.maxLines ? `${cmLines - cfg.claudeMd.maxLines} linii ponad próg → skróć/przenieś do DS-docs (skrót+wskaźnik)` : null);
 
+// 4b) rozmiar CLAUDE.md w BAJTACH — realny always-on koszt.
+//     Liczba linii to PROXY, które przestaje śledzić koszt, gdy treść rośnie DŁUGOŚCIĄ linii
+//     zamiast ich liczbą (zmierzone 2026-08-04 w antisys prototype: 50 847 B → 97 096 B
+//     w 10 dni przy 212 → 241 linii, czyli 36% zapasu na liczniku przy +91% realnego payloadu;
+//     jeden bullet miał 21 KB = 21,6% pliku). Próg opcjonalny — sprawdzany tylko gdy podany.
+if (cfg.claudeMd.maxBytes != null && existsSync(cmPath)) {
+  const cmBytes = Buffer.byteLength(readFileSync(cmPath, 'utf8'), 'utf8');
+  add('claudemd-bytes', `${cfg.claudeMd.path} (bajty, always-on)`, cmBytes, cfg.claudeMd.maxBytes,
+    cmBytes <= cfg.claudeMd.maxBytes,
+    cmBytes > cfg.claudeMd.maxBytes
+      ? `${cmBytes - cfg.claudeMd.maxBytes} B ponad próg → zwiń najdłuższy bullet do imperatywu + wskaźnika na DS-docs (licznik linii tego NIE pokaże), albo podnieś baseline świadomie w tym samym commicie`
+      : null);
+}
+
 // 5) markery design-detalu w CLAUDE.md (anti-bloat treści, nie tylko rozmiaru)
 //    Proxy jakościowy: node-IDs / hex / surowe px to niemal zawsze design-detal,
 //    który należy do registry/canonical-patterns, nie do always-on CLAUDE.md.
