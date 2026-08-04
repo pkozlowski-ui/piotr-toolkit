@@ -171,12 +171,18 @@ if (cfg.modelPolicy) {
     }
 
     const minMech = mp.minMechSessionsToExpectDelegation ?? 2;
-    const ok = !(mechSessions >= minMech && delegTotal === 0);
+    // HIPOTEZA 2026-08-04 (audyt tokenów, baseline: Haiku = 0,14% wagi zużycia przy regule
+    // "mechanika → Haiku"): sam delegTotal>0 maskował problem — delegacje szły na Sonnet/Opus,
+    // mechanika zostawała w głównej sesji. Alert także gdy delegacje są, ale zero na Haiku.
+    // Walidacja: następny audyt tokenów (~2 tyg.) — udział Haiku ma wzrosnąć, inne checki bez regresu.
+    const ok = !(mechSessions >= minMech && (delegTotal === 0 || deleg.haiku === 0));
     const breakdown = `h:${deleg.haiku} s:${deleg.sonnet} o:${deleg.opus}` +
       (deleg.fable ? ` f:${deleg.fable}` : '') + (deleg.other ? ` ?:${deleg.other}` : '');
     add('model-delegation', `dobór modelu (deleg vs mechanika, ${mp.windowDays || 3}d)`,
       `${delegTotal} deleg [${breakdown}] / ${mechSessions} mech-sesji`, null, ok,
-      ok ? null : `${mechSessions} sesji z mechaniczną robotą Figma, 0 delegacji → deleguj sweepy/audyty do Haiku/Sonnet (subagent), nie rób ich na modelu głównej sesji`);
+      ok ? null : (delegTotal === 0
+        ? `${mechSessions} sesji z mechaniczną robotą Figma, 0 delegacji → deleguj sweepy/audyty do Haiku/Sonnet (subagent), nie rób ich na modelu głównej sesji`
+        : `${mechSessions} sesji z mechaniką Figma, delegacje są (${delegTotal}) ale ŻADNA na Haiku → mechanikę (sweepy, audyty, batch-edycje) kieruj do subagenta Haiku/low, nie Sonnet/Opus`));
   } catch { /* higiena modelu nigdy nie blokuje audytu */ }
 }
 
