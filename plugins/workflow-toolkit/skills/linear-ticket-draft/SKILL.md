@@ -29,8 +29,25 @@ w czacie. Nic nie wysyłać.
 - **Pisz jak człowiek wypełniający ticket. Zero śladów AI:** bez kursywy (`*...*`), bez em-dashy (—),
   bez przesadnie równoległych fraz, bez „Note:", bez emoji, bez „we're excited / delivered a robust…".
 - **Bold tylko na mini-nagłówki sekcji** (`**Screens**`, `**Not included**`). Bullety dla list.
-- **Linki (Figma / PR / repo) = osobne bullety, jeden pod drugim**, w sekcji na końcu (np. `**Figma**`).
-  URL z node-id: `…?node-id=ID-z-myślnikiem` (np. `4180-137260`).
+- **Linki KONTEKSTOWO, nie zbiorczo (TWARDA, standard od 2026-08-05).** Każdy ekran/element wymieniony
+  w `**Screens**` dostaje SWÓJ WŁASNY link Figma wpięty w tym samym bullet-poincie — nie osobna sekcja
+  linków na końcu. Powód: reviewer klika prosto w opisany ekran, zamiast szukać go w zbiorczej liście.
+  Format bulleta: `- Screen name: what it does. [Figma](url)` (markdown link, nie goły URL — czytelniej
+  w renderze Linear). Zbiorcza sekcja `**Figma**` na końcu zostaje TYLKO gdy link dotyczy całego
+  flow/sekcji jako całości (np. link do sekcji z wszystkimi ekranami obok siebie) — nie duplikuj tam
+  linków już wpiętych przy screenach. URL z node-id: `…?node-id=ID-z-myślnikiem` (np. `4180-137260`).
+- **⚠️ Jeden draft = JEDNA lista linków, licz PRZED pokazaniem (regresja 2026-08-06, MAN-781 — nie w
+  Linearze, w analogicznym Figma-comment draftcie tej samej dyscypliny, więc reguła i tak dotyczy tego
+  skilla).** Realny fail: draft komentarza wymieniał 3 ekrany, ale treść komentarza linkowała tylko 2
+  (trzeci żył wyłącznie jako osobny „anchor:" label poza cytowanym blokiem) — potem w TEJ SAMEJ
+  odpowiedzi doszła osobna „lista wszystkich 3 linków" pod spodem. Dwa niezależne miejsca z linkami do
+  tych samych rzeczy zawsze się rozjadą przy edycji, i user złapał to od razu (liczba w drafcie ≠
+  liczba w liście). Fix nie jest kosmetyczny — to jest DOKŁADNIE reguła z akapitu wyżej („nie osobna
+  sekcja linków na końcu"), złamana przez zbudowanie drugiej listy PO fakcie zamiast poprawienia
+  oryginalnego draftu. **Przed pokazaniem JAKIEGOKOLWIEK draftu z linkami: policz linki w treści vs
+  policz wymienione z nazwy elementy — muszą się zgadzać 1:1, i to ma być JEDYNE miejsce z linkami w
+  całej odpowiedzi.** Jeśli czegoś brakuje — dopisz link W TYM SAMYM miejscu w treści, nie jako
+  dodatkową listę obok.
 
 ## Czego NIE robić
 - **Pomijaj design system** — tokeny, komponenty DS, parytet Mantine, audyty, node-id, nazwy warstw.
@@ -42,10 +59,12 @@ w czacie. Nic nie wysyłać.
 ## Struktura (elastyczna — tnij puste sekcje)
 1. **Nagłówek** — krótka nazwa zakresu (bez em-dasha).
 2. 1 zdanie kontekstu (gdzie zbudowane; ew. rename / przeniesienia).
-3. **Screens** (albo What's built) — bullety: ekran/element + 1 linia co robi.
+3. **Screens** (albo What's built) — bullety: ekran/element + 1 linia co robi + **link Figma DO TEGO
+   EKRANU wpięty w ten sam bullet** (`[Figma](url)`), nie zbiorczo na końcu.
 4. Krótki akapit per kluczowy obszar, jeśli potrzebny.
 5. **Not included** — co świadomie poza zakresem i dokąd należy (fakt, nie decyzja).
-6. **Figma** (lub **Links**) — bullety, jeden link pod drugim.
+6. **Figma** (lub **Links**) — TYLKO jeśli zostaje link do czegoś, co nie jest pojedynczym ekranem z
+   punktu 3 (np. cała sekcja/flow widziany na canvasie naraz, PR, repo). Nie duplikuj tu linków ekranów.
 
 ## Długość: description vs komentarz
 - **Opis ticketu (description)** = ten strukturalny draft — kompletny, ale skondensowany.
