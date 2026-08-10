@@ -50,6 +50,11 @@ w czacie. Nic nie wysyłać.
   dodatkową listę obok.
 
 ## Czego NIE robić
+- **Nigdy link do GitHub PR (TWARDA, recurring — Piotr poprawiał to wielokrotnie, ostatnio na
+  MAN-825, 2026-08-10).** PR to mechanika budowy repo, nie treść produktowa — ta sama zasada co
+  „pomijaj design system" niżej. Zostaje: link do prototypu/Vercel (deliverable, nie mechanizm),
+  link Figma per-ekran/sekcja. `**Links**`/`**Figma**` z punktu 6 struktury NIGDY nie zawiera PR,
+  nawet jako przykład użycia.
 - **Pomijaj design system** — tokeny, komponenty DS, parytet Mantine, audyty, node-id, nazwy warstw.
   To nie treść produktowego taska.
 - **Nie przypisuj sobie decyzji i nie podsumowuj „decyzji do podjęcia".** Decyzje produktowe/designerskie
@@ -64,7 +69,8 @@ w czacie. Nic nie wysyłać.
 4. Krótki akapit per kluczowy obszar, jeśli potrzebny.
 5. **Not included** — co świadomie poza zakresem i dokąd należy (fakt, nie decyzja).
 6. **Figma** (lub **Links**) — TYLKO jeśli zostaje link do czegoś, co nie jest pojedynczym ekranem z
-   punktu 3 (np. cała sekcja/flow widziany na canvasie naraz, PR, repo). Nie duplikuj tu linków ekranów.
+   punktu 3 (np. cała sekcja/flow widziany na canvasie naraz, prototyp/Vercel). NIGDY link do PR
+   (patrz „Czego NIE robić"). Nie duplikuj tu linków ekranów.
 
 ## Długość: description vs komentarz
 - **Opis ticketu (description)** = ten strukturalny draft — kompletny, ale skondensowany.
