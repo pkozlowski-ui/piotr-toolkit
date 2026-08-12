@@ -99,6 +99,23 @@ if (cfg.claudeMd.maxBytes != null && existsSync(cmPath)) {
       : null);
 }
 
+// 4c) najdłuższa linia CLAUDE.md w znakach — łapie bloat niewidoczny dla liczby linii/bajtów.
+//     Zmierzone 2026-08-10 (antisys prototype): 241/380 linii ✅, ale jedna linia miała
+//     27 885 znaków (~26% pliku) — licznik linii/bajtów tego nie widzi, gdy treść rośnie
+//     GĘSTOŚCIĄ jednej linii, nie ich liczbą. Próg opcjonalny (jak maxBytes) — sprawdzany
+//     tylko gdy podany w configu.
+if (cfg.claudeMd.maxLineChars != null && existsSync(cmPath)) {
+  const cmText = readFileSync(cmPath, 'utf8');
+  const cmLinesArr = cmText.split('\n');
+  let maxLen = 0, maxLineNo = 0;
+  cmLinesArr.forEach((l, i) => { if (l.length > maxLen) { maxLen = l.length; maxLineNo = i + 1; } });
+  add('claudemd-max-line-chars', `${cfg.claudeMd.path} (najdłuższa linia, znaki)`, maxLen, cfg.claudeMd.maxLineChars,
+    maxLen <= cfg.claudeMd.maxLineChars,
+    maxLen > cfg.claudeMd.maxLineChars
+      ? `linia ${maxLineNo} ma ${maxLen} znaków (próg ${cfg.claudeMd.maxLineChars}) → zwiń do imperatywu + wskaźnika na DS-docs/eval-README, nie duplikuj tam pełnego tekstu`
+      : null);
+}
+
 // 5) markery design-detalu w CLAUDE.md (anti-bloat treści, nie tylko rozmiaru)
 //    Proxy jakościowy: node-IDs / hex / surowe px to niemal zawsze design-detal,
 //    który należy do registry/canonical-patterns, nie do always-on CLAUDE.md.
