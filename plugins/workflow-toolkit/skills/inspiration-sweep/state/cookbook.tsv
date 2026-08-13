@@ -1,0 +1,95 @@
+# cookbook — entries already reviewed by inspiration-sweep. One per line: id<TAB>firstSeen<TAB>title
+# Delete a line (or: snapshot.mjs forget cookbook <id>) to have the next sweep look at it again.
+capabilities-classification-guide	2026-08-13	Classification
+capabilities-contextual-embeddings-guide	2026-08-13	Enhancing RAG with contextual retrieval
+capabilities-knowledge-graph-guide	2026-08-13	Knowledge graph construction
+capabilities-retrieval-augmented-generation-guide	2026-08-13	Retrieval augmented generation
+capabilities-summarization-guide	2026-08-13	Summarization
+capabilities-text-to-sql-guide	2026-08-13	Text to SQL
+claude-agent-sdk-00-the-one-liner-research-agent	2026-08-13	The one-liner research agent
+claude-agent-sdk-01-the-chief-of-staff-agent	2026-08-13	The chief of staff agent
+claude-agent-sdk-02-the-observability-agent	2026-08-13	The observability agent
+claude-agent-sdk-03-the-site-reliability-agent	2026-08-13	The site reliability agent
+claude-agent-sdk-04-migrating-from-openai-agents-sdk	2026-08-13	Migrating from the OpenAI Agents SDK
+claude-agent-sdk-05-building-a-session-browser	2026-08-13	Building a session browser
+claude-agent-sdk-06-the-vulnerability-detection-agent	2026-08-13	The vulnerability detection agent
+claude-agent-sdk-07-hosting-the-agent	2026-08-13	Hosting your agent
+claude-agent-sdk-08-dynamic-workflows	2026-08-13	Orchestrate subagents at scale with dynamic workflows
+coding-prompting-for-frontend-aesthetics	2026-08-13	Prompting for frontend aesthetics
+cost-optimization-cost-optimization	2026-08-13	Cost Optimization on the Claude API
+evals-agentic-search-reproduce-agentic-search-benchmarks	2026-08-13	Reproduce agentic search benchmark scores
+extended-thinking-extended-thinking	2026-08-13	Extended thinking
+extended-thinking-extended-thinking-with-tool-use	2026-08-13	Extended thinking with tool use
+fable-5-fallback-billing-guide	2026-08-13	Classifier fallback and billing for Claude Fable 5
+finetuning-finetuning-on-bedrock	2026-08-13	Finetuning Claude 3 Haiku on Bedrock
+managed-agents-cma-cap-session-spend	2026-08-13	Budgets: cap what a session can spend
+managed-agents-cma-consult-an-advisor	2026-08-13	Advisor: consult a stronger model mid-turn
+managed-agents-cma-coordinate-specialist-team	2026-08-13	Multiagent: coordinate a specialist team
+managed-agents-cma-iterate-fix-failing-tests	2026-08-13	Iterate on a failing test suite
+managed-agents-cma-operate-in-production	2026-08-13	Managed Agents production setup
+managed-agents-cma-pin-inference-geo	2026-08-13	Data residency: pin inference geography
+managed-agents-cma-plan-big-execute-small	2026-08-13	Coordinator: big models plan, small models execute
+managed-agents-cma-prompt-versioning-and-rollback	2026-08-13	Prompt versioning and rollback
+managed-agents-cma-remember-user-preferences	2026-08-13	Build agents that remember your users
+managed-agents-cma-use-skills-from-a-repo	2026-08-13	Skills: pick up a repo's .claude/skills
+managed-agents-cma-verify-with-outcome-grader	2026-08-13	Outcomes: agents that verify their own work
+managed-agents-cma-watch-subagents-live	2026-08-13	Multiagent: watch a curriculum team work in real time
+managed-agents-cma-with-mongodb-atlas	2026-08-13	Fraud Review Agent with MongoDB Atlas
+managed-agents-data-analyst-agent	2026-08-13	Data analyst agent
+managed-agents-slack-data-bot	2026-08-13	Slack data analyst bot
+managed-agents-sre-incident-responder	2026-08-13	SRE incident response agent
+misc-batch-processing	2026-08-13	Batch processing with Message Batches API
+misc-building-evals	2026-08-13	Building evals
+misc-building-moderation-filter	2026-08-13	Building a moderation filter
+misc-generate-test-cases	2026-08-13	Generate synthetic test data for your prompt template
+misc-how-to-enable-json-mode	2026-08-13	Prompting for JSON mode
+misc-how-to-make-sql-queries	2026-08-13	How to make SQL queries
+misc-metaprompt	2026-08-13	Metaprompt
+misc-pdf-upload-summarization	2026-08-13	Uploading PDFs to Claude via the API
+misc-prompt-caching	2026-08-13	Prompt caching through the Claude API
+misc-read-web-pages-with-haiku	2026-08-13	Summarizing web page content with Haiku
+misc-sampling-past-max-tokens	2026-08-13	Sampling beyond the max tokens limit
+misc-session-memory-compaction	2026-08-13	Session memory compaction
+misc-speculative-prompt-caching	2026-08-13	Speculative prompt caching
+misc-using-citations	2026-08-13	Citations
+multimodal-best-practices-for-vision	2026-08-13	Best practices for using vision
+multimodal-crop-tool	2026-08-13	Giving Claude a zoom tool for reading fine image detail
+multimodal-getting-started-with-vision	2026-08-13	Getting started with vision
+multimodal-how-to-transcribe-text	2026-08-13	How to transcribe documents
+multimodal-reading-charts-graphs-powerpoints	2026-08-13	Working with charts, graphs, slide decks
+multimodal-using-sub-agents	2026-08-13	Using Haiku as a sub-agent
+observability-usage-cost-api	2026-08-13	Usage & cost Admin API cookbook
+patterns-agents-async-multi-agent-orchestration	2026-08-13	Async multi-agent orchestration
+patterns-agents-basic-workflows	2026-08-13	Basic workflows
+patterns-agents-evaluator-optimizer	2026-08-13	Evaluator optimizer
+patterns-agents-orchestrator-workers	2026-08-13	Orchestrator workers
+skills-notebooks-01-skills-introduction	2026-08-13	Introduction to Claude Skills
+skills-notebooks-02-skills-financial-applications	2026-08-13	Claude Skills for financial applications
+skills-notebooks-03-skills-custom-development	2026-08-13	Building custom Skills for Claude
+third-party-deepgram-prerecorded-audio	2026-08-13	Transcribe an audio file with Deepgram
+third-party-elevenlabs-low-latency-stt-claude-tts	2026-08-13	Low latency voice assistant with ElevenLabs
+third-party-llamaindex-basic-rag-with-llamaindex	2026-08-13	RAG pipeline with LlamaIndex
+third-party-llamaindex-multi-document-agents	2026-08-13	Multi-document agents
+third-party-llamaindex-multi-modal	2026-08-13	Multi-modal (LlamaIndex)
+third-party-llamaindex-react-agent	2026-08-13	ReAct agent
+third-party-llamaindex-router-query-engine	2026-08-13	RouterQuery engine
+third-party-llamaindex-subquestion-query-engine	2026-08-13	SubQuestionQueryEngine
+third-party-mongodb-rag-using-mongodb	2026-08-13	RAG system with MongoDB
+third-party-pinecone-claude-3-rag-agent	2026-08-13	RAG agents with LangChain v1
+third-party-pinecone-rag-using-pinecone	2026-08-13	RAG using Pinecone
+third-party-wikipedia-wikipedia-search-cookbook	2026-08-13	Iteratively searching Wikipedia
+third-party-wolframalpha-using-llm-api	2026-08-13	Wolfram Alpha LLM API as a tool
+tool-evaluation-tool-evaluation	2026-08-13	Tool evaluation
+tool-use-automatic-context-compaction	2026-08-13	Automatic context compaction
+tool-use-calculator-tool	2026-08-13	Using a calculator tool
+tool-use-context-engineering-context-engineering-tools	2026-08-13	Context engineering: memory, compaction, tool clearing
+tool-use-customer-service-agent	2026-08-13	Customer service agent with client-side tools
+tool-use-extracting-structured-json	2026-08-13	Extracting structured JSON
+tool-use-memory-cookbook	2026-08-13	Memory & context management
+tool-use-parallel-tools	2026-08-13	Parallel tool calls
+tool-use-programmatic-tool-calling-ptc	2026-08-13	Programmatic tool calling (PTC)
+tool-use-threat-intel-enrichment-agent	2026-08-13	Threat intelligence enrichment agent
+tool-use-tool-choice	2026-08-13	Tool choice
+tool-use-tool-search-with-embeddings	2026-08-13	Tool search with embeddings
+tool-use-tool-use-with-pydantic	2026-08-13	Note-saving tool with Pydantic
+tool-use-vision-with-tools	2026-08-13	Using vision with tools

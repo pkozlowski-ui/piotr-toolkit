@@ -23,6 +23,11 @@ w katalogu tego skilla obok — konwencja `evals/`), NIGDY automatyczne przepisy
    (PL+EN), grep w wypowiedziach USERA, sprawdź okno — zadanie zrobione bez skilla?
 4. **Outcome tracing** (subagent Sonnet): sample sesji po wywołaniu — błędy narzędzi, korekty
    usera („nie o to", „znowu", „popraw"), retry. To najdroższa i najcenniejsza warstwa.
+5. **Held-out po zmianie** (deterministyczna, tylko gdy oceniasz KONKRETNĄ zmianę reguły):
+   `scripts/heldout_split.sh "<plugin:skill>" <data-zmiany>` — dzieli realne wywołania na dev-set
+   (przed zmianą) i held-out (po zmianie) i blokuje werdykt przy held-oucie < 3. Warstwy 1–4
+   mierzą STAN; ta jedna odpowiada na „czy nowa wersja jest lepsza od starej".
+   Kanon: `../session-retro/held-out-gate.md`.
 
 ## Twarde reguły wykonania
 
@@ -65,5 +70,8 @@ Audyt nie jest jednorazowy — działa w pętli **zmierz → porównaj → utwar
 
 - `scripts/adoption_scan.sh [SINCE=YYYY-MM-DD]` — env: `CLAUDE_PROJECTS` (default
   `~/.claude/projects`), `TOOLKIT_ROOT` (default `~/Documents/piotr-toolkit`).
-- `scripts/skill_trigger_context.py "<plugin:skill>" [SINCE=YYYY-MM-DD] [roots...]` —
-  bez SINCE bierze ostatnie 30 dni.
+- `scripts/skill_trigger_context.py "<plugin:skill>" [SINCE=YYYY-MM-DD] [UNTIL=YYYY-MM-DD] [roots...]` —
+  bez SINCE bierze ostatnie 30 dni; `UNTIL` jest wyłączne i służy podziałowi czasowemu. Filtruje po
+  timestampie ZDARZENIA, nie po mtime pliku (świeżo dotknięta stara sesja inaczej przecieka do obu okien).
+- `scripts/heldout_split.sh "<plugin:skill>" <CHANGE_DATE> [DEV_WINDOW_DAYS=60] [MIN_HELDOUT=3]` —
+  `exit 1` gdy held-out za mały; „za mało danych" to legalny wynik, „przeszło na jednym przykładzie" nie.

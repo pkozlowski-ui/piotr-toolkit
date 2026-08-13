@@ -14,6 +14,7 @@ po kontekście — nie musisz ich wywoływać ręcznie. Ta mapa jest dla orienta
 | Zapis/porządkowanie pamięci | `memory-discipline` | „gdzie to zapisać", „jak prowadzić pamięć" |
 | Koniec sesji | `session-retro` | „zakończ sesję", „kończymy", „zrób retro" |
 | Przekazanie kontekstu / kompaktowanie | `handoff` | „handoff", „przekaż kontekst" |
+| Cykliczny przegląd inspiracji (cookbook, changelog) | `inspiration-sweep` | „przegląd inspiracji", „co nowego w cookbooku" + zadanie miesięczne |
 
 ## Egzekucja niezawodności (hooki + verifier)
 Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji (Anthropic: prawdziwy guardrail = hooki, nie instrukcja). Ładują się automatycznie gdy plugin włączony.
@@ -32,6 +33,13 @@ Realne wpadki skilli materializują się jako taski w `skills/<skill>/evals/` �
 w `skills/session-retro/evals-convention.md`. Retro dopisuje taski (krok w `session-retro`); zmiana
 istniejącego skilla z `evals/` wymaga przejścia wszystkich aktywnych tasków PRZED utwardzeniem
 (doktryna validation-gate); wynik do commit message (`evals: N/N pass`).
+
+**To warunek konieczny, nie wystarczający.** Task pisany z tej samej wpadki, która zrodziła poprawkę,
+jest specyfikacją i przechodzi z definicji — więc `evals: N/N pass` nie znaczy „nowa wersja lepsza od
+starej". Na to odpowiada `skills/session-retro/held-out-gate.md`: podział czasowy realnych wywołań
+(`usage-audit/scripts/heldout_split.sh` — dev-set przed zmianą, held-out po zmianie, `exit 1` przy
+held-oucie < 3), syntetyczne triggery dopiero gdy realnych brakuje, ocena ślepa (`verifier`).
+Bez kompletu warunków zmiana idzie jako **hipoteza**, nie kanon.
 
 ## Doktryna pamięci
 Trwałość oparta na git (3 warstwy: kanon repo / konwencje / dane prywatne) — pełny model w `memory-discipline`.

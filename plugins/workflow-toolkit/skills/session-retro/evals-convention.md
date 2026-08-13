@@ -1,7 +1,11 @@
-# Konwencja `evals/` — zmaterializowany held-out dla skilli
+# Konwencja `evals/` — taski specyfikacyjne skilli
 
 > Wykonuje doktrynę validation-gate (SKILL.md → „Validation-gate"): „waliduj na przykładach
 > nieużytych do wymyślenia zmiany". Ten plik definiuje, GDZIE te przykłady żyją i jak wyglądają.
+>
+> **Nazwa poprawiona 2026-08-13:** wcześniej ten plik nazywał się „zmaterializowany held-out",
+> co było nieprawdą — task pisany z tej samej wpadki, która zrodziła poprawkę, jest specyfikacją
+> i przechodzi z definicji. Held-out ma własny mechanizm: [`held-out-gate.md`](held-out-gate.md).
 > Konwencja jest cross-plugin — dotyczy każdego skilla w każdym pluginie tego marketplace'u.
 >
 > Rodowód: Evaluation-Driven Development (Anthropic „Demystifying evals for AI agents", Hamel
@@ -45,6 +49,10 @@ Jeśli nie umiesz napisać jednoznacznego „Pass" — to materiał na wpis w pa
 1. **Retro → task.** Realna wpadka skilla/reguły w sesji → dopisz task (krok w `session-retro`).
 2. **Zmiana skilla → run.** ZANIM utwardzisz zmianę w SKILL.md — przejdź `evals/` tego skilla
    i sprawdź, że nowa wersja nadal przechodzi wszystkie aktywne taski. Regres = nie utwardzaj.
+   **To jest warunek konieczny, nie wystarczający:** taski tutaj pisała ta sama sesja, która wymyśliła
+   poprawkę, więc przechodzą z definicji. Pytanie „czy nowa wersja jest LEPSZA od starej" rozstrzyga
+   [`held-out-gate.md`](held-out-gate.md) — podział czasowy realnych wywołań
+   (`usage-audit/scripts/heldout_split.sh`), a syntetyki dopiero gdy realnych jest za mało.
 3. **Bump wersji pluginu** — gdy zmieniasz skill mający `evals/`, odnotuj w commit message
    wynik: `evals: N/N pass`.
 4. **Saturacja** — gdy skill od dawna przechodzi wszystko i wpadek brak, to sygnał zdrowia,
