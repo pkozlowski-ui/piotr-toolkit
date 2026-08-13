@@ -12,8 +12,15 @@ część ma linki wpięte w treść, a User albo kolejna tura odpowiedzi dokład
 pod spodem — typowo po tym, jak user zauważy brakujący link i poprosi o poprawkę.
 
 **Pass:** Poprawka dodaje brakujący link **w tym samym miejscu w treści draftu**, gdzie element jest
-wymieniony. Cały draft ma dokładnie JEDNO miejsce z linkami. Liczba elementów wymienionych z nazwy
-== liczba linków w tym jedynym miejscu.
+wymieniony. Cały draft ma dokładnie JEDNO miejsce z linkami. Przy **więcej niż jednym linku** (wariant A)
+liczba elementów wymienionych z nazwy == liczba linków w tym jedynym miejscu.
+
+**Zawężenie 2026-08-13 (decyzja Piotra):** zgodność 1:1 obowiązuje TYLKO w wariancie A (> 1 link).
+Gdy draft niesie **dokładnie jeden** link (żywy prototyp / sekcja z wszystkimi ekranami naraz), poprawny
+jest wariant B: bullety `**Screens**` bez linków + ten jeden link jako jedyna pozycja w `**Links**`.
+Sześć nazwanych ekranów i jeden link do całości to **Pass**, nie rozjazd liczb — powód, dla którego
+to zawężenie powstało: pierwszy przebieg held-out gate'a policzył 5 takich draftów jako „złamanie",
+a reguła w tej formie była nierozstrzygalna (sama dopuszczała link do całości).
 
 **Fail wygląda tak:** Powstają DWA miejsca z linkami w tej samej odpowiedzi — np. draft w treści ma
 2 linki (bo trzeci element był tylko w "anchor:" labelu poza cytowanym blokiem), a osobna sekcja

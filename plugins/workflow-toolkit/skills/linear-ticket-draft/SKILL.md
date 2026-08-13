@@ -44,13 +44,17 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
 - **Pisz jak człowiek wypełniający ticket. Zero śladów AI:** bez kursywy (`*...*`), bez em-dashy (—),
   bez przesadnie równoległych fraz, bez „Note:", bez emoji, bez „we're excited / delivered a robust…".
 - **Bold tylko na mini-nagłówki sekcji** (`**Screens**`, `**Not included**`). Bullety dla list.
-- **Linki KONTEKSTOWO, nie zbiorczo (TWARDA, standard od 2026-08-05).** Każdy ekran/element wymieniony
-  w `**Screens**` dostaje SWÓJ WŁASNY link Figma wpięty w tym samym bullet-poincie — nie osobna sekcja
-  linków na końcu. Powód: reviewer klika prosto w opisany ekran, zamiast szukać go w zbiorczej liście.
-  Format bulleta: `- Screen name: what it does. [Figma](url)` (markdown link, nie goły URL — czytelniej
-  w renderze Linear). Zbiorcza sekcja `**Figma**` na końcu zostaje TYLKO gdy link dotyczy całego
-  flow/sekcji jako całości (np. link do sekcji z wszystkimi ekranami obok siebie) — nie duplikuj tam
-  linków już wpiętych przy screenach. URL z node-id: `…?node-id=ID-z-myślnikiem` (np. `4180-137260`).
+- **Rozmieszczenie linków rozstrzyga ICH LICZBA (TWARDA, decyzja Piotra 2026-08-13 — zastępuje
+  wcześniejszy standard „zawsze kontekstowo" z 2026-08-05).** Policz linki, które draft ma nieść,
+  i wybierz jeden z dwóch wariantów — nigdy oba naraz:
+  - **> 1 link → wariant A, link per ekran.** Każdy element wymieniony w `**Screens**` dostaje SWÓJ
+    WŁASNY link wpięty w tym samym bullet-poincie, i **żadnej zbiorczej sekcji `**Links**` na końcu**.
+    Format bulleta: `- Screen name: what it does. [Figma](url)` (markdown link, nie goły URL —
+    czytelniej w renderze Linear). Reviewer klika prosto w opisany ekran.
+  - **dokładnie 1 link → wariant B, jeden link zbiorczy.** Bullety w `**Screens**` zostają BEZ linków,
+    a link (żywy prototyp / sekcja z wszystkimi ekranami obok siebie) idzie jako jedyna pozycja
+    w `**Links**` na końcu. Rozbijanie jednego linku na sześć bulletów-duplikatów jest szumem.
+  URL z node-id: `…?node-id=ID-z-myślnikiem` (np. `4180-137260`).
 - **⚠️ Jeden draft = JEDNA lista linków, licz PRZED pokazaniem (regresja 2026-08-06, MAN-781 — nie w
   Linearze, w analogicznym Figma-comment draftcie tej samej dyscypliny, więc reguła i tak dotyczy tego
   skilla).** Realny fail: draft komentarza wymieniał 3 ekrany, ale treść komentarza linkowała tylko 2
@@ -59,10 +63,11 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
   tych samych rzeczy zawsze się rozjadą przy edycji, i user złapał to od razu (liczba w drafcie ≠
   liczba w liście). Fix nie jest kosmetyczny — to jest DOKŁADNIE reguła z akapitu wyżej („nie osobna
   sekcja linków na końcu"), złamana przez zbudowanie drugiej listy PO fakcie zamiast poprawienia
-  oryginalnego draftu. **Przed pokazaniem JAKIEGOKOLWIEK draftu z linkami: policz linki w treści vs
-  policz wymienione z nazwy elementy — muszą się zgadzać 1:1, i to ma być JEDYNE miejsce z linkami w
-  całej odpowiedzi.** Jeśli czegoś brakuje — dopisz link W TYM SAMYM miejscu w treści, nie jako
-  dodatkową listę obok.
+  oryginalnego draftu. **Przed pokazaniem JAKIEGOKOLWIEK draftu z linkami policz linki i sprawdź dwie
+  rzeczy: (1) to JEDYNE miejsce z linkami w całej odpowiedzi; (2) w wariancie A (> 1 link) każdy
+  wymieniony z nazwy element ma swój link — zgodność 1:1.** W wariancie B (dokładnie 1 link) zgodności
+  1:1 się NIE liczy — jeden link do całości przy sześciu nazwanych ekranach jest poprawny. Brakuje
+  linku w wariancie A → dopisz go W TYM SAMYM miejscu w treści, nie jako dodatkową listę obok.
 
 ## Czego NIE robić
 - **Nigdy link do GitHub PR (TWARDA, recurring — Piotr poprawiał to wielokrotnie, ostatnio na
@@ -79,13 +84,13 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
 ## Struktura (elastyczna — tnij puste sekcje)
 1. **Nagłówek** — krótka nazwa zakresu (bez em-dasha).
 2. 1 zdanie kontekstu (gdzie zbudowane; ew. rename / przeniesienia).
-3. **Screens** (albo What's built) — bullety: ekran/element + 1 linia co robi + **link Figma DO TEGO
-   EKRANU wpięty w ten sam bullet** (`[Figma](url)`), nie zbiorczo na końcu.
+3. **Screens** (albo What's built) — bullety: ekran/element + 1 linia co robi. **Wariant A (> 1 link):**
+   + link do TEGO ekranu wpięty w ten sam bullet (`[Figma](url)`). **Wariant B (1 link):** bez linków tutaj.
 4. Krótki akapit per kluczowy obszar, jeśli potrzebny.
 5. **Not included** — co świadomie poza zakresem i dokąd należy (fakt, nie decyzja).
-6. **Figma** (lub **Links**) — TYLKO jeśli zostaje link do czegoś, co nie jest pojedynczym ekranem z
-   punktu 3 (np. cała sekcja/flow widziany na canvasie naraz, prototyp/Vercel). NIGDY link do PR
-   (patrz „Czego NIE robić"). Nie duplikuj tu linków ekranów.
+6. **Figma** (lub **Links**) — **tylko w wariancie B**, jako jedyna pozycja: prototyp/Vercel albo
+   sekcja z wszystkimi ekranami naraz. W wariancie A tej sekcji NIE MA (linki żyją przy ekranach) —
+   nie duplikuj tu linków ekranów. NIGDY link do PR (patrz „Czego NIE robić").
 
 ## Długość: description vs komentarz
 - **Opis ticketu (description)** = ten strukturalny draft — kompletny, ale skondensowany.
