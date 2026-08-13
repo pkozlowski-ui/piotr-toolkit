@@ -64,6 +64,31 @@ a soczewka T dała `7/10 trafione, 2 fałszywe` przy baseline dev-setu `17/19, 1
 kompletnie niezależną od tego, co zmieniono. Soczewka C na tym samym held-oucie dała werdykt użyteczny:
 `6/6 spełnione, 0 złamań` dla reguły jednej listy linków.
 
+### Soczewkę T na deterministycznym triggerze mierz OFFLINE — nie czekaj na wywołania po zmianie
+
+Gdy trigger jest regexem w hooku, kandydata da się ocenić **przed** wdrożeniem, bo funkcja jest
+deterministyczna: aplikujesz go na korpusie promptów i patrzysz, co łapie ponad obecny wzorzec.
+Podział czasowy zostaje w mocy, tylko przenosi się na korpus:
+
+- **regex PROJEKTUJESZ na dev-secie** (prompty przed datą zmiany) — tam wolno patrzeć na trafienia
+  i dostrajać okno;
+- **regex MIERZYSZ na held-oucie** (prompty od daty zmiany) — tam nie wolno nic dostrajać, bo pierwszy
+  powrót do regexa po zobaczeniu wyniku zamienia held-out w dev-set;
+- **oceniane przypadki** = prompty, które łapie KANDYDAT, a nie łapie obecny wzorzec. Pozostałe to
+  „nie dotyczy" — kandydat nic w nich nie zmienia;
+- korpus musi być tym, co hook realnie widzi: prompty usera bez sidechainów subagentów, bez meta
+  i `<task-notification>`. Wpuszczenie sidechainów zawyża i trafienia, i fałszywe alarmy.
+
+Zmierzone 2026-08-13 (`linear-ticket-draft`, kandydat „komentarz do Figmy"): dev-set 1769 promptów,
+held-out 948, kandydat łapał ponad wzorzec 13 promptów, ocena ślepa dała
+`held-out T: 2/12 trafione, 9 fałszywych alarmów` → odrzucone, zero wdrożeń, zero czekania na sesje.
+
+**Gdy oba końce zawodzą naraz, problem jest w instrumencie, nie w progu.** Rozluźnienie regexa mnoży
+fałszywe alarmy, a zaciśnięcie zbija liczbę ocenianych przypadków pod bramkę wielkości — i to jest
+sygnał, że intent nie mieszka w słowach kluczowych promptu (tu: kanał odpowiedzi wynikał z kontekstu
+sesji, nie z treści promptu — „REKO, daj draft"). Wtedy **werdyktem jest „inny kanał", nie „lepszy
+regex"**; szukaj wsadu, którego proximity nie widzi, albo zostaw regułę w treści skilla.
+
 ### B. Triggery syntetyczne (uzupełnienie, gdy A jest za mały)
 
 Dwustopniowo (za cookbookiem `misc-generate-test-cases`, bo naiwne „wygeneruj 10 przykładów" daje

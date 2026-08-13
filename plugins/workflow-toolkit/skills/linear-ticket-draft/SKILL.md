@@ -55,6 +55,10 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
     a link (żywy prototyp / sekcja z wszystkimi ekranami obok siebie) idzie jako jedyna pozycja
     w `**Links**` na końcu. Rozbijanie jednego linku na sześć bulletów-duplikatów jest szumem.
   URL z node-id: `…?node-id=ID-z-myślnikiem` (np. `4180-137260`).
+  **Status: obowiązująca, ale HIPOTEZA behawioralna** — drugi przebieg gate'a (2026-08-13) dał
+  `held-out C: 0 ocenianych przypadków, za mało danych` (zero wywołań po zmianie, bo reguła powstała
+  tego samego dnia). Stosuj jak regułę, ale przy następnej retro sprawdź ją na ≥ 3 draftach niosących
+  linki, zanim ktokolwiek nazwie ją zwalidowaną.
 - **⚠️ Jeden draft = JEDNA lista linków, licz PRZED pokazaniem (regresja 2026-08-06, MAN-781 — nie w
   Linearze, w analogicznym Figma-comment draftcie tej samej dyscypliny, więc reguła i tak dotyczy tego
   skilla).** Realny fail: draft komentarza wymieniał 3 ekrany, ale treść komentarza linkowała tylko 2

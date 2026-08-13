@@ -27,8 +27,10 @@ Do **not** spawn one for trivial, clearly-scoped, easily-reversible work. A ritu
 ### 1 — Frame the question
 State, in the prompt to the advisor, exactly what to pressure-test and what "wrong" would look like. Give it the concrete material (the plan, the diff, the decision + rationale) and the file paths / context it needs to verify against. Vague framing → vague verdict.
 
-### 2 — Spawn a READ-ONLY agent (hard rule)
+### 2 — Spawn a READ-ONLY agent, and escalate the model explicitly (hard rule)
 Use the Agent tool with **`subagent_type: 'Explore'`** (broad read/verify) or **`'Plan'`** (design/architecture judgement). Both exclude Edit/Write/Bash-mutation by construction.
+
+**Always pass `model: 'opus'` explicitly.** Without it, the Agent tool inherits whatever model the main session is running — so on a Sonnet session, a "second opinion" is just the same level of judgment talking to itself, which defeats the point of an adversarial check. The escalation is a single point call (one advisor invocation), not the whole session moving to a costlier model, so it doesn't conflict with the hard spend ceiling in the global model-selection rule — cheap relative to catching a real mistake before an irreversible action (cookbook `managed-agents-cma-consult-an-advisor`: ~$0.07 consult vs ~$0.21 for the equivalent session cost).
 
 **Never** use `general-purpose` (or any full-tools agent) with a prompt that says "don't modify files." The instruction is not a guardrail — a capability that's present eventually gets used. (Real case 2026-07-02: a `general-purpose` advisor told "verdict only" instead executed half a memory consolidation, archiving files and rewriting the index; untangling it cost more than the review saved.)
 
@@ -46,7 +48,9 @@ The advisor's verdict is **input, not a verdict on you.** Weigh it, correct cour
 
 ## Rules
 
+- **Consult before an irreversible decision — not optional.** If the action about to be taken matches the trigger test in "When to use" (irreversible/destructive, architectural, an early hard-to-reverse step in a multi-step plan, or declaring "done" on shared state), spawn the advisor *before* acting, every time — treat the trigger test as a gate on the action, not a suggestion to skim past.
 - **Read-only, always.** `Explore` / `Plan` only. If you catch yourself reaching for `general-purpose` to "also let it fix things," that's a separate, explicit step — not a review.
+- **Model escalation is not optional either.** Always pass `model: 'opus'` on the advisor call — see step 2. Skipping it silently degrades the review to same-level agreement.
 - **Trigger-gated.** Match the ceremony to the stakes. Cheap-to-undo → don't spawn.
 - **Adversarial by default.** An advisor that agrees with you taught you nothing.
 - **The user's fresh-perspective trick generalizes** beyond design review (cf. `method_multiagent_design_audit` in cross-project memory) — same move, any high-stakes decision, always read-only.

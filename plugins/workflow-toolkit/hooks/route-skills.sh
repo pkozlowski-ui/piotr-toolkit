@@ -8,6 +8,15 @@
 INPUT="$(cat)"
 hit() { echo "$INPUT" | grep -qiE "$1"; }
 
+# NIE dokładaj tu branchu na „komentarz do Figmy" — ZMIERZONE I ODRZUCONE (held-out gate, 2026-08-13).
+# Kandydat `(draft|komentarz|odpowied)…(figma|figjam)` w oknie 40 zn., projektowany na dev-secie
+# (1769 promptów przed 08-05), mierzony ślepo na held-oucie (948 promptów od 08-05):
+# `held-out T: 2/12 trafione, 9 fałszywych alarmów` — czyli 9× złamany warunek blokujący soczewki T.
+# Fałszywe: budowa tablic FigJam, długie prompty inżynieryjne do worktree, rozmowa „gdzie leży komentarz".
+# Zaciśnięcie (wymagany czasownik proszący) schodzi do 2 przypadków, czyli pod bramkę wielkości.
+# Powód strukturalny: realne prośby o taki draft NIE nazywają Figmy — kanał wynika z kontekstu sesji
+# („REKO, daj draft"), więc proximity na słowie kluczowym jest złym instrumentem. Zakres skilla jest
+# domknięty w SKILL.md i tam żyje; wznowienie tylko z INNYM kanałem niż proximity, nie z lepszym regexem.
 if hit '(draft|opis)[^"]{0,40}linear|linear[^"]{0,40}(draft|opis|ticket)'; then
   echo "SKILL ROUTING (hook): intent 'draft/opis do Linear' → załaduj Skill workflow-toolkit:linear-ticket-draft ZANIM napiszesz treść (rejestr 'opis taska'; NIGDY nie wysyłaj bez explicit «wyślij»)."
 fi
