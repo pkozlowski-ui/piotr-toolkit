@@ -127,8 +127,10 @@ Wszystkie trzy naraz:
    `held-out T: 8/10 trafione, 0 fałszywych` albo `held-out C: R2 6/6 spełnione, 0 złamań`.
    Bez liczby to nie gate, tylko wrażenie; bez soczewki nie wiadomo, czego liczba dotyczy.
 
-Nie masz kompletu → **oznacz zmianę jako HIPOTEZĘ** (w SKILL.md albo w karcie), nie jako kanon.
-To jest normalne i tanie; udawany gate nie jest.
+Nie masz kompletu → **oznacz zmianę jako HIPOTEZĘ** (w SKILL.md albo w karcie), nie jako kanon,
+**i dopisz ją do `hipotezy-otwarte.md`** — z warunkiem wznowienia i komendą, która go sprawdza.
+Adnotacja bez wpisu w rejestrze nie ma wywoływacza: retro czyta rejestr (krok 4b), a treści skilla
+pod tym kątem nie przegląda. To jest normalne i tanie; udawany gate nie jest.
 
 ## Czego NIE robić
 

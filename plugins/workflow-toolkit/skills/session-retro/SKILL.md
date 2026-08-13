@@ -59,6 +59,13 @@ Build-logi **archiwizuj (`mv`), nie kasuj**. Propose-first przy niejasnych (czy 
 Jeśli są zmiany w repo (`git status`) — pokaż skrót i **zaproponuj** commit (nie commituj sam, chyba że
 user prosił). Pamięć w `.claude/memory/` i ADR-y też idą do commita (są git-trwałe).
 
+### 4b — Przejrzyj rejestr otwartych hipotez (OBOWIĄZKOWY, każde retro)
+Otwórz `hipotezy-otwarte.md` (katalog tego skilla) i dla **każdej** pozycji z sekcji „Otwarte" odpal
+jej **Komendę**. Warunek wznowienia spełniony → przeprowadź gate wg `held-out-gate.md` i zapisz werdykt
+z liczbą i nazwaną soczewką; niespełniony → nic nie rób i idź dalej (to kosztuje jedno odpalenie skryptu).
+Bez tego kroku hipoteza cicho awansuje na kanon — w `SKILL.md` wygląda jak każda inna reguła, a nikt
+do niej nie wraca. Nową hipotezę (zmiana wdrożona bez pełnego gate'a) **dopisz tu w tym samym retro**.
+
 ### 5 — Krótki raport
 Wypunktuj: co zapisano i gdzie (warstwa), co zaproponowano do commita, co zostaje otwarte na następną sesję.
 
@@ -74,7 +81,9 @@ rządzi krokiem fold-inu. Nie promuj lekcji do kanonu tylko dlatego, że jedna s
   jest lepsza od starej — nie „wydaje się lepsza".**
 - **Gdy check istnieje** (audyt, test, metryka): waliduj na przykładach NIEUŻYTYCH do wymyślenia
   zmiany (held-out) i akceptuj tylko jeśli nie pogarsza reszty.
-- **Gdy checku brak**: to osąd, nie kanon — oznacz jako hipotezę, nie zapisuj jako regułę.
+- **Gdy checku brak**: to osąd, nie kanon — oznacz jako hipotezę, nie zapisuj jako regułę **i wpisz ją
+  do `hipotezy-otwarte.md`** (rejestr + wywoływacz, czytany w kroku 4b). Samo słowo „HIPOTEZA" w treści
+  skilla nie jest mechanizmem — nikt po nie nie wraca.
 - **Cel:** domknięcie pętli retro→fold-in — nie foldować reguły z jednego przypadku bez sprawdzenia,
   że nie psuje innych.
 - **Wpadka z sesji → task w `evals/` skilla.** Gdy w sesji realnie zawiódł skill lub reguła
