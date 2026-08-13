@@ -31,9 +31,38 @@ Skrypt zwraca dev-set (okno przed zmianą — to, na czym zmiana powstała), hel
 i **werdykt o wielkości held-outu**. Poniżej 3 wywołań kończy `exit 1`: „za mało danych" jest legalnym
 wynikiem, „przeszło na jednym przykładzie" nie jest.
 
-Werdykt per wywołanie, binarny: **trafiony** / **pominięty** (skill powinien wejść i nie wszedł) /
-**fałszywy alarm** (wszedł, gdzie nie powinien). Pominięcia są najdroższą klasą i najłatwiej je
-przegapić, bo w transkrypcie nie ma czego szukać — trzeba czytać prompty, w których skilla *brak*.
+**Licznik wywołań to GÓRNA GRANICA, nie wielkość held-outu (zmierzone 2026-08-13).** Zanim uznasz
+bramkę za przeszłą, odejmij od niego:
+- **case'y „nie dotyczy"** — wywołania, w których testowana reguła nie miała zastosowania (reguła
+  o linkach, a draft bez linków). „Nie dotyczy" nie jest dowodem, że reguła działa;
+- **case będący ŹRÓDŁEM fixa** — wpadka, po której regułę napisano, wpada do held-outu, gdy fix
+  poszedł tego samego dnia (granica idzie po dacie, nie po „przed/po wpadce"). To dev-set, nie held-out.
+
+Realny przypadek: `linear-ticket-draft`, reguła „zero linków do PR", zmiana 2026-08-10 → skrypt
+zaraportował 4 wywołania („≥ 3, oceniaj"), a ocenianych przypadków było **2** (jeden draft bez linków,
+jeden = MAN-825, źródło fixa). Werdykt brzmi wtedy „za mało danych", mimo zielonej bramki skryptu.
+
+### Rubryka zależy od tego, CO zmieniłeś — dwie soczewki, nie jedna
+
+Rozstrzygnij to **zanim** wybierzesz rubrykę, bo pomyłka daje liczby ortogonalne do zmiany:
+
+**Soczewka T (zmiana triggera)** — ruszyłeś `description`, frazy triggera, hook routingu.
+Werdykt per wywołanie: **trafiony** / **pominięty** (skill powinien wejść i nie wszedł) / **fałszywy
+alarm** (wszedł, gdzie nie powinien). Pominięcia są najdroższą klasą i najłatwiej je przegapić, bo
+w transkrypcie nie ma czego szukać — trzeba czytać prompty, w których skilla *brak*.
+
+**Soczewka C (zmiana treści reguły)** — ruszyłeś to, co skill *nakazuje* w środku (format, zakazy,
+struktura outputu). Werdykt **per wymaganie, nie per wywołanie**: **spełnione** / **złamane** /
+**nie dotyczy**. Wypisz wymagania jako osobne, sprawdzalne punkty (R1, R2, …) i oceniaj każdy z nich
+niezależnie na każdym case'ie.
+
+**Nie mieszaj soczewek — soczewka T nie mierzy zmiany treści i nie może jej zmierzyć.** Gdy trigger
+jest wymuszany twardym kanałem (hook `route-skills.sh` i pokrewne), liczba trafień odbija **regex
+hooka**, nie treść `SKILL.md`: edycja treści nie przesunie jej ani w górę, ani w dół. Zmierzone
+2026-08-13 na trzech sierpniowych fixach `linear-ticket-draft` — wszystkie trzy były zmianami treści,
+a soczewka T dała `7/10 trafione, 2 fałszywe` przy baseline dev-setu `17/19, 1 fałszywy`, czyli liczbę
+kompletnie niezależną od tego, co zmieniono. Soczewka C na tym samym held-oucie dała werdykt użyteczny:
+`6/6 spełnione, 0 złamań` dla reguły jednej listy linków.
 
 ### B. Triggery syntetyczne (uzupełnienie, gdy A jest za mały)
 
@@ -59,11 +88,19 @@ odpalił się na wygenerowanym zdaniu, nie znaczy, że jego treść jest lepsza 
 Wszystkie trzy naraz:
 
 1. **Brak regresu na dev-secie** — aktywne taski `evals/` nadal przechodzą (`evals-convention.md`, krok 2).
-2. **Held-out ≥ 3** i większość werdyktów po nowej wersji nie gorsza niż po starej, **przy zerowym
-   nowym fałszywym alarmie**. Nowy fałszywy alarm blokuje utwardzenie nawet przy poprawie czułości —
-   skill wchodzący nieproszony kosztuje więcej niż skill, którego trzeba zawołać.
-3. **Wynik zapisany z liczbą** — w commit message (`held-out: 8/10 trafione, 0 fałszywych`) albo
-   w karcie. Bez liczby to nie gate, tylko wrażenie.
+2. **Held-out ≥ 3 przypadków OCENIANYCH** (po odjęciu „nie dotyczy" i case'a-źródła — patrz wyżej;
+   licznik wywołań ze skryptu nie wystarcza) i większość werdyktów po nowej wersji nie gorsza niż
+   po starej, **w soczewce właściwej dla zmiany**.
+3. **Warunek blokujący dotyczy tylko soczewki, którą zmiana rusza:**
+   - **zmiana triggera (T)** → **zerowy nowy fałszywy alarm**. Blokuje utwardzenie nawet przy poprawie
+     czułości: skill wchodzący nieproszony kosztuje więcej niż skill, którego trzeba zawołać.
+   - **zmiana treści (C)** → **zerowe nowe złamanie** któregokolwiek wymagania, którego zmiana dotyczy.
+     Fałszywe alarmy w soczewce T **NIE blokują** zmiany treści — zmierzone 2026-08-13: literalne
+     zastosowanie starego warunku blokowało trzy fixy treści za dwa fałszywe alarmy pochodzące z regexa
+     hooka i własnej inicjatywy modelu, czyli za coś, czego te fixy nie tykały.
+4. **Wynik zapisany z liczbą** — w commit message albo w karcie, **z nazwaną soczewką**:
+   `held-out T: 8/10 trafione, 0 fałszywych` albo `held-out C: R2 6/6 spełnione, 0 złamań`.
+   Bez liczby to nie gate, tylko wrażenie; bez soczewki nie wiadomo, czego liczba dotyczy.
 
 Nie masz kompletu → **oznacz zmianę jako HIPOTEZĘ** (w SKILL.md albo w karcie), nie jako kanon.
 To jest normalne i tanie; udawany gate nie jest.
@@ -75,5 +112,11 @@ To jest normalne i tanie; udawany gate nie jest.
   co zmianę zainspirowało. Granica idzie po dacie albo nie ma granicy.
 - **Nie foldować reguły z jednego przypadku** bez sprawdzenia, że nie psuje reszty — to ta sama pętla
   retro→gate, tylko widziana od drugiej strony.
+- **Nie oceniać pominięć, gdy skill nie ma domkniętego zakresu.** Klasa „pominięty" znaczy „powinien
+  wejść i nie wszedł" — a to jest rozstrzygalne tylko wtedy, gdy wiadomo, co należy do rejestru skilla.
+  Zmierzone 2026-08-13: jedyny kandydat na pominięcie `linear-ticket-draft` okazał się draftem
+  komentarza do Figmy, a `SKILL.md` rozciągał swoją dyscyplinę na Figma-comment drafty, nie mówiąc,
+  czy sam ma tam wchodzić → werdykt nierozstrzygalny. **Napotkasz taką lukę → najpierw domknij zakres
+  w `SKILL.md`, potem oceniaj pominięcia.**
 - **Nie mierzyć adopcji zamiast trafności.** Wzrost wywołań może oznaczać rozlazły trigger. Liczby
   z `adoption_scan.sh` są wsadem, nie werdyktem.

@@ -57,5 +57,17 @@ if [ "$n_ho" -lt "$MIN_HELDOUT" ]; then
   exit 1
 fi
 
-echo "✓ held-out ma $n_ho wywołań (≥ $MIN_HELDOUT) — oceniaj je wg held-out-gate.md."
-echo "  Werdykt per wywołanie: trafiony / pominięty (missed trigger) / fałszywy alarm."
+echo "✓ held-out ma $n_ho WYWOŁAŃ (≥ $MIN_HELDOUT) — ale to GÓRNA GRANICA, nie wielkość held-outu."
+echo
+echo "  Zanim uznasz bramkę za przeszłą, odejmij od $n_ho:"
+echo "   • case'y 'nie dotyczy' — testowana reguła nie miała w nich zastosowania"
+echo "     (reguła o linkach, a draft bez linków). 'Nie dotyczy' nie jest dowodem."
+echo "   • case będący ŹRÓDŁEM fixa — wpadka, po której regułę napisano, wpada tu, gdy fix"
+echo "     poszedł tego samego dnia. To dev-set, nie held-out."
+echo "  Zostało < $MIN_HELDOUT ocenianych → werdykt to 'za mało danych', mimo zielonej bramki wyżej."
+echo
+echo "  RUBRYKA zależy od tego, CO zmieniłeś (held-out-gate.md, 'dwie soczewki'):"
+echo "   • zmiana TRIGGERA (T)  → per wywołanie: trafiony / pominięty / fałszywy alarm"
+echo "   • zmiana TREŚCI  (C)  → per wymaganie: spełnione / złamane / nie dotyczy"
+echo "  Nie mieszaj ich. Gdy trigger wymusza hook (route-skills.sh), soczewka T mierzy regex hooka,"
+echo "  nie treść SKILL.md — i zmiany treści nie mogą jej przesunąć."

@@ -14,6 +14,21 @@ w czacie. Nic nie wysyłać.
 - "draft do lineara" / "zrób draft ticketu" / "napisz do lineara"
 - "opis do taska" / "opis taska" / "opis do <TICKET-ID>"
 - prośba o podsumowanie dostarczonej roboty pod kątem Linear (komentarz albo description)
+- **draft komentarza do wątku w Figmie** (odpowiedź na komentarz Toma/stakeholdera przy designie) —
+  patrz „Zakres" niżej
+
+## Zakres — co należy do tego rejestru (domknięte 2026-08-13)
+Skill obejmuje **każdy draft team-facing odpowiedzi o dostarczonym designie**, niezależnie od kanału:
+**komentarz/description w Linear ORAZ komentarz w wątku Figma.** Oba idą do tego samego zespołu, w tym
+samym rejestrze „opis taska" (ENG, strukturalny), i obowiązuje w nich ta sama dyscyplina linków —
+reguła jednej listy linków powstała właśnie na Figma-comment draftcie (MAN-781), a nie w Linearze.
+**Nie należą tu:** wiadomość na Slacku i mail (rejestr „wiadomość" — konwersacyjny, patrz globalny
+CLAUDE.md) ani notatka do vaultu.
+
+Powód domknięcia: przy pierwszym przebiegu held-out gate'a (2026-08-13) jedyny kandydat na pominięty
+trigger okazał się draftem komentarza do Figmy i **werdykt był nierozstrzygalny**, bo skill nakazywał
+sobie dyscyplinę linków w takich draftach, nie mówiąc, czy sam ma w nie wchodzić. Otwarty zakres =
+niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
 
 ## Twarde zasady (nadrzędne)
 1. **NIE WYSYŁAJ.** Linear komentarz / edycja opisu = treść team-facing → draft pokazujesz w czacie
