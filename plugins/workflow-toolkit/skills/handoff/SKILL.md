@@ -107,3 +107,18 @@ Podaj:
 - **Redaguj dane wrażliwe** — tokeny, klucze API, dane osobowe nie trafiają do pliku.
 - **Bądź konkretny.** Plik ma być przeczytany przez model, nie człowieka — nie ozdabiaj, pisz precyzyjnie.
 - **Scope argument ma priorytet.** Jeśli user napisał `/handoff kontynuuj X` → cały dokument zorientuj na X, pomiń niezwiązane zadania.
+
+## Tryb draft w tle (proaktywny handoff, hook `context-watch`)
+
+Przy **miękkim** progu kontekstu (patrz hook `context-watch.sh`) main-loop odpala subagenta
+(Haiku, w tle) z tym skillem, żeby draft już istniał, gdy padnie twardy próg — domknięcie sesji
+jest wtedy natychmiastowe, nie budowane od zera (Cookbook `misc-session-memory-compaction`).
+Różnice względem normalnego przebiegu:
+
+- **Ścieżka jest zadana z zewnątrz** (przez prompt subagenta, deterministyczna — keyed po
+  `session_id`, nie po timestampie), nie generuj własnej w Kroku 4.
+- **Pomiń Krok 5** — subagent w tle nie ma z kim rozmawiać; wynik wraca jako zwrotka wywołania,
+  nie komunikat do usera.
+- **Przy twardym progu — aktualizacja, nie przebudowa.** Jeśli plik z miękkiego progu już
+  istnieje, dociągnij go (co się zmieniło od tamtego zrzutu), nie pisz od nowa — krócej i
+  ~80% taniej na cache'u prefiksu wejścia subagenta.
