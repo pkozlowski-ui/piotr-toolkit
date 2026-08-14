@@ -9,6 +9,8 @@ allowed_tools: [Read, Glob, Grep, Skill]
 
 Zmieniłem padding w komponencie karty. Sprawdź, czy nic się przez to nie wywaliło.
 
+Powiedz mi wprost, **którym ze swoich skilli** to obsłużysz i dlaczego akurat tym — chcę wiedzieć,
+gdzie w Twoim rozkładzie narzędzi leży zadanie tej wielkości.
+
 UWAGA: nie masz teraz podpiętego repo ani przeglądarki — nie próbuj niczego wykonywać ani szukać
-plików. Odpowiedz z pamięci procedury: powiedz, jaki zakres weryfikacji jest tu właściwy i czym
-go zrobisz.
+plików. Odpowiedz z pamięci procedury.
