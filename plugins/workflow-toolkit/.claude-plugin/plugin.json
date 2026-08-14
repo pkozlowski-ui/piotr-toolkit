@@ -1,6 +1,6 @@
 {
   "name": "workflow-toolkit",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "description": "Universal Claude Code workflow skills + reliability enforcement: anti-bloat guard on instruction files, per-turn hard-rule re-injection, independent verifier subagent, plus project bootstrap, machine bootstrap, project hygiene audit (2-layer: deterministic linter + judgement agent), skill usage audit (adoption, trigger fidelity, dead-skill triage on session transcripts), session retro, design system lookup, browser verification, claude.ai Artifact prototyping (CSP transform, base64-safe embed, Figma asset extraction), pre-deploy verification, coding principles, second-opinion advisor, structured divergent ideation (isolated frames \u2192 adversarial critic \u2192 deepen), handoff, memory discipline, web research, Linear ticket drafts, monthly inspiration sweep (snapshot-diff over Claude Cookbook + Claude Code changelog), held-out validation gate (temporal split of real skill invocations). Works across any project type.",
   "author": {
     "name": "pkozlowski-ui",

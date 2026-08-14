@@ -129,7 +129,7 @@ co odpowiedź może zgodnie z prawdą zacytować jako antywzorzec.** Case 009 ob
 regex „brak `#` w nazwie pliku", który karał odpowiedź za poprawne wytłumaczenie, dlaczego `#`
 jest złe (`criteria` PASS 3/3, całość 0.75). Grader usunięty — `llm` już ten warunek pokrywał.
 
-## Trzy twarde reguły bramy
+## Cztery twarde reguły bramy
 
 ### 1. Bump wersji pluginu = warunek działania bramy, nie kosmetyka
 
@@ -149,11 +149,34 @@ Przy targecie-ścieżce (`claude plugin eval .`) **skill nie jest dostępny agen
 nazwie. Kanoniczna komenda bramy:
 
 ```bash
-claude plugin eval <plugin>@pkozlowski-ui-marketplace --runs 2 --ablation none --threshold 0.8 --no-publish
+claude plugin eval <plugin>@pkozlowski-ui-marketplace \
+  --runs 2 --ablation none --threshold 0.8 --no-publish --judge-model sonnet
 ```
 
 Ta różnica 0.00 vs 1.00 jest jednocześnie dowodem, że brama mierzy **realny wkład skilla**,
 a nie wiedzę modelu.
+
+### 4. Sędzia = sonnet, NIE domyślny haiku
+
+Domyślny sędzia (haiku) **produkuje fałszywe FAIL-e na długich odpowiedziach.** Zmierzone na
+obsidian-kanban: case'y 003 i 004 dostały od haiku `FAIL FAIL FAIL` w **dwóch** kolejnych runach
+(score 0.33, stabilnie — więc nie szum), a ten sam case z `--judge-model sonnet` dał
+`PASS PASS PASS` (score 1.00). Zmieniony był wyłącznie sędzia: prompt, `criteria` i SKILL.md
+nietknięte. To były dwie najdłuższe odpowiedzi w suicie (6310 i 5096 znaków) z warunkami
+zaszytymi głęboko w strukturze — haiku nie utrzymuje trzech warunków „ALL must hold" na takim
+materiale.
+
+Koszt tej poprawki jest pomijalny: sędzia haiku ~$0.008/run, sonnet ~$0.032/run, przy runie
+agenta ~$0.41. **+6% do przebiegu za usunięcie całej klasy fałszywych czerwonych lampek.**
+
+Nie ma klucza per-case (`judge_model` nie występuje w schemacie `prompt.md`) — sędzia idzie
+**flagą na komendzie**, więc musi być w kanonicznej komendzie bramy, inaczej wypada przy
+każdym ręcznym przebiegu.
+
+**Konsekwencja dla triage:** zanim uznasz `criteria FAIL` za dziurę w SKILL.md, sprawdź, czy
+odpowiedź nie jest długa — i przepuść case przez sonnet. Fałszywy FAIL od haiku wygląda
+identycznie jak realna dziura w doktrynie, a prowadzi do dokładnie złej naprawy: rozluźnienia
+kryterium, które było poprawne.
 
 ### 3. Prompt musi być wykonalny w PUSTYM sandboxie — bez vaultu, bez MCP
 
@@ -179,14 +202,20 @@ droższy i odpala cudzy bash jako Ty. Świadoma decyzja per suita, nie default.
 
 ## Koszt i dyscyplina wydatku
 
-Zmierzone (nie szacowane) na obsidian-kanban, sędzia = haiku (default), 3 głosy:
+Zmierzone (nie szacowane) na obsidian-kanban, 3 głosy sędziego:
 
 | Zakres | Koszt |
 |---|---|
-| 1 case × 1 run | ~$0.5–1.2 (mediana ~$0.74) |
-| 9 case'ów × 1 run | ~$6.1 |
-| 9 case'ów × 2 runy | ~$13 |
-| 9 case'ów × 2 runy + `--ablation with-without` | ~$27 |
+| 1 run: agent | ~$0.40 |
+| 1 run: sędzia haiku / sędzia sonnet | ~$0.008 / ~$0.032 |
+| 1 case × 2 runy | ~$0.80 |
+| 9 case'ów × 2 runy | ~$7 |
+| 9 case'ów × 2 runy + `--ablation with-without` | ~$14 |
+
+**Prompty w formie „opisz procedurę" są ~2× tańsze od operacyjnych.** Wersja promptów zlecająca
+operację na nieistniejącym vaulcie kosztowała ~$0.74 za run — agent przepalał tury na diagnozę
+środowiska (reguła 3). Po przeramowaniu ten sam case kosztuje ~$0.40. Reguła 3 nie jest tylko
+o poprawności sygnału; jest też o połowie rachunku.
 
 Stąd doktryna:
 - **`--ablation none` w codziennym użyciu.** Pełne `with-without` świadomie, raz na większą
@@ -194,26 +223,57 @@ Stąd doktryna:
 - **Gate ręczny, NIE hook `pre-push`** — w hooku to niekontrolowany wydatek.
 - **Pytaj usera przed każdym przebiegiem płatnym** (twardy sufit: zero paid overage).
 - **`--case <glob>` + `--tag`** — nie płać za case'y, które już są zielone i których nie ruszałeś.
+  `--case` matchuje **prefiksem po nazwie case'a**: `002*` działa. Matcher **nie jest minimatchem** —
+  klasa znaków (`00[23478]*`) nie matchuje niczego, więc selekcję kilku case'ów robisz pętlą
+  osobnych wywołań, nie jednym globem. Niedopasowany glob kończy się natychmiast i **za darmo**
+  („No eval cases found matching"), więc próbowanie składni nic nie kosztuje — ale próbuj tylko
+  globami, które w razie trafienia odpalą wyłącznie to, za co chcesz zapłacić.
 - **`--max-cost-usd <n>`** jako twardy sufit przebiegu (exit 2 przy przekroczeniu; overrun
   ograniczony do jednego runu, płatne gradery są wtedy pomijane, darmowe nadal scorują).
 - **`--runs 1` nadaje się do SZUKANIA zepsutych case'ów, nie do certyfikowania baseline'u** —
   pojedynczy run jest szumny (ten sam grader `regex` dał FAIL i PASS na tym samym case'ie
   w dwóch przebiegach). Baseline certyfikuj przy `--runs 2`+.
-- **`--keep-temp`** przy diagnozie — potem czytaj `out/trace.jsonl` z katalogu tempa.
+- **`--keep-temp` jest do diagnozy potrzebny RZADKO.** `aggregate-result.json` ma w każdym
+  graderze `llm` pole **`evidence` z pełną ostatnią odpowiedzią agenta** — czyli materiał,
+  na którym sędzia głosował, dostajesz za darmo z zakończonego przebiegu:
 
-## Diagnoza czerwonego case'a — trzy klasy, trzy różne naprawy
+  ```bash
+  python3 -c "import json;d=json.load(open('evals/results/<run>/aggregate-result.json'));\
+  print([g for g in d['cases'][0]['arms']['with'][0]['graders'] if g['name']=='criteria'][0]['evidence'])"
+  ```
+
+  Sięgaj po `--keep-temp` + `out/trace.jsonl` tylko wtedy, gdy pytanie dotyczy **przebiegu**
+  (które narzędzia, w jakiej kolejności, na czym zszedł z torów), a nie **treści odpowiedzi**.
+  Pierwsza diagnoza obsidian-kanban wydała $3.44 na runy z `--keep-temp`, żeby zobaczyć to,
+  co już leżało w darmowym JSON-ie z poprzedniego przebiegu.
+- **Uzasadnień sędziego CLI nie zapisuje** — w JSON-ie jest tylko `judgeVotes: [bool, bool, bool]`.
+  Przy `FAIL` nie wiadomo, KTÓRY warunek `criteria` poległ; wnioskuj z `evidence` i z kształtu
+  kryterium, albo rozbij wielowarunkowe `criteria` na osobne gradery, gdy case czerwieni się
+  powtarzalnie i nie umiesz wskazać warunku.
+
+## Diagnoza czerwonego case'a — cztery klasy, cztery różne naprawy
 
 **Nie wolno rozluźniać graderów, żeby case'y zzieleniały.** Czerwony case to pytanie „co
-konkretnie jest zepsute", i odpowiedzi są trzy — rozstrzyga trace, nie zgadywanie:
+konkretnie jest zepsute", i odpowiedzi są cztery. Idź tą kolejnością — każdy krok jest tańszy
+od następnego i wyklucza klasę, która wygląda identycznie:
 
-| Klasa | Sygnatura | Naprawa |
-|---|---|---|
-| **Bug evala** | darmowy grader FAIL przy `criteria` PASS 3/3 | popraw/usuń grader — to eval jest zły, nie skill |
-| **Niewykonalny prompt** | `skill-loaded 0x` (score dokładnie 0.00 przy wagach 2+1+1) | przepisz prompt wg reguły 3 — gradery zostają nietknięte |
-| **Realna dziura w SKILL.md** | `skill-loaded` ✓ + `criteria` FAIL 3/3 | uzupełnij doktrynę w SKILL.md; bump + re-run |
+| # | Klasa | Sygnatura | Naprawa |
+|---|---|---|---|
+| 1 | **Niewykonalny prompt** | `skill-loaded 0x`, score dokładnie 0.00 | przepisz prompt wg reguły 3 — gradery nietknięte |
+| 2 | **Bug evala** | darmowy grader FAIL przy `criteria` PASS 3/3 | popraw/usuń grader — zły jest eval, nie skill |
+| 3 | **Fałszywy FAIL sędziego** | `criteria` FAIL na **długiej** odpowiedzi, sędzia = haiku | re-run z `--judge-model sonnet` (reguła 4) |
+| 4 | **Realna dziura w SKILL.md** | `criteria` FAIL **także u sonneta** | uzupełnij doktrynę w SKILL.md; bump + re-run |
 
-`score == 0.00` przy obecnym darmowym `skill-loaded` jest sygnaturą „skill się nie załadował" —
-zawsze sprawdź to PRZED diagnozowaniem treści odpowiedzi.
+Kolejność nie jest kosmetyczna — klasy 3 i 4 mają **identyczną sygnaturę** (`skill-loaded` ✓ +
+`criteria` FAIL 3/3, powtarzalnie w wielu runach), a naprawy są przeciwne: jedna nie tyka
+kryterium, druga dopisuje doktrynę. Pomyłka w tę stronę kończy się rozluźnieniem kryterium,
+które było poprawne — dokładnie tym, czego ta konwencja zabrania.
+
+Dwa darmowe checki przed każdą płatną diagnozą:
+1. **`score == 0.00`** przy darmowym `skill-loaded` to sygnatura „skill się nie załadował" (klasa 1) —
+   sprawdź to, ZANIM zaczniesz diagnozować treść odpowiedzi.
+2. **Przeczytaj `evidence`** z `aggregate-result.json` i sam sprawdź kryterium wobec odpowiedzi.
+   Gdy Twój odczyt mówi PASS, a sędzia dał FAIL — jesteś w klasie 3, nie 4.
 
 ## Cykl życia
 
