@@ -1,0 +1,69 @@
+{
+  "$comment": "Per-project overlay for code-design-audit. Copy to <repo>/eval/audit/config.json and fill. RULE: the checks are project-agnostic; everything project-specific lives HERE. Never hardcode a scale, a path or a product term inside a check. Every ledger entry (outOfScope / exceptions / nodeExceptions) carries a `reason` — it is debt on the record, not a setting. Do NOT fabricate any of these values: if the human hasn't stated them, ask (propose-first).",
+
+  "tokenSources": {
+    "$comment": "Where the scale actually lives. Spacing/radius/type/colour scales are DERIVED from these at runtime, so a token added here needs no check edit.",
+    "css": ["<path/to/tokens.css>"],
+    "theme": "<path/to/theme.(ts|tsx|js)>"
+  },
+
+  "roots": {
+    "$comment": "Source roots the walker scans. `screens` is the router root used to resolve a registry route to a file.",
+    "app": ["<apps/…/src>"],
+    "ds": ["<packages/design-system/src>"],
+    "screens": ["<apps/…/src/app>"],
+    "fixtures": ["<apps/…/src/mocks>"]
+  },
+
+  "ignore": ["<glob or path fragment to skip entirely>"],
+
+  "typeScale": [],
+  "typeScale$comment": "Font sizes (px) transcribed from the design file's text styles. Empty = the type lens cannot run; say so rather than inventing a scale.",
+
+  "scaleExtras": {
+    "$comment": "Values legitimately on-scale but not derivable from a token declaration. Each key that gets a value also gets a `<key>$comment` stating WHY.",
+    "spacing": [0],
+    "radius": [0],
+    "fontSize": []
+  },
+
+  "runtimeTokenPrefixes": ["<--ui-library-prefix>", "<--font->"],
+
+  "copy": {
+    "$comment": "Pure product vocabulary. Guessing this produces noise on every acronym in the product.",
+    "acronyms": [],
+    "ghostTerms": { "<retired term>": "<what the shipped term is>" },
+    "placeholders": ["Lorem", "ipsum", "TODO", "FIXME", "placeholder text"],
+    "yearCanonical": "<e.g. 2026/27>",
+    "titleCaseStopwords": []
+  },
+
+  "owners": {
+    "$comment": "Check id → the ARTEFACT the fix belongs in. Attached to each finding so routing survives a session that never reads the skill. `code` = the design file cannot express it. `figma` = a design/token decision the code only mirrors (a code-only fix creates drift the pixel gate will then report as a regression). `both` = the same edit lands twice (copy). `verify` = undecidable statically; the geometry measurement resolves it. `process` = neither artefact — the harness itself.",
+    "code": [],
+    "figma": [],
+    "both": [],
+    "verify": [],
+    "process": []
+  },
+
+  "collapse": {
+    "$comment": "Checks folded to one row per file — real but systemic, so the per-file count is the actionable unit.",
+    "checks": []
+  },
+
+  "outOfScope": {
+    "$comment": "Files this gate REPORTS on but must not FAIL on, because nothing here can verify a fix (e.g. a layer with no captured baseline). Capped at WARN and labelled, never hidden. Removing a name from this list is what 'capturing a baseline' means — the list is the ledger of what is still unmeasured, and it shrinks.",
+    "label": "<why these are unverifiable, in one phrase>",
+    "paths": []
+  },
+
+  "exceptions": [],
+  "exceptions$comment": "Accepted findings. Shape: { check, file, reason }. `reason` must state what was MEASURED, not that it looked fine.",
+
+  "nodeExceptions": [],
+  "nodeExceptions$comment": "Accepted per-node geometry findings. Shape: { check, path, prop, reason }. A false acquittal here whitewashes real drift — narrow each entry to the specific property and keep the measurement in the reason.",
+
+  "paintExceptions": [],
+  "a11yExceptions": []
+}

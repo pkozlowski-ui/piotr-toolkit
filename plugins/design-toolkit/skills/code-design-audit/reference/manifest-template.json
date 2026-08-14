@@ -1,0 +1,29 @@
+{
+  "$comment": "Screen registry for code-design-audit. Copy to <repo>/eval/manifest.json and fill. This is the single addressing table every runtime layer uses: id ↔ route ↔ design nodeId ↔ viewport. Without it, tiers T2/T3 have nothing to walk. Keep it authored by a human — a route or nodeId guessed from a filename produces a green run against the wrong screen.",
+
+  "baseUrl": "http://localhost:<dev-server-port>",
+  "figmaFileKey": "<design file key>",
+  "defaultViewport": { "width": 1440, "height": 1080 },
+
+  "threshold": 0.12,
+  "maxMismatch": 0.02,
+  "threshold$comment": "Pixel-diff sensitivity and the default per-screen mismatch budget. A budget is DEBT, not a setting: raising one needs a stated reason on the screen, and re-testing after any design-system fix.",
+
+  "screens": [
+    {
+      "id": "<flow>-<nn>-<slug>",
+      "flow": "<flow>",
+      "name": "<human name, matches the design frame>",
+      "route": "/<app route that renders it>",
+      "nodeId": "<design node id>",
+      "viewport": { "width": 1440, "height": 900 },
+
+      "phase": "<optional: iteration phase, when the project has one>",
+      "phase$comment": "HUMAN INPUT ONLY. No gate can catch a wrong value — a screen rendered in the wrong phase can still pass a pixel budget. Unclear → ask, never default silently.",
+
+      "maxMismatch": "<optional per-screen budget override — requires $comment>",
+      "parityBudget": "<optional per-screen content-parity budget — requires $comment>",
+      "$comment": "<required whenever a budget is overridden: what was MEASURED, why the divergence is legitimate (e.g. illustrative mock data vs fixture), and what would retire the exception>"
+    }
+  ]
+}
