@@ -1,3 +1,7 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# wyniki `claude plugin eval` — lokalne raporty przebiegu, nie artefakt repo
+evals/results/
+**/evals/results/
