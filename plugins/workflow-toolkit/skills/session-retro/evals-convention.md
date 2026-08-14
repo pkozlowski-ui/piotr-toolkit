@@ -158,7 +158,11 @@ a nie wiedzę modelu.
 
 ### 4. Sędzia = sonnet, NIE domyślny haiku
 
-Domyślny sędzia (haiku) **produkuje fałszywe FAIL-e na długich odpowiedziach.** Zmierzone na
+Domyślny sędzia (haiku) **myli się w OBIE strony — fałszywe FAIL-e i fałszywe PASS-y.** To nie
+jest sędzia „łagodniejszy", tylko mniej wierny: jego werdykt słabo koreluje z tym, co kryterium
+naprawdę mówi, więc suita na haiku nie mierzy tego, co myślisz, że mierzy.
+
+**Fałszywe FAIL-e — na długich odpowiedziach.** Zmierzone na
 obsidian-kanban: case'y 003 i 004 dostały od haiku `FAIL FAIL FAIL` w **dwóch** kolejnych runach
 (score 0.33, stabilnie — więc nie szum), a ten sam case z `--judge-model sonnet` dał
 `PASS PASS PASS` (score 1.00). Zmieniony był wyłącznie sędzia: prompt, `criteria` i SKILL.md
@@ -166,8 +170,16 @@ nietknięte. To były dwie najdłuższe odpowiedzi w suicie (6310 i 5096 znaków
 zaszytymi głęboko w strukturze — haiku nie utrzymuje trzech warunków „ALL must hold" na takim
 materiale.
 
+**Fałszywe PASS-y — na kryteriach wewnętrznie sprzecznych.** Case 009 obsidian-kanban dostawał od
+haiku `PASS PASS PASS`, a od sonneta `FAIL FAIL FAIL` w dwóch runach. Sonnet miał rację: kryterium
+warunkowało cytowanie wpisu w `.base` od plain-safety nazwy w klauzuli PASS, a w klauzuli FAIL
+karało za niecytowany wpis **bezwarunkowo**. Haiku nie zauważyło sprzeczności i przepuściło case
+jako zielony. **Fałszywy PASS jest groźniejszy od fałszywego FAIL-a** — czerwona lampka wymusza
+diagnozę, zielona zamyka sprawę. Suita, która świeci zielono na haiku, może po prostu mieć
+sędziego niezdolnego przeczytać własne kryteria.
+
 Koszt tej poprawki jest pomijalny: sędzia haiku ~$0.008/run, sonnet ~$0.032/run, przy runie
-agenta ~$0.41. **+6% do przebiegu za usunięcie całej klasy fałszywych czerwonych lampek.**
+agenta ~$0.41. **+6% do przebiegu za sędziego, który faktycznie czyta kryterium.**
 
 Nie ma klucza per-case (`judge_model` nie występuje w schemacie `prompt.md`) — sędzia idzie
 **flagą na komendzie**, więc musi być w kanonicznej komendzie bramy, inaczej wypada przy
@@ -180,7 +192,15 @@ kryterium, które było poprawne.
 
 ### 3. Prompt musi być wykonalny w PUSTYM sandboxie — bez vaultu, bez MCP
 
-Sandbox evala ma **pusty katalog roboczy i zero narzędzi `mcp__*`**. Prompt zlecający operację
+Sandbox evala ma **pusty katalog roboczy i zero narzędzi `mcp__*`** — ale **NIE jest odcięty od
+dysku.** `Read`/`Glob`/`Grep` po ścieżkach absolutnych sięgają realnego filesystemu: case 009
+obsidian-kanban przeczytał prawdziwy `-Kanban Board.base` z vaultu i policzył pozycje w `cardOrders`.
+Czyli „pusty sandbox" znaczy **pusty cwd i brak MCP**, a nie brak dostępu do stanu. Konsekwencje
+w obie strony: prompt MOŻE odwołać się do realnego pliku podanego ścieżką absolutną (wierniejszy
+case), ale wtedy **wynik zależy od stanu tego pliku** i przestaje być powtarzalny — a agent bez
+`Bash` nie sprawdzi warunków bezpieczeństwa zapisu i słusznie zatrzyma się przed mutacją.
+
+Prompt zlecający operację
 na nieistniejącym stanie („przesuń tę kartę", „odczytaj notatkę X") sprawia, że agent robi
 jedyną uczciwą rzecz: diagnozuje brak środowiska i odmawia pracy na ślepo — zużywa tury na
 `ToolSearch`/`Glob`/`Grep` i **nigdy nie dochodzi do wywołania skilla**. Wynik: `skill-loaded 0x`
@@ -206,11 +226,15 @@ Zmierzone (nie szacowane) na obsidian-kanban, 3 głosy sędziego:
 
 | Zakres | Koszt |
 |---|---|
-| 1 run: agent | ~$0.40 |
+| 1 run: agent | ~$0.40 (rozrzut $0.20–$0.98) |
 | 1 run: sędzia haiku / sędzia sonnet | ~$0.008 / ~$0.032 |
-| 1 case × 2 runy | ~$0.80 |
-| 9 case'ów × 2 runy | ~$7 |
-| 9 case'ów × 2 runy + `--ablation with-without` | ~$14 |
+| 1 case × 2 runy | ~$0.80–$1.60 |
+| 9 case'ów × 2 runy, sędzia sonnet | **$9.40 zmierzone**, 1526s |
+| 9 case'ów × 2 runy + `--ablation with-without` | ~$19 |
+
+Rozrzut per run jest duży (×5) i nie da się go przewidzieć z treści promptu — te same case'y
+w dwóch przebiegach kosztowały $0.35 i $0.98. **Planuj budżet po górnej granicy, nie po medianie**,
+i trzymaj `--max-cost-usd` na każdej komendzie.
 
 **Prompty w formie „opisz procedurę" są ~2× tańsze od operacyjnych.** Wersja promptów zlecająca
 operację na nieistniejącym vaulcie kosztowała ~$0.74 za run — agent przepalał tury na diagnozę
@@ -268,6 +292,20 @@ Kolejność nie jest kosmetyczna — klasy 3 i 4 mają **identyczną sygnaturę*
 `criteria` FAIL 3/3, powtarzalnie w wielu runach), a naprawy są przeciwne: jedna nie tyka
 kryterium, druga dopisuje doktrynę. Pomyłka w tę stronę kończy się rozluźnieniem kryterium,
 które było poprawne — dokładnie tym, czego ta konwencja zabrania.
+
+**Trigger jest niedeterministyczny — jedno `skill-loaded 0x` nie jest dowodem.** W przebiegu
+dziewiątki na sonnecie dwa runy z osiemnastu (`001` run 1, `004` run 1) miały `Skill called 0x`,
+a ich drugie runy `1x` — ten sam prompt, ten sam plugin. Dlatego klasa 1 wymaga **`0x` w KAŻDYM
+runie** (score dokładnie 0.00 powtarzalnie); pojedyncze `0x` przy drugim runie `1x` to szum
+odpalenia, nie zepsuty prompt. To także twardy argument za `--runs 2` jako minimum bramy:
+przy `--runs 1` ten szum wygląda jak regres triggera.
+
+**Kryterium z więcej niż dwoma warunkami „ALL must hold" jest nierozstrzygalne w debugowaniu.**
+CLI nie zapisuje uzasadnień, więc `FAIL FAIL FAIL` na kryterium z czterema warunkami nie mówi,
+który poległ — i każda naprawa jest zgadywaniem. Gdy taki case czerwieni się powtarzalnie,
+**rozbij kryterium na osobne gradery po jednym warunku** (każdy z własną nazwą pliku, bo nazwa
+gradera jest tym, co widzisz w raporcie) i dopisz w każdym: „oceniasz WYŁĄCZNIE X, nie karz za
+nic innego". Następny przebieg wskaże warunek zamiast całości.
 
 Dwa darmowe checki przed każdą płatną diagnozą:
 1. **`score == 0.00`** przy darmowym `skill-loaded` to sygnatura „skill się nie załadował" (klasa 1) —

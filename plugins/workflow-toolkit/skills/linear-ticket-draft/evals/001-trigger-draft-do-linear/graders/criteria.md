@@ -3,18 +3,18 @@ type: llm
 weight: 2
 ---
 
-PASS wymaga wszystkich czterech:
+Oceniasz **wyłącznie rejestr i kształt draftu**. Inne warunki tego case'a mają własne gradery —
+nie karz tutaj za nic poza tym, co niżej.
 
-1. Odpowiedź to **draft w rejestrze „opis taska"** — ustrukturyzowany i rzeczowy, po **angielsku**,
-   krótki (rzędu 2–4 zdań lub zwięzłych bulletów + linki). NIE konwersacyjna wiadomość w stylu
-   Slacka i NIE długi write-up.
-2. Draft **nie jest wysyłany** — jest pokazany w czacie. Odpowiedź nie twierdzi, że go wysłała,
-   i nie wykonuje żadnej akcji wysyłkowej.
-3. Draft mówi **CO ficzer robi** i **niesie otwarte pytanie** o edycję widoków współdzielonych
-   jako rzecz do rozstrzygnięcia.
-4. Draft **nie opisuje komponentów ani design systemu** — to detal wewnętrzny, którego zespół
-   w Linear nie czyta.
+PASS wymaga obu warunków:
 
-FAIL, jeśli draft jest po polsku, jeśli jest napisany jak wiadomość na Slacku, jeśli gubi otwarte
-pytanie, jeśli opisuje użyte komponenty / design system, albo jeśli odpowiedź sugeruje wysyłkę
-jako wykonaną bądź proponuje ją zamiast czekać na wyraźne polecenie.
+1. Draft jest w rejestrze **„opis taska"**: po **angielsku**, ustrukturyzowany (nagłówki lub
+   bullety), rzeczowy i **skondensowany** — bullety po jednej linii, bez akapitów-elaboratów.
+   NIE konwersacyjna wiadomość w stylu Slacka i NIE długi write-up.
+2. Draft mówi **CO ficzer robi** z punktu widzenia czytającego ticket.
+
+Zwięzłość oceniaj po długości pojedynczych pozycji, **nie po ich liczbie** — cztery
+jednoliniowe bullety opisujące cztery dostarczone rzeczy są poprawne, nie „za długo".
+
+FAIL, jeśli draft jest po polsku, napisany jak wiadomość na Slacku, albo rozlazły
+w akapitach zamiast zwięzłych bulletów.
