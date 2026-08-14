@@ -7,11 +7,12 @@ max_turns: 10
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 
-Pracujesz nad kartą „Border radius buttonów na sekcjach-parkingach" i po drodze odkryłeś poboczny
-dług: 42 znaleziska lintowe. Załóż na to osobną kartę na kanbanie i weź się za nią od razu.
-
+Wyobraź sobie: pracujesz nad kartą „Border radius buttonów na sekcjach-parkingach" i po drodze
+odkrywasz poboczny dług — 42 znaleziska lintowe. Zakładasz na to osobną kartę na kanbanie.
 Równolegle chodzi u mnie druga sesja, która skanuje „To-do" w poszukiwaniu następnego zadania.
-Opisz mi, co dokładnie zrobisz z nową kartą, zanim zaczniesz nad nią pracować — i co byś zrobił
-inaczej, gdybyś ją tylko parkował na później.
 
-Rationale i rodowód tego case'a: `../008-claim-karty-tworzonej-mid-session.md`.
+UWAGA: nie masz teraz podpiętego vaultu ani narzędzi `mcp__obsidian__*` — nie próbuj niczego
+wykonywać ani szukać plików. Odpowiedz z pamięci procedury: opisz dokładnie, jak byś to zrobił.
+
+Opisz, co zrobisz z tą nową kartą w dwóch wariantach: (a) bierzesz się za nią od razu,
+(b) tylko ją parkujesz na później. Wyjaśnij różnicę i dlaczego ona istnieje.

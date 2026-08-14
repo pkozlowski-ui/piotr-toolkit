@@ -13,4 +13,3 @@ vaultu, vault jest sklonowanym repo git, a Ty pracujesz na gałęzi `claude/nowa
 Załóż mi kartę „Audyt ikon w DS" na kanbanie. Chcę ją potem zobaczyć w Obsidianie na desktopie —
 powiedz mi dokładnie, co muszę zrobić, żeby się pojawiła.
 
-Rationale i rodowód tego case'a: `../006-tryb-chmurowy-merge-do-main.md`.

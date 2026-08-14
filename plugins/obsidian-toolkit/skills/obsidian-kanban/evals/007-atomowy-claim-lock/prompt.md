@@ -7,10 +7,12 @@ max_turns: 10
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 
-Mam na tej maszynie kilka równoległych sesji pracujących na jednym kanbanie w Obsidianie.
-Weź kartę „Application Template Table".
+Mam na tej maszynie kilka równoległych sesji pracujących na jednym kanbanie w Obsidianie
+i chcę, żebyś wziął kartę „Application Template Table".
 
-Opisz mi mechanizm, którym zabezpieczysz się przed tym, że inna sesja robi tę samą kartę —
-konkretnie: co uruchomisz, jakie kody wyjścia mogą wrócić i co zrobisz przy każdym z nich.
+UWAGA: nie masz teraz podpiętego vaultu ani narzędzi `mcp__obsidian__*` — nie próbuj niczego
+wykonywać ani szukać plików. Odpowiedz z pamięci procedury: opisz dokładnie, jak byś to zrobił.
 
-Rationale i rodowód tego case'a: `../007-atomowy-claim-lock.md`.
+Opisz mechanizm, którym zabezpieczysz się przed tym, że inna sesja robi tę samą kartę:
+co konkretnie uruchomisz, jakie kody wyjścia mogą wrócić, co zrobisz przy każdym z nich,
+i co się dzieje przy domknięciu karty.

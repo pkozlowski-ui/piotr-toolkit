@@ -13,4 +13,3 @@ raczej backlog na kiedyś.
 Mój board ma kolumny: Lab, To-do, In progress, To confirm, Done. Powiedz, jaki `status`
 wpiszesz tej karcie we frontmatterze i dlaczego.
 
-Rationale i rodowód tego case'a: `../005-zamkniety-slownik-statusow.md`.

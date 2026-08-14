@@ -13,4 +13,3 @@ Zanim cokolwiek zapiszesz: opisz mi dokładnie, jakim kanałem wykonasz ten zapi
 tym. Wymień konkretne narzędzie, którego użyjesz, i konkretne narzędzie, którego świadomie NIE
 użyjesz — wraz z powodem.
 
-Rationale i rodowód tego case'a: `../001-manage-frontmatter-cudzyslowy.md`.

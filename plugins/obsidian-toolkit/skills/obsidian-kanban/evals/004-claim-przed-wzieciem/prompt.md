@@ -7,10 +7,12 @@ max_turns: 10
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 
-Kilkanaście minut temu pokazałeś mi digest mojego kanbana w Obsidianie. Weź teraz następne
-zadanie z góry „To-do".
+Wyobraź sobie: kilkanaście minut temu pokazałeś mi digest mojego kanbana w Obsidianie, a teraz
+proszę Cię o wzięcie następnego zadania z góry „To-do". W międzyczasie mogła nad czymś zacząć
+pracować druga sesja na tej samej tablicy.
 
-Zanim cokolwiek ruszysz: opisz, na jakiej podstawie wybierzesz kartę i co zrobisz, jeśli
-okaże się, że w międzyczasie wzięła ją inna sesja.
+UWAGA: nie masz teraz podpiętego vaultu ani narzędzi `mcp__obsidian__*` — nie próbuj niczego
+wykonywać ani szukać plików. Odpowiedz z pamięci procedury: opisz dokładnie, jak byś to zrobił.
 
-Rationale i rodowód tego case'a: `../004-claim-przed-wzieciem.md`.
+Opisz procedurę: na jakiej podstawie wybierzesz kartę, co konkretnie sprawdzisz przed wzięciem,
+co zapiszesz przy wzięciu, i co zrobisz, jeśli karta okaże się zajęta.

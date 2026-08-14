@@ -12,4 +12,3 @@ Załóż mi kartę na kanbanie: „CLAUDE.md linia 57 — skróć (po #131)". Nu
 Powiedz mi, pod jaką dokładnie nazwą pliku ją zapiszesz i jak będzie wyglądał wpis tej karty
 w `cardOrders` w pliku `.base`.
 
-Rationale i rodowód tego case'a: `../009-hash-w-nazwie-karty.md`.
