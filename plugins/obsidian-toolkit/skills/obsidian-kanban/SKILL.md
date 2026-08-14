@@ -174,6 +174,9 @@ To wspólny vault pracy — **każdy zapis pokazuj najpierw jako propozycję**, 
 status: <kolumna ze słownika boardu>
 claimed: <YYYY-MM-DD HH:MM · sesja>   # lustro locka (źródło prawdy = kanban-claim.sh); zdejmij przy domknięciu
 epic: "[[EPIC · <nazwa>]]"            # tylko sub-task epica — czyni łańcuch queryowalnym
+related:                              # opcjonalnie — cross-cutting linki, patrz sekcja "Powiązania" niżej
+  - "[[Inna karta]]"
+linear: MAN-833                       # opcjonalnie — klucz ticketu Linear, NIE url, NIE kopia stanu
 done_at: <YYYY-MM-DD>                 # tylko karta Done — stempel wejścia w Done; auto-archiwum liczy 30 dni od tej daty
 tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w cudzysłowach
 ---
@@ -182,6 +185,19 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 
 ## Rezultat        <!-- wypełniane przy przejściu na Done: co zrobione + link do artefaktu/PR/Figma -->
 ```
+
+## Powiązania — `related:` i `linear:` (⚠️ hipoteza z jednej sesji, nie utwardzona doktryna)
+
+**Status:** wzorzec wypróbowany na **jednym** boardzie (antisis-prototype, 2026-08-14, backfill na 5 kartach) bez obiektywnego checku, że jest ogólnie lepszy — zgodnie z regułą „ewolucja skilla tylko przez validation-gate" (globalny CLAUDE.md), traktuj to jako **do potwierdzenia**, nie jako zamknięty kanon. Zanim rozszerzysz to na kolejny board, sprawdź czy ten board w ogóle ma taki problem (rozproszone powiązania między kartami, ticket Linear wspominany tylko w prozie) — jeśli nie, nie wymuszaj pól „bo tak robi inny projekt".
+
+**Motywacja (dowód, nie tylko intuicja):** `.base` boardu antisis-prototype ma już zdefiniowany drugi wymiar grupowania — klucz `"note.status\x1fnote.related"` w `cardOrders`/`swimlaneOrders` — ale żadna karta nigdy nie ustawiała property `related`, więc ten swimlane nigdy się nie aktywował. To **nie jest nowy mechanizm Bases** wymyślony tu — to odblokowanie już istniejącej konfiguracji przez wypełnienie pola, które dotąd było puste. Przed dodaniem tych pól na innym boardzie sprawdź analogicznie jego `.base` — może mieć ten sam martwy swimlane albo nie mieć go wcale (wtedy `related:` nadal wolno użyć jako czystego tekstowego pola, ale bez efektu na grupowanie).
+
+- **`related:`** — lista wikilinków w cudzysłowach (ten sam gotcha co inne wikilinki w YAML — nigdy plain `[[A]], [[B]]`) do kart powiązanych tematycznie, ale **poza** relacją epic/sub-task: spun-off-from, blocks/unblocks, ten sam temat widziany z innej karty. Różnica względem `epic:` — `epic` koduje **hierarchię** (jedna karta-indeks + jej sub-taski, patrz sekcja „Epiki"); `related` koduje **płaską sieć** cross-cutting powiązań, która może przecinać epiki albo łączyć karty bez żadnego epika.
+- **`linear:`** — plain string, **sam klucz** ticketu Linear (`MAN-833`), NIE cały URL i NIE kopia tytułu/stanu ticketu. Klucz się nie starzeje; skopiowany stan tak — gdy potrzebny aktualny stan ticketu, query Linear MCP po tym kluczu w danym momencie, nie czytaj z karty.
+
+**Kiedy dopisywać (dziś osąd, nie zautomatyzowany check):** gdy treść karty już zawiera `[[wikilink]]` do innej karty w roli spun-off-from/blocker/ten-sam-temat i nie jest to epic-relacja → przenieś referencję też do `related:`, żeby była queryowalna, nie tylko czytelna w prozie. Gdy karta ma odpowiadający ticket Linear, a pola `linear:` jeszcze nie ma → dopisz klucz.
+
+**Kiedy NIE dodawać (żeby nie rozjechać się z `epic:`):** jeśli powiązanie to epic↔sub-task, zostaje w `epic:` — nie duplikuj tego samego linku też w `related:`.
 
 ## Gotchas
 - **Odkryj kolumny z `.base`** — nie hardcoduj; boardy różnią się słownikiem (Manta: Lab/To-do/In progress/To confirm/Done).
