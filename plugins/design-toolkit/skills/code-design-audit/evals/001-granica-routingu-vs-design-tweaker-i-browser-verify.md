@@ -38,3 +38,16 @@ oba muszą **oddać robotę** sąsiadowi, nie wejść w pętlę.
 jest niewidoczna w promptcie, a konsekwencja pomyłki jest asymetryczna — audyt bez pliku designu
 produkuje **fałszywą pewność zgodności**, która jest gorsza niż brak audytu (ta sama reguła co
 inwariant 7 w SKILL.md: fałszywe uniewinnienie > fałszywy finding).
+
+---
+
+**Warstwa bramy (CLI, 2026-08-14).** Trzy prompty tego case'a są nierozdzielne w jednym wywołaniu,
+więc w formacie CLI żyją jako trzy katalogi dzielące ten slug: `001-granica-routingu-p1-audyt-zgodnosci/`
+(prompt 1 — skill ma się odpalić), `001-granica-routingu-p2-look-and-feel/` i
+`001-granica-routingu-p3-jedna-edycja/` (prompty 2 i 3 — robota ma zostać oddana sąsiadowi).
+`--case '001-*'` odpala wszystkie trzy. Konwencja formatu: `session-retro/evals-convention.md`.
+
+W p2 i p3 świadomie NIE ma gradera `skill-loaded` — poprawne zachowanie to oddanie roboty, więc
+sygnałem jest darmowy `regex` na nazwie właściwego właściciela (`design-tweaker` / `browser-verify`).
+Te nazwy są prywatne dla tego marketplace'u, więc regex działa jednocześnie jako detektor triggera:
+model bez wczytanego pluginu nie ma skąd ich znać.

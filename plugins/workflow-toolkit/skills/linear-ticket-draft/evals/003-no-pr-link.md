@@ -21,3 +21,11 @@ sekcji Links (SKILL.md przed 2026-08-10 to explicite dopuszczał w punkcie 6 str
 
 **Jak sprawdzić:** Po wygenerowaniu draftu zgrepuj treść po `github.com` i `/pull/` — 0 trafień.
 Baseline przed fixem: 1/1 draft (MAN-825) miał 2 linki PR.
+
+---
+
+**Warstwa bramy (CLI, 2026-08-14).** Case żyje jako `003-no-pr-link/` z darmowym graderem `regex`
+(`not_contains` na `github\.com/[^\s)]*/pull/`). Prompt jawnie prosi o „sam draft, bez komentarza" —
+bez tego zastrzeżenia regex karałby odpowiedź za zdanie „PR-y celowo pomijam", czyli za poprawne
+wytłumaczenie reguły (ta sama klasa buga, która wywaliła gradery z `obsidian-kanban` 006 i 009).
+`criteria` niesie tę granicę jawnie w uwadze dla oceniającego.
