@@ -12,7 +12,11 @@ description: >
   "what's wrong with this", "looks like AI", "feels generic/boring/off",
   "is this good?", "make it more premium", /design-audit, /critique, /diagnose.
   Execution after diagnosis → impeccable. Greenfield → taste-skill / frontend-design.
-  Mobile deep-dive → mobile-audit. Quick smoke-check → browser-verify.
+  Mobile deep-dive → mobile-audit. Quick smoke-check → browser-verify. Also triggers on
+  routing/handoff questions about ITS OWN boundaries — "who executes this", "which skill
+  owns X", "where does this go" — even when no audit is requested: the answer depends on
+  this skill's own routing rules (e.g. taste-skill is weak on condensed/dense UI — dashboards
+  and data-heavy apps route to frontend-design instead), not general reasoning.
 ---
 
 # Design Tweaker — full-stack product-design audit
