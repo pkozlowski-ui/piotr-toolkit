@@ -1,6 +1,6 @@
 ---
 name: linear-ticket-draft
-description: Tworzy draft opisu/komentarza taska do Linear w rejestrze "opis taska" (ENG, strukturalny, skondensowany, pisany jak człowiek). Uruchamia się gdy user mówi "draft do lineara", "opis do taska", "opis taska", "zrób draft ticketu", "napisz do lineara", "opis do <TICKET>", albo prosi o podsumowanie dostarczonej roboty do Linear. NIGDY nie wysyła — pokazuje draft w czacie i czeka na wyraźne "wyślij".
+description: Tworzy draft opisu/komentarza taska do Linear w rejestrze "opis taska" (ENG, strukturalny, skondensowany, pisany jak człowiek). Uruchamia się gdy user mówi "draft do lineara", "opis do taska", "opis taska", "zrób draft ticketu", "napisz do lineara", "opis do <TICKET>", albo prosi o podsumowanie dostarczonej roboty do Linear. NIGDY nie wysyła i nigdy nie zaprasza do wysyłki — pokazuje draft w czacie i milknie, user inicjuje sam.
 ---
 
 # Skill: linear-ticket-draft
@@ -32,9 +32,13 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
 
 ## Twarde zasady (nadrzędne)
 1. **NIE WYSYŁAJ.** Linear komentarz / edycja opisu = treść team-facing → draft pokazujesz w czacie
-   i czekasz na wyraźne **„wyślij"** (zgodnie z globalnym CLAUDE.md „Wysyłka na zewnątrz"). Dopiero po
-   „wyślij" zadaj **jedno** pytanie: **komentarz czy podmiana opisu (description)?** — i wtedy użyj
-   Linear MCP (`save_comment` / `save_issue`).
+   i **milkniesz na temat wysyłki** (zgodnie z globalnym CLAUDE.md „Wysyłka na zewnątrz" — „przygotuj
+   draft, pokaż, zamilknij"). **Nie zapraszaj do wysyłki żadną formułą oczekiwania** — nie pisz
+   „powiedz «wyślij», to zapostuję", nie pisz „czekam na «wyślij»", nie pytaj „wysłać?". Zaproszenie
+   jest naruszeniem samo w sobie, nawet jeśli poprawnie deklarujesz, że sam nie wysyłasz — user
+   inicjuje wysyłkę sam, nieproszony pytaniem. Dopiero gdy user **sam** to zainicjuje, zadaj **jedno**
+   pytanie: **komentarz czy podmiana opisu (description)?** — i wtedy użyj Linear MCP (`save_comment` /
+   `save_issue`).
 2. Prośba o poprawkę draftu (krócej, inny ton, inne sekcje) ≠ zgoda na wysyłkę.
 3. **Timing przy epicu/wątku (TWARDE):** jeśli ticket należy do **aktywnego epica z otwartymi sub-taskami** (patrz skill `obsidian-kanban` → „Epiki") — **NIE draftuj teraz**. Draft opisu/komentarza opisującego rozwiązanie powstaje **dopiero gdy cały wątek jest zbudowany** (wszystkie sub-taski domknięte). Powód: komentarz z opisem rozwiązania, po którym rozwiązanie się jeszcze zmienia, dezaktualizuje się. Gdy wątek trwa — zbieraj materiał, ale wstrzymaj draft do końca.
 
