@@ -10,10 +10,10 @@ description: >-
   registry, token sources, copy lexicon, exception ledger) that lives in the product repo. Use when
   asked to "audit the prototype", "check the code against Figma", "is the prototype faithful to the
   design", "design-vs-code audit", "zaudytuj prototyp", "sprawdź zgodność kodu z designem", or
-  before handing a built prototype to review. NOT for: design-file quality (→ a Figma-side polish
-  loop), a quick smoke check after one edit (→ workflow-toolkit:browser-verify), correctness review
-  of a diff (→ code-review), or pure craft judgement with no design file to compare against
-  (→ design-toolkit:design-tweaker alone).
+  before handing a built prototype to review. NOT for: design-file quality (→
+  figma-design-toolkit:ui-polish-loop), a quick smoke check after one edit (→
+  workflow-toolkit:browser-verify), correctness review of a diff (→ code-review), or pure craft
+  judgement with no design file to compare against (→ design-toolkit:design-tweaker alone).
 ---
 
 > **Cross-project canonical skill** (piotr-toolkit → `design-toolkit`). This file is the
@@ -28,9 +28,9 @@ description: >-
 
 # code-design-audit
 
-Drive a **built prototype** to design-faithfulness. A Figma-side polish loop does this for the
-design file; this does it for the running app, and deliberately does not duplicate it — the two
-audit different substrates and route findings to different places.
+Drive a **built prototype** to design-faithfulness. `figma-design-toolkit:ui-polish-loop` does this
+for the design file; this does it for the running app, and deliberately does not duplicate it — the
+two audit different substrates and route findings to different places.
 
 ## 0. Two layers, and what actually runs here
 
@@ -150,12 +150,11 @@ Write this table for the project before running anything; the point is the right
    `max_iterations`.**
 
 8. **HAND THE OTHER DIRECTION OVER** — collect every non-code-owned finding into one design to-do
-   list. Route it to the project's design-side loop.
-   **Fallback when the project has no Figma-side polish loop** (the common case outside the
-   reference implementation): route those findings to `design-toolkit:design-tweaker` for the
-   design-side judgement, and park each one as a task/card with its owner and reason. **Never
-   silently fix a design-owned finding in code** because no design-side loop exists — that is
-   exactly the drift this skill is for.
+   list. Route it to the project's design-side loop, `figma-design-toolkit:ui-polish-loop`.
+   **Fallback when the project hasn't set up that loop yet**: route those findings to
+   `design-toolkit:design-tweaker` for the design-side judgement, and park each one as a task/card
+   with its owner and reason. **Never silently fix a design-owned finding in code** because no
+   design-side loop exists — that is exactly the drift this skill is for.
 
 9. **CONVERGE** — explicit `max_iterations` (default 3 rounds of 6→7, hard ceiling 8) and four
    terminal states, reported **by name**, never inferred:
@@ -212,6 +211,9 @@ stays the gate.
 
 ## 6. Synergy map (what to call, and what not to duplicate)
 
+- `figma-design-toolkit:ui-polish-loop` — the design-side counterpart. Route design-owned findings
+  there instead of fixing them in code; take code-owned findings it surfaces back here. Keep one
+  overlay shape where a project runs both (component names, brand/experience rules).
 - `design-toolkit:design-tweaker` — **owns craft judgement** (step 4, and the fallback in step 8).
   Delegate; never reimplement its lenses here.
 - `design-toolkit:mobile-audit` — mobile-viewport deep dive when the flow is mobile-first.

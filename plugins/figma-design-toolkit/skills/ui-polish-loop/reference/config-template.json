@@ -1,0 +1,51 @@
+{
+  "$comment": "Per-project overlay for ui-polish-loop. Copy to <repo>/docs/design-system/ui-polish-loop-overlay.json (or fold into an existing playbook) and fill. RULE: the loop/dimensions/triage/terminal-states are project-agnostic; everything project-specific lives HERE. Do NOT fabricate any of these values: if the human hasn't stated them, ask (propose-first).",
+
+  "tier": "T0",
+  "tier$comment": "T0 = loop only (no gate). T1 = has a mechanical gate. T2 = also has a screen/node-id registry. T3 = also has a recorded decision library. State this honestly; T0 is a valid, common answer.",
+
+  "designSystem": {
+    "fileKey": "<Figma file key or URL>",
+    "sourcePages": ["<DS page name(s) holding canonical masters>"]
+  },
+
+  "gate": {
+    "$comment": "T1+. Never re-implement a project's gate in the skill — call it. If none exists, leave hasGate:false and the loop runs on judgement (design-tweaker) instead of mechanical auto-fix.",
+    "hasGate": false,
+    "location": "<path to the project's gate/build-kit functions, if any>",
+    "functions": []
+  },
+
+  "registry": {
+    "$comment": "T2. screen <-> node-id <-> flow map. Without it, cross-screen checks (§3c) are manual.",
+    "location": "<path to the project's screen/flow registry, if any>"
+  },
+
+  "decisionLibrary": {
+    "$comment": "T3. Ledger of intentional exceptions ('don't fix these') that a mechanical gate would otherwise flag as defects.",
+    "location": "<path, or null if none yet>"
+  },
+
+  "components": {
+    "$comment": "So the generic cross-screen checks (§3c) know what to look for in THIS design system.",
+    "navComponents": { "<ComponentName>": "<role, e.g. 'main nav rail'>" },
+    "footerComponent": "<name of the footer/actions-row component, if any>",
+    "fieldComponents": ["<Field/Input/Select/... component names>"],
+    "stepComponents": ["<stepper/progress component names, if any>"]
+  },
+
+  "experiences": [],
+  "experiences$comment": "Only if this design system serves more than one sibling brand/product (e.g. an internal tool + a customer-facing app) sharing the same file. Each entry: { name, brand, chromeNotes }. Leave empty for a single-experience project.",
+
+  "copy": {
+    "$comment": "Pointer to the project's UX-writing canon. Guessing register/acronyms produces noise on every acronym in the product.",
+    "lexiconLocation": "<path to the project's copy/UX-writing canon, if any>"
+  },
+
+  "convergence": {
+    "maxIterations": 3,
+    "hardCeiling": 8
+  },
+
+  "scopeGuard": "<one-line statement of what this loop must NOT invent, typically: DS-only, no new component/variant without a separate proposal>"
+}

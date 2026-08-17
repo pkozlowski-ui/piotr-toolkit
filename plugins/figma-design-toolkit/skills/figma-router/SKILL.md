@@ -27,6 +27,7 @@ description: >
 | **DS scaffold / init** | "załóż design system", registry/build-kit | `figma-ds-init` |
 | **Prototyp** | prototype mode, połącz ekrany, tranzycje, overlay | `figma-prototype` |
 | **Prototyp kodu → review** | działający prototyp w kodzie → klatki-stany do async review, "zrób reviewable", "rozbij na flow", "Figma specs z kodu" | `prototype-to-review` |
+| **Iteracyjny polish flow** | "wypoleruj/dociśnij flow", "improve screen quality", audyt→fix→re-audyt aż do zbieżności | `ui-polish-loop` (siostrzany do `design-toolkit:code-design-audit` po stronie kodu) |
 | **Cloud / headless** | brak Figma Desktop, telefon, web/cloud env | `figma-cloud` (mechanika) + skill domenowy (metodologia) |
 
 Cross-domain → skill domeny PRIMARY (on odsyła do secondary). Niejasne → jedno pytanie.
