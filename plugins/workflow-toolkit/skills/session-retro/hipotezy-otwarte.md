@@ -39,6 +39,50 @@
 
 ---
 
+### H2 — `design-tweaker` description: trigger na pytania meta/routingowe o WŁASNE granice
+
+- **Co jest hipotezą:** dopisana fraza „who executes this / which skill owns X" w `description`,
+  żeby pytania o routing/handoff (nie tylko „audit this") ładowały skill.
+- **Data zmiany:** 2026-08-17 (`design-toolkit` 1.4.2, commit `860f5bf`).
+- **Stan gate'a:** eval case 001 przeszedł 0.00→1.00 (dowód że fix DZIAŁA na tym scenariuszu),
+  ale to konieczne, nie wystarczające — held-out na realnych sesjach nieodpalony (zero czasu
+  od zmiany).
+- **Soczewka:** trigger fidelity — oceniaj per realna sesja z pytaniem routingowym, nie per
+  eval-run.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE, czyli realne sesje z pytaniem meta/routingowym
+  o `design-tweaker` po dacie zmiany.
+- **Komenda:**
+  ```bash
+  plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
+    design-toolkit:design-tweaker 2026-08-17
+  ```
+- **Gdzie zapisać werdykt:** karta „Evale jako brama — dokoncz pozostale 10 plikow prozy" (Archive)
+  albo nowa karta, + zdjęcie tej pozycji stąd.
+
+### H3 — `linear-ticket-draft`: nigdy nie zaprasza do wysyłki (rule 1 przepisana)
+
+- **Co jest hipotezą:** reguła „milkniesz, nie zapraszasz formułą oczekiwania" zamiast „czekasz
+  na wyraźne «wyślij»" — usuwa lukę, w której model dosłownie pisał „Powiedz «wyślij»"/„czekam
+  na «wyślij»".
+- **Data zmiany:** 2026-08-17 (`workflow-toolkit` 1.31.4, commit `7344c77`).
+- **Stan gate'a:** eval case 001 przeszedł 0.80→0.90, rdzeń problemu (dosłowny zakazany wzorzec)
+  zniknął w OBU runach re-runu — ale to jest ta sama, konieczna-nie-wystarczająca sytuacja co H2.
+  **Uwaga:** resztkowy pojedynczy flake w re-runie (inna, węższa fraza „powiedz X, przepiszę
+  sekcję" — niedotycząca wysyłki) potraktowany jako szum; jeśli held-out pokaże, że to się
+  powtarza w realnych sesjach, może to być osobny, węższy finding, nie dowód że fix nie działa.
+- **Soczewka:** doctrine-compliance — oceniaj per realny draft wysłany do Lineara/Figmy po dacie
+  zmiany, sprawdzając czy PADA jakakolwiek formuła zaproszenia do wysyłki.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE, czyli realne drafty `linear-ticket-draft` po
+  dacie zmiany.
+- **Komenda:**
+  ```bash
+  plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
+    workflow-toolkit:linear-ticket-draft 2026-08-17
+  ```
+- **Gdzie zapisać werdykt:** j.w. + zdjęcie tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
