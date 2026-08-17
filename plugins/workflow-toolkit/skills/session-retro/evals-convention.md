@@ -300,6 +300,38 @@ runie** (score dokładnie 0.00 powtarzalnie); pojedyncze `0x` przy drugim runie 
 odpalenia, nie zepsuty prompt. To także twardy argument za `--runs 2` jako minimum bramy:
 przy `--runs 1` ten szum wygląda jak regres triggera.
 
+**Piąta sygnatura — `skill-loaded 0x` w KAŻDYM runie, ale `criteria` PASS (score > 0, nie 0.00).**
+Nie jest to klasa 1 (tam `skill-loaded` FAIL ciągnie score do dokładnie 0.00) — tu model odpowiada
+merytorycznie poprawnie z ogólnego rozumowania, nigdy nie wołając `Skill`. Zmierzone 2026-08-17 na
+trzech case'ach (`obsidian-feedback-sweep` 002, `figma-design-workflow` 001, `design-tweaker` 001,
+wszystkie pytania „opisz procedurę" wg reguły 3) — ale dwa pierwsze i trzeci **nie są tym samym
+finding'iem**, mimo identycznego `0x`:
+
+- **`obsidian-feedback-sweep` 002 i `figma-design-workflow` 001** — `criteria` PASS **3/3 w obu
+  runach** (odpowiedź kompletna i poprawna wg `evidence`). Sprawdzian: czy fakt wymagany do PASS
+  żyje WYŁĄCZNIE w ciele SKILL.md, czy jest odtwarzalny z ogólnej kompetencji/ambient-contextu
+  (np. `description` skilla widoczny w każdej sesji, albo zwykła dyscyplina agenta — „bierz cytaty
+  z żywego źródła, nie z pamięci" nie wymaga doktryny, wymaga ostrożności). W obu przypadkach
+  odpowiedź była kompletna BEZ specyficznej wiedzy z ciała skilla — pytanie było odpowiadalne z
+  intuicji. **To nie jest zepsuty prompt ani zepsuty grader** — nie rozluźniaj `skill-loaded`, nie
+  przepisuj promptu drugi raz (próba jawnego imperatywu na 002 nie zmieniła wyniku). Udokumentuj
+  jako znaną granicę testowania triggera: pytania meta/proceduralne, których poprawna odpowiedź
+  nie wymaga specyfiki doktryny, będą czasem przechodzić bez konsultacji skilla — to sygnał
+  nasycenia ogólnej kompetencji modelu, nie regres.
+- **`design-tweaker` 001** — WYGLĄDA identycznie (`skill-loaded 0x` w obu runach), ale `criteria`
+  **też FAIL w obu runach** (score 0.00, nie > 0 — sprawdź to najpierw, to odróżnia od punktu
+  wyżej). Fakt wymagany do PASS („`taste-skill` jest słaby na skondensowany/gęsty UI, dashboardy →
+  `frontend-design`") żyje TYLKO w ciele SKILL.md (linia z sekcji „When to route elsewhere"), nie
+  w `description`. Model bez konsultacji zgadł sensowny, ale niekompletny routing (`dataviz` +
+  praca własna) i nigdy nie rozważył ani nie wykluczył `taste-skill` — brakująca wiedza dała
+  realnie gorszą odpowiedź, nie tylko `0x` na papierze. To wygląda na faktyczną lukę triggera:
+  `description` design-tweakera ma frazy pod „zaudytuj UI" (audit this, design review…), ale
+  żadnej pod pytania meta/routingowe o WŁASNE granice skilla („komu oddajesz egzekucję”, „kiedy
+  NIE Ty”). Naprawa warta przetestowania: dopisać do `description` frazę pokrywającą pytania o
+  routing/handoff, zbumpować i zweryfikować re-runem TEGO SAMEGO case'a (płatne — pytaj przed
+  odpaleniem) — to jest test, nie pewność, więc traktuj jak każdą zmianę description: nie utwardzaj
+  bez porównania z poprzednią wersją (rozdział „Cykl życia” niżej).
+
 **Kryterium z więcej niż dwoma warunkami „ALL must hold" jest nierozstrzygalne w debugowaniu.**
 CLI nie zapisuje uzasadnień, więc `FAIL FAIL FAIL` na kryterium z czterema warunkami nie mówi,
 który poległ — i każda naprawa jest zgadywaniem. Gdy taki case czerwieni się powtarzalnie,
