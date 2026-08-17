@@ -15,10 +15,13 @@ description: >-
 > **Cross-project canonical skill** (piotr-toolkit → `figma-design-toolkit`). This file is the
 > project-agnostic **engine**: §1–§5 + §7–§9 work against any Figma DS and any target code library.
 > The **per-project overlay** (§6 — target UI library, token namespace, component registry, WCAG target,
-> DS component names) does **not** live here — it lives in each product repo, typically
-> `docs/design-system/figma-handoff-playbook.md` + that repo's `.claude/skills/figma-handoff-prep/`.
+> DS component names) does **not** live here — it lives in the product repo's own design-system docs,
+> typically `docs/design-system/figma-handoff-playbook.md`. **Do not** create a same-named
+> `.claude/skills/figma-handoff-prep/` in the product repo to hold it — a project-scoped skill fully
+> shadows a plugin skill of the same name, which makes this canonical copy unreachable/dead from that
+> repo (measured on Anti-SIS: 8 days of one-way drift before the duplicate was caught and deleted).
 > Authored from the Anti-SIS engagement 2026-07-15 (first reference implementation). Promote new
-> heuristics back here (§9); keep product specifics in the product repo.
+> heuristics back here (§9); keep product specifics in the product repo's playbook.
 
 # figma-handoff-prep
 
@@ -159,6 +162,14 @@ for (const child of page.children) {
 return { page: page.name, screens, ann, skipped, errs };
 ```
 
+⚠️ **Idempotent-skip is clone-unsafe.** A cloned screen already carries the SOURCE screen's annotation, so
+the "skip if already annotated" guard leaves a WRONG `h1` + landmarks in place. After any clone (a
+distillation pass like Lighthouse→MVP, or a cross-experience clone) re-derive `h1` + landmarks from the
+clone's own anatomy and overwrite — don't trust the presence check alone (see §7 clone-safety verify).
+Real defect (Anti-SIS, 2026-07-23): a cloned auth screen carried the source flow's `h1="Welcome to the
+Family Portal"` + banner landmarks; other clones carried `h1` values from their respective sources —
+20/69 MVP screens, all cloned, all stale.
+
 Flow-type flavor: add one clause to the screen annotation on auth (3.3.8 accessible auth), multi-step
 (3.3.7 redundant entry, focus to new-step h1), results/irreversible (confirm step, outcome not color-only),
 upload (dropzone click fallback), AI/assistant (aria-live for new output, actions are buttons).
@@ -184,9 +195,10 @@ resolve the stale description in Dev Mode (the "split-brain": same `key`, `remot
 
 ## 6. Project overlay — TEMPLATE (fill per project, keep in the product repo)
 
-This block does not live in the toolkit. Each product repo carries its own filled overlay (in
-`docs/design-system/figma-handoff-playbook.md` + that repo's `.claude/skills/figma-handoff-prep/`). Copy
-this template there and fill the `<…>` placeholders against the project's design system.
+This block does not live in the toolkit. Each product repo carries its own filled overlay, in its
+design-system docs (typically `docs/design-system/figma-handoff-playbook.md`) — **not** in a same-named
+local skill file (see the shadowing warning at the top of this file). Copy this template there and fill
+the `<…>` placeholders against the project's design system.
 
 ```yaml
 targetLibrary: <lib + version>          # component + prop vocabulary the mappings speak (e.g. Mantine v9, shadcn/ui)
@@ -208,6 +220,12 @@ rendered value, not alias name).
 - **Annotations:** counts per page, 0 errors; spot-check one screen visually.
 - **No split-brain:** if a component shows two descriptions in `get_design_context`, it's a stale published
   mirror (same `key`, `remote:true`) → re-publish.
+- **h1 + landmark accuracy (clone-safety) — MANDATORY when any screen was cloned:** for every screen,
+  extract `h1 = "…"` from its annotation and compare to the ACTUAL title (page-header title, else the
+  largest text ≥20px); compare claimed landmarks to the nav instances actually present. Flag any
+  zero-nav screen still claiming banner/top-bar landmarks (cross-flow/cross-experience bleed from a
+  clone). This is the one check the idempotent-skip guard in §4 can't catch on its own — a wrong `h1`
+  reaches the engineer verbatim and produces the wrong ARIA structure.
 - **E2E:** `get_design_context` surfaces annotations + descriptions + code-syntax (see §2.5).
 
 ## 8. Manual handoff (not headless — give the user a checklist)
