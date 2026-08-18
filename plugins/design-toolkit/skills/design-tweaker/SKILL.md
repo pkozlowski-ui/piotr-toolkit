@@ -134,7 +134,7 @@ The audit surface. **Quick mode:** apply the lenses the complaint implicates (us
 ### 7 · Accessibility & robustness
 - Contrast, color-only state, **focus ring** (`:focus-visible` visible, ≥3:1), touch targets ≥44px with ≥8px spacing.
 - **States & edge cases (harden):** empty / loading / error / zero / very long text / overflow / huge numbers / long names colliding with layout. Are they handled or will they break?
-- **Copy / microcopy (content = part of the DS)** — CTA action-led & verb-first ("Send reminders" > "Submit"); **capitalization by surface** (sentence-case default; Title Case only for proper nouns / formal data-field labels — `Open seats only`, not `Open Seats Only`); no glyph in labels; no placeholders shipped (`Button`, `Lorem`); **voice register matches the audience** (admin = operational · consumer funnel = warm/plain · returning dashboard = status + next-action); one canonical term per concept (watch ghost/renamed terms). If the project has `01-foundations/ux-writing.md`, audit against it (mechanical: `copyAudit`); for a whole experience run the harvest→register→fix playbook.
+- **Copy / microcopy (content = part of the DS)** — CTA action-led & verb-first ("Send reminders" > "Submit"); **capitalization by surface** (sentence-case default; Title Case only for proper nouns / formal data-field labels — `Open seats only`, not `Open Seats Only`); no glyph in labels; no placeholders shipped (`Button`, `Lorem`); **voice register matches the audience** (admin = operational · consumer funnel = warm/plain · returning dashboard = status + next-action); one canonical term per concept (watch ghost/renamed terms). If the project has `01-foundations/ux-writing.md`, audit against it (mechanical: `copyAudit`); for a whole experience run the harvest→register→fix playbook. **Rewriting/writing the actual strings is not this skill's job** — hand the copy findings to `design-toolkit:ux-copy` (it carries the lexicon, register table, and the US-English rule); this lens only names what is wrong.
 - Code-level tells: `outline-none` w/o replacement · `transition: all` · icon buttons w/o `aria-label` · `<div onClick>` · form `font-size < 16px` (iOS zoom).
 
 ---
@@ -177,6 +177,7 @@ Rules for the plan: order matters (system/token fixes before visual); structural
 - **frontend-design** → greenfield, no constraints (Anthropic plugin).
 - **mobile-audit** (this toolkit) → deep multi-viewport mobile review.
 - **browser-verify** (workflow-toolkit) → quick smoke-check after a UI change.
+- **ux-copy** (this toolkit) → write/rewrite the strings this audit flagged (lexicon + register + US-English rule).
 - Figma execution → `figma-design-toolkit` (component-first, Plugin API).
 
 If a routed tool isn't installed, say so + give the URL. design-tweaker is self-sufficient **through the audit + plan**; you may drive fixes yourself with consent, but never rewrite silently.

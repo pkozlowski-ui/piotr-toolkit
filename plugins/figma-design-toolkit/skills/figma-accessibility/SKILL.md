@@ -38,6 +38,34 @@ Verify the palette passes WCAG 2.1 AA **before** auditing components.
 | UI components (borders, icons, input outlines) | **3 : 1** |
 | Focus indicators | **3 : 1** against adjacent background |
 
+### Every finding carries its WCAG success criterion
+
+A finding without a criterion id is an opinion; with one it is auditable, ticketable, and speaks
+the same vocabulary as the client's own compliance review. Tag **every** audit row from this crib
+sheet — never ship a bare "contrast too low".
+
+| What failed | Success criterion | Level |
+|---|---|---|
+| Text contrast below the thresholds above | **1.4.3** Contrast (Minimum) | AA |
+| Icon / border / input outline / focus ring below 3:1 | **1.4.11** Non-text Contrast | AA |
+| Meaningful image or icon-only control with no text alternative | **1.1.1** Non-text Content | A |
+| Structure carried by styling only (heading, list, group, table) | **1.3.1** Info and Relationships | A |
+| Meaning carried by color alone (status dot, required field, chart series) | **1.4.1** Use of Color | A |
+| Control unreachable or unusable by keyboard | **2.1.1** Keyboard | A |
+| Focus trapped with no way out (modal, drawer, embed) | **2.1.2** No Keyboard Trap | A |
+| Tab / reading order does not follow meaning | **2.4.3** Focus Order | A |
+| No visible focus indicator | **2.4.7** Focus Visible | AA |
+| Touch target below 24 × 24 px | **2.5.8** Target Size (Minimum) | AA (WCAG 2.2) |
+| Touch target below 44 × 44 px | **2.5.5** Target Size (Enhanced) | AAA — but it is the iOS/Android HIG floor, so treat a sub-44 tap target on mobile as a real defect and cite 2.5.8 as the compliance hook |
+| Input with no label or instruction | **3.3.2** Labels or Instructions | A |
+| Error not identified in text (color/border only) | **3.3.1** Error Identification | A |
+| Component with no accessible name, role, or state | **4.1.2** Name, Role, Value | A |
+
+Two rules on citing: (1) **level travels with the id** — a AAA finding is advice, an A/AA finding is
+compliance, and collapsing the two oversells the report; (2) when a screen cannot be measured
+(no rendered state, missing token resolution), report it as **unmeasured**, not as passing — the
+criterion tells the reader what was *supposed* to be checked.
+
 ### Script: extract all COLOR variables with resolved values
 
 ```javascript
@@ -197,6 +225,22 @@ return readingOrder(frame);
 
 ⚠ Groups and frames with absolute positioning break reading order.
 Interactive elements (buttons, inputs) must appear in the order they are reached by Tab key.
+
+---
+
+## Audit output format
+
+Audit findings (what is wrong) are a different table from the handoff spec (what to build) below.
+One row per finding, criterion mandatory:
+
+| # | Finding (located: frame → layer) | Criterion | Level | Severity | Measured | Fix |
+|---|---|---|---|---|---|---|
+| 1 | Login → helper text on `bg/surface` | 1.4.3 Contrast (Minimum) | AA | Critical | 3.1:1 (needs 4.5:1) | Bind to `text/secondary` (5.7:1) |
+| 2 | Login → "show password" icon button | 4.1.2 Name, Role, Value | A | Major | no name | `aria-label="Show password"` |
+| 3 | Verify → code inputs | 2.5.8 Target Size (Minimum) | AA | Major | 20 × 20 px | Grow to ≥ 44 × 44 px hit area |
+
+Group by criterion when the same one fires across many layers — that is **one** systemic defect
+(a token or a component), not N findings.
 
 ---
 

@@ -234,6 +234,13 @@ Write this table for the project before running anything; the point is the right
 11. **Name the unmeasured classes honestly** rather than forcing a bad check (variant identity and
     field order/wording are the two standing ones — §3b is the bridge until a cheap check exists).
 
+12. **An a11y finding carries its WCAG success criterion id.** axe already reports it on every
+    result (`tags: ["wcag143", "wcag412", …]`) — surface it in the finding instead of dropping it,
+    and tag hand-found a11y findings from the crib sheet in
+    `figma-design-toolkit:figma-accessibility`. Level travels with the id (A/AA = compliance,
+    AAA = advice). Without the id the finding is an opinion; with it, it survives into a ticket
+    and into the client's own compliance review unchanged.
+
 ## 5. Wire it into the harness, not into prose
 
 A rule that says "run the audit before done" fires when someone remembers it — measured at 0/8
