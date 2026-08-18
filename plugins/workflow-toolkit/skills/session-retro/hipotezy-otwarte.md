@@ -134,3 +134,29 @@ kanałem niż proximity słów kluczowych.
   grep -rl 'Decyzje dla Ciebie' ~/.claude/projects/*/[0-9a-f]*.jsonl 2>/dev/null | head
   ```
 - **Gdzie zapisać werdykt:** ta sama karta co H4.
+
+---
+
+### H6 — `ux-copy`: reguła American English z klauzulą „nie mirroruj brytyjskiej pisowni z promptu"
+
+- **Co jest hipotezą:** cały nowy skill `design-toolkit:ux-copy` jako kanał pisania stringów, a w nim
+  konkretnie §1 rule 1 — US English wygrywa z pisownią, którą user/brief/istniejące copy podaje
+  brytyjsko (mirror-back to realna klasa błędu: MAN-809, dwie rundy feedbacku KIPP 2026-08-06/07).
+- **Data zmiany:** 2026-08-18 (`design-toolkit` 1.6.0, commit `4a5511b`).
+- **Stan gate'a:** `held-out: 0 ocenianych przypadków` — skill powstał dziś, eval 001 **napisany,
+  ale nieodpalony** (nawet konieczny-nie-wystarczający dowód z evala jeszcze nie istnieje, inaczej
+  niż w H2/H3).
+- **Soczewka:** dwie, mierz osobno — **T (trigger fidelity)**: czy prośba o copy („napisz copy",
+  „co ma być na przycisku", placeholder w buildzie) ładuje skill, czy leci z pamięci; **C (treść)**:
+  czy wyemitowane stringi trzymają US English + sentence case + verb-first CTA.
+- **Ryzyko odwrotne, którego trzeba pilnować:** skill przechwytuje audyt copy zamiast pisania i
+  produkuje drugi werdykt obok `design-tweaker`/`code-design-audit` — werdykt musi policzyć
+  przypadki, w których `ux-copy` odpalił się na zadaniu audytowym.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (realne prośby o copy po dacie zmiany). Zanim
+  urośnie: odpal eval `ux-copy-001` — to jest tanie i domyka warunek konieczny.
+- **Komenda:**
+  ```bash
+  plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
+    design-toolkit:ux-copy 2026-08-18
+  ```
+- **Gdzie zapisać werdykt:** ta sama karta co H4/H5 („Cost gate — held-out") + zdjęcie tej pozycji stąd.
