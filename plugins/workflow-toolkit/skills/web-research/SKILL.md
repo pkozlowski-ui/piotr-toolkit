@@ -86,6 +86,20 @@ Pick from the request; honor an explicit keyword. State which mode you're runnin
 | `standard` *(default)* | most requests | 8–15 searches over sub-questions, fetch 8–12 sources | full structured report |
 | `deep` | "deep dive", high-stakes, "be thorough" | broad fan-out, fetch 15+ sources, verification pass | long report + risks + confidence notes |
 
+### Cost gate — deep mode is expensive
+
+`deep` costs 15+ fetches plus a verification pass; `standard` costs 8–15 searches. Before running
+anything above `quick`, check three things. **Any "no" drops you a mode, or out of the skill entirely.**
+
+1. **Does a decision hang on it?** A report nobody acts on is a report nobody needed. If it feeds no
+   decision or deliverable, run `quick` — or answer with a single `WebSearch` and no report at all.
+2. **Is the answer actually unknown?** If one authoritative source settles it, fetch that source and
+   stop. Fan-out is for contested or fragmented ground, not for confirmation.
+3. **Is the question still open?** If the user already named the answer and wants backing, that is
+   verification, not research — verify the specific claim and say so.
+
+An explicit `deep` / "be thorough" / "dogłębnie" from the user is an opt-in: skip the checks and run it.
+
 ## Source quality — the MUST-HAVE
 
 This is the core of the skill. A report is only as good as its sources.

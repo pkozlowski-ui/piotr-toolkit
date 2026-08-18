@@ -92,3 +92,45 @@ mierzony ślepo na held-oucie 948). Warunek zerowego fałszywego alarmu złamany
 kandydata schodzi do 2 ocenianych przypadków, czyli pod bramkę wielkości. Powód strukturalny
 i zakaz powtarzania siedzą w komentarzu w `hooks/route-skills.sh` — wznowienie tylko z INNYM
 kanałem niż proximity słów kluczowych.
+
+---
+
+### H4 — cost gate z ABORT-em w drogich skillach (`design-tweaker`, `code-design-audit`, `web-research`)
+
+- **Co jest hipotezą:** trzy pytania self-judge przed trybem panel/full/deep; „nie" na którymkolwiek
+  → tryb tańszy. Wzorzec zapożyczony z `neuroarxiv` (pre-flight gate), nie zmierzony u mnie.
+- **Data zmiany:** 2026-08-18 (`design-toolkit` 1.5.0, `workflow-toolkit` 1.32.0).
+- **Stan gate'a:** `held-out C: 0 ocenianych przypadków` — reguła powstała dziś, zero wywołań po zmianie.
+- **Soczewka:** C (zmiana treści) — oceniaj per wywołanie skilla: czy gate został przebiegnięty i czy
+  wybrany tryb był tańszy niż domyślny tam, gdzie któreś pytanie wypadło na „nie".
+- **Ryzyko odwrotne, którego trzeba pilnować:** gate może ZANIŻAĆ jakość — panel/deep pominięty tam,
+  gdzie był potrzebny. Werdykt musi liczyć obie klasy błędu, nie tylko oszczędność.
+- **Warunek wznowienia:** ≥ 3 wywołania OCENIANE każdego z trzech skilli osobno (skille mają różne
+  progi; wspólna liczba nic nie rozstrzyga).
+- **Komenda:**
+  ```bash
+  for s in design-toolkit:design-tweaker design-toolkit:code-design-audit workflow-toolkit:web-research; do
+    plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh "$s" 2026-08-18
+  done
+  ```
+- **Gdzie zapisać werdykt:** nowa karta kanban „Cost gate — held-out" + zdjęcie tej pozycji stąd.
+
+---
+
+### H5 — warunek unieważnienia przy każdej rekomendacji (globalny `CLAUDE.md` + `second-opinion` + fold-in w retro)
+
+- **Co jest hipotezą:** każda pozycja „Decyzje dla Ciebie" i każda foldowana reguła niesie zdanie
+  „przestaje być trafna, gdy X" z obserwowalnym X.
+- **Data zmiany:** 2026-08-18 (`CLAUDE.global.md`, `workflow-toolkit` 1.32.0).
+- **Stan gate'a:** niezmierzony. Baseline: **0 trafień** frazy „failure condition / warunek
+  unieważnienia / staje się błędna" we wszystkich `*/skills/*/SKILL.md` przed zmianą.
+- **Soczewka:** C (zmiana treści) — per odpowiedź kończąca etap: czy każda REKO niesie X i czy X jest
+  obserwowalne, czy to wata w rodzaju „gdy zmienią się okoliczności".
+- **Ryzyko odwrotne:** rytualne doklejanie pustego warunku do każdej pozycji — to pogarsza kontrakt
+  odpowiedzi (szum w sekcji decyzji), zamiast go poprawiać. Werdykt musi osobno liczyć warunki PUSTE.
+- **Warunek wznowienia:** ≥ 3 odpowiedzi z sekcją „Decyzje dla Ciebie" po dacie zmiany.
+- **Komenda:**
+  ```bash
+  grep -rl 'Decyzje dla Ciebie' ~/.claude/projects/*/[0-9a-f]*.jsonl 2>/dev/null | head
+  ```
+- **Gdzie zapisać werdykt:** ta sama karta co H4.

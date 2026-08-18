@@ -49,6 +49,42 @@ which tier this project can reach:
 not a failure.** Say so explicitly. The failure mode is a T3 layer that never ran reading as
 green: an uncaptured screen is *unverified*, never *clean*.
 
+## 0.5 Cost gate and inspection scope — map first, then inspect
+
+A full T1–T3 pass over a large surface costs real context: static checks across every source root, a
+browser run per screen, and a `design-tweaker` delegation per screenshot. Bound it before you start.
+
+**Abort checks.** Any "no" → do the smaller thing instead and say so in one line.
+
+1. **Is there a design artefact or shipped surface to be faithful to?** Otherwise there is nothing to
+   measure parity against → `design-toolkit:design-tweaker` alone.
+2. **Is more than one screen in question?** A single edit just landed → `workflow-toolkit:browser-verify`.
+3. **Did the user leave the target open?** If they named the screen, audit that screen. Do not widen a
+   pointed question into a full sweep.
+
+An explicit "full audit" / "zaudytuj cały prototyp" is an opt-in: skip the checks and run it.
+
+**Surface tiers.** Always map first, then inspect selectively.
+
+| Surface | Approach |
+|---|---|
+| **Small** — under ~10 screens | inspect every screen directly, across the tiers the project reaches |
+| **Medium** — ~10–40 screens | map the registry first, then T1 across all of it, T2/T3 only on the screens the question touches plus the highest-traffic ones |
+| **Large / monorepo** — several apps or 40+ screens | **ask which app or module.** If the user cannot narrow it, produce a shallow map and name the most useful target for a deep pass. Do not silently audit all of it. |
+
+**Inspection scope note — mandatory in every report.** A broad request must not silently become an
+exhaustive audit, and a partial audit must not read as a clean bill of health. State:
+
+- what was **mapped** (registry, roots, token sources)
+- what was **inspected deeply**, and at which tier
+- what was **sampled**
+- what was **intentionally skipped**, and why
+- which findings are **high confidence** vs **provisional**
+
+This is §0's "an uncaptured screen is *unverified*, never *clean*" made visible to the reader instead
+of implied. A report without the scope note is not finishable — it is the thing that stops a T3 layer
+that never ran from reading as green.
+
 ## 1. Overlay — propose-first, never guess
 
 The overlay is project data, and inventing it produces confident nonsense (a copy lexicon guessed

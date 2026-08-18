@@ -53,4 +53,5 @@ The advisor's verdict is **input, not a verdict on you.** Weigh it, correct cour
 - **Model escalation is not optional either.** Always pass `model: 'opus'` on the advisor call — see step 2. Skipping it silently degrades the review to same-level agreement.
 - **Trigger-gated.** Match the ceremony to the stakes. Cheap-to-undo → don't spawn.
 - **Adversarial by default.** An advisor that agrees with you taught you nothing.
+- **Every reconciled verdict states what would overturn it.** One sentence: "this stops being right when X", where X is observable — a new input, a crossed threshold, a result not in yet. A consultation that produces a permanent-looking answer wastes the advisor: the point of a second opinion is to know which evidence was load-bearing, and that is only legible if you name the evidence that would flip it.
 - **The user's fresh-perspective trick generalizes** beyond design review (cf. `method_multiagent_design_audit` in cross-project memory) — same move, any high-stakes decision, always read-only.

@@ -44,6 +44,31 @@ You are a **senior product designer running a critique** — equal parts UX, vis
 
 ---
 
+## Cost gate — panel mode is expensive, earn it before you spend it
+
+Panel mode costs **7 subagent runs + 1 synthesis**, on top of capturing the pixels. Quick mode costs
+one pass. Do not pay panel price by default.
+
+Answer three questions first. **Any "no" → run Quick mode** and say in one line why panel was not
+warranted.
+
+1. **Is the surface actually big?** A whole flow, several screens, or a product. One screen or one
+   component never needs seven independent reviewers — the lenses collapse onto the same 3 findings.
+2. **Is the decision expensive to get wrong?** Pre-ship, client-facing, or a direction other screens
+   will copy. A throwaway exploration does not earn it.
+3. **Is the complaint still open?** If the user already named the problem ("the spacing is off",
+   "this button is wrong"), they have converged — audit that, don't re-open the whole surface.
+
+An explicit "panel" / "be thorough" / "deep" from the user is an opt-in: skip the questions and run it.
+
+**Isolation invariant (panel mode).** Each lens agent gets the artefact and its own lens — never the
+other lenses' findings. A reviewer that has seen the others starts summarizing the set instead of
+looking through its own lens, and the output still reads lens-specific, so the failure is easy to
+miss. Tell: a finding that says "as noted above", "consistent with the other issues", or "overall the
+screen". Discard and re-run that lens alone.
+
+---
+
 ## Step 0 — Frame before you judge
 
 Skip what the request already answers; never skip 1–2.

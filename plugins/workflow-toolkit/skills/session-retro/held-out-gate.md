@@ -127,6 +127,14 @@ Wszystkie trzy naraz:
    `held-out T: 8/10 trafione, 0 fałszywych` albo `held-out C: R2 6/6 spełnione, 0 złamań`.
    Bez liczby to nie gate, tylko wrażenie; bez soczewki nie wiadomo, czego liczba dotyczy.
 
+5. **Zapisane „czego ten przebieg NIE dowodzi"** — wypunktowana lista przy werdykcie, obok liczby.
+   Minimum: czego nie zmierzono (soczewka, której zmiana nie ruszała, przypadki „nie dotyczy"), na
+   czym oceniano (n, model, harness, czy ocena była ślepa), i **gdzie nowa wersja wypadła GORZEJ albo
+   nie lepiej** niż stara. Zielona liczba bez tej listy czyta się jak dowód ogólny, a jest dowodem
+   punktowym — i to właśnie tak hipoteza awansuje na kanon mimo istniejącego rejestru.
+   Wynik, w którym nie ma ani jednej pozycji na tej liście, jest podejrzany, nie czysty: znaczy zwykle,
+   że przebieg mierzył to, pod co regułę napisano.
+
 Nie masz kompletu → **oznacz zmianę jako HIPOTEZĘ** (w SKILL.md albo w karcie), nie jako kanon,
 **i dopisz ją do `hipotezy-otwarte.md`** — z warunkiem wznowienia i komendą, która go sprawdza.
 Adnotacja bez wpisu w rejestrze nie ma wywoływacza: retro czyta rejestr (krok 4b), a treści skilla

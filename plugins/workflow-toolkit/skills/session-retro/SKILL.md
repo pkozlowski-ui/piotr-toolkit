@@ -84,6 +84,10 @@ rządzi krokiem fold-inu. Nie promuj lekcji do kanonu tylko dlatego, że jedna s
 - **Gdy checku brak**: to osąd, nie kanon — oznacz jako hipotezę, nie zapisuj jako regułę **i wpisz ją
   do `hipotezy-otwarte.md`** (rejestr + wywoływacz, czytany w kroku 4b). Samo słowo „HIPOTEZA" w treści
   skilla nie jest mechanizmem — nikt po nie nie wraca.
+- **Każda foldowana reguła niesie warunek unieważnienia** — jedno zdanie „przestaje obowiązywać,
+  gdy X", z X obserwowalnym (zmiana narzędzia, wynik gate'a, przekroczony próg). Reguła bez tego jest
+  nieusuwalna: sweep odpływu (krok 3b) nie ma po czym poznać, że wygasła, więc kanon rośnie i nigdy
+  nie maleje. Nie umiesz nazwać X → to sygnał, że nie masz jeszcze reguły, tylko obserwację.
 - **Cel:** domknięcie pętli retro→fold-in — nie foldować reguły z jednego przypadku bez sprawdzenia,
   że nie psuje innych.
 - **Wpadka z sesji → task w `evals/` skilla.** Gdy w sesji realnie zawiódł skill lub reguła
