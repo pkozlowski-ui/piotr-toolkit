@@ -143,17 +143,19 @@ kanałem niż proximity słów kluczowych.
   konkretnie §1 rule 1 — US English wygrywa z pisownią, którą user/brief/istniejące copy podaje
   brytyjsko (mirror-back to realna klasa błędu: MAN-809, dwie rundy feedbacku KIPP 2026-08-06/07).
 - **Data zmiany:** 2026-08-18 (`design-toolkit` 1.6.0, commit `4a5511b`).
-- **Stan gate'a:** `held-out: 0 ocenianych przypadków` — skill powstał dziś, eval 001 **napisany,
-  ale nieodpalony** (nawet konieczny-nie-wystarczający dowód z evala jeszcze nie istnieje, inaczej
-  niż w H2/H3).
+- **Stan gate'a:** `held-out: 0 ocenianych przypadków`. Eval 001 odpalony 2026-08-18:
+  `score 1.00` (2 runy, `criteria` PASS 3/3 w obu, `skill-loaded` 1×, $0.75) — czyli ta sama
+  sytuacja konieczna-nie-wystarczająca co H2/H3. **Bez ablacji** (`--ablation none`), więc wkład
+  samego skilla wobec bazowego modelu niezmierzony.
 - **Soczewka:** dwie, mierz osobno — **T (trigger fidelity)**: czy prośba o copy („napisz copy",
   „co ma być na przycisku", placeholder w buildzie) ładuje skill, czy leci z pamięci; **C (treść)**:
   czy wyemitowane stringi trzymają US English + sentence case + verb-first CTA.
 - **Ryzyko odwrotne, którego trzeba pilnować:** skill przechwytuje audyt copy zamiast pisania i
   produkuje drugi werdykt obok `design-tweaker`/`code-design-audit` — werdykt musi policzyć
   przypadki, w których `ux-copy` odpalił się na zadaniu audytowym.
-- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (realne prośby o copy po dacie zmiany). Zanim
-  urośnie: odpal eval `ux-copy-001` — to jest tanie i domyka warunek konieczny.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (realne prośby o copy po dacie zmiany).
+  Opcjonalnie taniej niż czekanie: `--ablation with-without` na case 001 (~$0.75 więcej) mierzy
+  wkład skilla wobec bazowego modelu — to jedyna rzecz, której pierwszy przebieg nie rozstrzygnął.
 - **Komenda:**
   ```bash
   plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
