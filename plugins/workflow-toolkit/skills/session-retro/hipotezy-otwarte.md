@@ -151,16 +151,17 @@ kanałem niż proximity słów kluczowych.
   regres skilla: wszystkie stringi w obu runach były amerykańskie, a sędzia karał wymaganą przez
   skill notkę „piszę US; jeśli klient jest UK-based, przerzucę". `criteria.md` przepisane
   (definicja *stringu interfejsowego* + zawężona klauzula FAIL); `SKILL.md` świadomie nietknięty.
+  **Re-run na poprawionym kryterium: `1.00`, 3/3 runy, 9/9 głosów** ($1.05) — sprawdzone, że
+  mierzyło nową wersję (`grep -c "wstrzymuje copy"` w cache 1.6.2 = 1, w 1.6.0 = 0). Warstwa evala
+  **zamknięta**; otwarty zostaje wyłącznie held-out.
 - **Soczewka:** dwie, mierz osobno — **T (trigger fidelity)**: czy prośba o copy („napisz copy",
   „co ma być na przycisku", placeholder w buildzie) ładuje skill, czy leci z pamięci; **C (treść)**:
   czy wyemitowane stringi trzymają US English + sentence case + verb-first CTA.
 - **Ryzyko odwrotne, którego trzeba pilnować:** skill przechwytuje audyt copy zamiast pisania i
   produkuje drugi werdykt obok `design-tweaker`/`code-design-audit` — werdykt musi policzyć
   przypadki, w których `ux-copy` odpalił się na zadaniu audytowym.
-- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (realne prośby o copy po dacie zmiany).
-  **Dług do domknięcia niezależnie od tego:** re-run case 001 na poprawionym `criteria` (`--ablation
-  none --runs 3`, ~$1.1) — do tego czasu arm `with` jest niezmierzony na obowiązującym kryterium,
-  a Δ +0.50 mówi tylko o wkładzie skilla, nie o jego niezawodności.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (realne prośby o copy po dacie zmiany). Warstwa
+  evala nie ma już długu — cokolwiek dalej rozstrzyga się na realnych sesjach, nie na case'ie.
 - **Komenda:**
   ```bash
   plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \

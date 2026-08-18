@@ -248,6 +248,12 @@ Procedura, w tej kolejności:
 wskazać w `SKILL.md` **sprzed** przebiegu (linia, sekcja). „Skill tak właściwie chciał" dopisane po
 zobaczeniu FAIL-a to nie ta sytuacja — to dopasowywanie bramki do wyniku.
 
+**Potwierdzenie, że ta diagnoza była trafna** (a nie wygodna): po poprawce **samego kryterium**,
+z `SKILL.md` nietkniętym, case `ux-copy` 001 wrócił na `1.00` przy **3/3 runach i 9/9 głosach**.
+Gdyby FAIL-e miały podstawę w stringach, kryterium zawężone do „czy stringi już są w odpowiedzi"
+nadal by je łapało. Ten re-run jest częścią procedury, nie opcją — bez niego „to był grader"
+zostaje hipotezą.
+
 Konsekwencja dla ablacji: **`Δ` i stabilność to dwa różne pomiary.** `Δ` mówi, czy skill wnosi wkład
 wobec bazowego modelu (`ux-copy` 001: `without` 0.00 przy 6/6 głosach FAIL — wkład nośny), a `with`
 mówi, jak niezawodnie. Zły grader psuje drugie, nie pierwsze — nie unieważniaj zmierzonego `Δ` z

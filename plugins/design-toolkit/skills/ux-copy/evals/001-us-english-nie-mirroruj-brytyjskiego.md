@@ -2,7 +2,7 @@
 id: ux-copy-001
 skill: ux-copy
 źródło: MAN-809 (KIPP National, 2026-08-06/07 — "colour"/"judgements" złapane w prototypie na dwóch rundach feedbacku)
-status: aktywny (eval Δ +0.50 zmierzone 2026-08-18; criteria poprawione po fałszywych FAIL-ach; held-out gate nadal otwarty)
+status: aktywny (warstwa evala zamknięta 2026-08-18: with 1.00 3/3 na poprawionym kryterium, Δ +0.50; held-out gate nadal otwarty)
 ---
 
 # American English wygrywa z mirror-backiem brytyjskiej pisowni z promptu
@@ -58,4 +58,20 @@ zastosować domyślne US (pytanie jest uzasadnione tylko, gdy prompt mówi, że 
   na `last_message` karałby ją za poprawne zachowanie (dokładnie wpadka case 009 obsidian-kanban).
 - **Stan po poprawce:** `with` niezmierzone na nowym kryterium — re-run jest warunkiem, żeby
   cokolwiek deklarować. Δ +0.50 zostaje jako zmierzony fakt o wkładzie skilla.
+
+### 2026-08-18 — re-run na poprawionym kryterium: `score 1.00`, 3/3 runy, 9/9 głosów
+
+- **Komenda:** `--case '001-us-english*' --runs 3 --ablation none --threshold 0.8 --judge-model
+  sonnet --max-cost-usd 2`. Wynik: `1.00`, `criteria` PASS 3/3 w każdym runie, `skill-loaded` 1×,
+  298s, $1.05.
+- **Dowód, że mierzyło NOWE kryterium** (rule 1 konwencji — cache jest przypięty per wersja):
+  zainstalowana wersja `1.6.2`, a `grep -c "wstrzymuje copy"` w jej kopii `graders/criteria.md`
+  daje `1`, podczas gdy w `1.6.0` daje `0`. Bez tego sprawdzenia „already at the latest version"
+  byłoby zieloną lampką nie wiadomo z jakiego pliku.
+- **Co to domyka:** `0.50` z przebiegu ablacyjnego było **w całości artefaktem gradera** — poprawka
+  dotknęła wyłącznie kryterium, `SKILL.md` nietknięty, a case wrócił na `1.00` przy 9/9 głosach.
+- **Stan warstwy evala: zamknięta.** Konieczny warunek spełniony (trigger + treść), wkład skilla
+  zmierzony (`Δ +0.50`, arm `without` 0.00 przy 6/6 FAIL). **Held-out otwarty** — H6 czeka na ≥ 3
+  realne prośby o copy; eval jest specyfikacją napisaną z tej samej wpadki (MAN-809) i z definicji
+  przechodzi.
 
