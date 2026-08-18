@@ -129,7 +129,7 @@ co odpowiedź może zgodnie z prawdą zacytować jako antywzorzec.** Case 009 ob
 regex „brak `#` w nazwie pliku", który karał odpowiedź za poprawne wytłumaczenie, dlaczego `#`
 jest złe (`criteria` PASS 3/3, całość 0.75). Grader usunięty — `llm` już ten warunek pokrywał.
 
-## Cztery twarde reguły bramy
+## Pięć twardych reguł bramy
 
 ### 1. Bump wersji pluginu = warunek działania bramy, nie kosmetyka
 
@@ -219,6 +219,41 @@ Dlatego:
 
 Wariant wierniejszy — fixture vaultu przez `scaffold_script` + `--scaffold` — jest możliwy, ale
 droższy i odpala cudzy bash jako Ty. Świadoma decyzja per suita, nie default.
+
+### 5. Kryterium karzące zachowanie, które SKILL.md NAKAZUJE, jest błędem kryterium — sprawdź to ZANIM ruszysz skill
+
+Kolejność triage'u przy `criteria FAIL` jest **odwrotna do intuicji**: najpierw podejrzewaj grader,
+potem sędziego, na końcu skill. Zmierzone dwa razy:
+
+- **case 009 `obsidian-kanban`** — `regex` karał odpowiedź za poprawne wytłumaczenie, dlaczego `#`
+  w nazwie pliku jest złe (`criteria` PASS 3/3, całość 0.75). Grader usunięty.
+- **case 001 `ux-copy`** (2026-08-18) — `criteria` FAIL-owało notkę „piszę US English; jeśli klient
+  jest UK-based, powiedz i przerzucę całość", czyli zachowanie **wprost wymagane** przez `SKILL.md`.
+  Wszystkie stringi w obu runach były amerykańskie; klauzula FAIL („pyta UK czy US") nie
+  odróżniała *odbicia decyzji* od *warunku podanego po wykonaniu roboty*. `with` spadło do 0.50 na
+  czystym artefakcie kryterium.
+
+Procedura, w tej kolejności:
+
+1. **Przeczytaj output, nie tylko werdykt.** `aggregate-result.json` → `cases[].arms.with[].graders[]
+   .evidence` niesie pełną odpowiedź; werdykt bez outputu nie pozwala odróżnić tych trzech przypadków.
+2. **Skonfrontuj karane zachowanie z `SKILL.md`.** Jeśli skill tego zachowania **wymaga** — poprawiasz
+   kryterium, nie skill. Rozluźnienie skilla pod złym graderem to regres wprowadzony przez pomiar.
+3. **Dopiero potem** sędzia (rule 4: haiku myli się w obie strony) i na końcu realna dziura w doktrynie.
+4. **Poprawka kryterium musi dodać rozstrzygające pytanie**, nie złagodzić próg. W `ux-copy` 001 to
+   było: „czy stringi już są w odpowiedzi?" — jeśli tak, nota o warunku jest neutralna. Kryterium bez
+   takiego pytania będzie się rozjeżdżać przy każdym dłuższym outpucie.
+
+**Kontrola nadużycia tej reguły:** wolno ją zastosować tylko wtedy, gdy karane zachowanie da się
+wskazać w `SKILL.md` **sprzed** przebiegu (linia, sekcja). „Skill tak właściwie chciał" dopisane po
+zobaczeniu FAIL-a to nie ta sytuacja — to dopasowywanie bramki do wyniku.
+
+Konsekwencja dla ablacji: **`Δ` i stabilność to dwa różne pomiary.** `Δ` mówi, czy skill wnosi wkład
+wobec bazowego modelu (`ux-copy` 001: `without` 0.00 przy 6/6 głosach FAIL — wkład nośny), a `with`
+mówi, jak niezawodnie. Zły grader psuje drugie, nie pierwsze — nie unieważniaj zmierzonego `Δ` z
+powodu FAIL-i, które okazały się artefaktem.
+
+---
 
 ## Koszt i dyscyplina wydatku
 
