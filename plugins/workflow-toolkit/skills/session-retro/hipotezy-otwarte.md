@@ -143,10 +143,14 @@ kanałem niż proximity słów kluczowych.
   konkretnie §1 rule 1 — US English wygrywa z pisownią, którą user/brief/istniejące copy podaje
   brytyjsko (mirror-back to realna klasa błędu: MAN-809, dwie rundy feedbacku KIPP 2026-08-06/07).
 - **Data zmiany:** 2026-08-18 (`design-toolkit` 1.6.0, commit `4a5511b`).
-- **Stan gate'a:** `held-out: 0 ocenianych przypadków`. Eval 001 odpalony 2026-08-18:
-  `score 1.00` (2 runy, `criteria` PASS 3/3 w obu, `skill-loaded` 1×, $0.75) — czyli ta sama
-  sytuacja konieczna-nie-wystarczająca co H2/H3. **Bez ablacji** (`--ablation none`), więc wkład
-  samego skilla wobec bazowego modelu niezmierzony.
+- **Stan gate'a:** `held-out: 0 ocenianych przypadków`. Eval 001 odpalony 2026-08-18 dwa razy:
+  bez ablacji `score 1.00` (2/2), potem `--ablation with-without` → **`with 0.50 · without 0.00 ·
+  Δ +0.50`** ($1.00, 332s). **Wkład skilla zmierzony i nośny**: arm `without` przegrał 6/6 głosami,
+  bo bazowy model jawnie deklaruje en-GB („skoro używasz *personalise*, trzymam en-GB") — klasa
+  błędu MAN-809 jest reprodukowalna. Spadek `with` do 0.50 to **fałszywe FAIL-e gradera**, nie
+  regres skilla: wszystkie stringi w obu runach były amerykańskie, a sędzia karał wymaganą przez
+  skill notkę „piszę US; jeśli klient jest UK-based, przerzucę". `criteria.md` przepisane
+  (definicja *stringu interfejsowego* + zawężona klauzula FAIL); `SKILL.md` świadomie nietknięty.
 - **Soczewka:** dwie, mierz osobno — **T (trigger fidelity)**: czy prośba o copy („napisz copy",
   „co ma być na przycisku", placeholder w buildzie) ładuje skill, czy leci z pamięci; **C (treść)**:
   czy wyemitowane stringi trzymają US English + sentence case + verb-first CTA.
@@ -154,8 +158,9 @@ kanałem niż proximity słów kluczowych.
   produkuje drugi werdykt obok `design-tweaker`/`code-design-audit` — werdykt musi policzyć
   przypadki, w których `ux-copy` odpalił się na zadaniu audytowym.
 - **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (realne prośby o copy po dacie zmiany).
-  Opcjonalnie taniej niż czekanie: `--ablation with-without` na case 001 (~$0.75 więcej) mierzy
-  wkład skilla wobec bazowego modelu — to jedyna rzecz, której pierwszy przebieg nie rozstrzygnął.
+  **Dług do domknięcia niezależnie od tego:** re-run case 001 na poprawionym `criteria` (`--ablation
+  none --runs 3`, ~$1.1) — do tego czasu arm `with` jest niezmierzony na obowiązującym kryterium,
+  a Δ +0.50 mówi tylko o wkładzie skilla, nie o jego niezawodności.
 - **Komenda:**
   ```bash
   plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
