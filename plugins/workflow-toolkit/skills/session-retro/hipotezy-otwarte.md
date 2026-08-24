@@ -95,6 +95,41 @@ kanałem niż proximity słów kluczowych.
 
 ---
 
+### H5 — warunek unieważnienia przy każdej rekomendacji — WERDYKT NIEJEDNOZNACZNY (gate nie przechodzi czysto) 2026-08-24
+
+`held-out C: 26 ocenianych pozycji (source A, time-split, 20 sampli z 10 różnych projektów/
+worktree, okno 2026-08-18→2026-08-24) — 16/26 met (62%), 10/26 broken (38%)` (50 itemów w 20
+odpowiedziach; 24 wyłączone z mianownika jako „nie dotyczy" — format BRAK REKO albo decyzja
+trywialna/odwracalna jednym ruchem). Rozkład w czasie jest tu rozstrzygający: WSZYSTKIE 10 złamań
+skupione w poranku 2026-08-18 (08:08–09:40) — spójne z tym, że reguła weszła do globalnego
+CLAUDE.md tego samego dnia, czyli ten wycinek jest zanieczyszczonym dev-setem, nie prawdziwym
+held-outem. Zawężenie do samego 08-24: 0/13 złamań, ALE 7/13 „met" jest rytualne — warunek
+unieważnienia to goła negacja własnej rekomendacji („traci trafność, gdy zdecydujesz inaczej"),
+nie obserwowalny nowy fakt. Licząc tylko warunki niepuste/informacyjne: 9/26 (35%) nawet
+w najkorzystniejszym ujęciu.
+
+Werdykt wg `held-out-gate.md → „kiedy wolno powiedzieć «lepsza»"`: Warunek 2 (≥3 oceniane)
+spełniony (26, albo 13 po zawężeniu do 08-24). Warunek 3 (zero NOWYCH złamań R1) — NIE spełniony
+w pełnym oknie (10 złamań); warunkowo spełniony tylko w zawężonym 08-24, i to podważony przez
+problem rytualnych odpowiedzi. **Bramka nie przechodzi jednoznacznie** — H5 zostaje hipotezą, NIE
+awansuje do wymuszonego kanonu (reguła i tak już stoi w CLAUDE.md/SKILL.md od 08-18 — ten werdykt
+nie każe jej zdejmować, tylko mówi że zgodność z nią nie jest jeszcze czysto dowiedziona).
+
+Zastrzeżenia własne, warte zachowania: pojedynczy nie-ślepy sędzia (autor hipotezy), mała próbka
+wobec 187 pasujących wiadomości w oknie, niepewny dokładny moment przyjęcia reguły (przybliżony
+do dnia, nie do commita), brak prawdziwego A/B (reguły nie było przed 08-18), klasyfikacja
+„rytualne" to osąd jakościowy, niezweryfikowany niezależnie.
+
+**Warunek wznowienia:** świeże ~2-tygodniowe held-out okno UCZCIWIE po zanieczyszczonym poranku
+08-18 + ślepy drugi sędzia (nie autor hipotezy) + filtr jakościowy odrzucający warunki będące
+czystą negacją własnej rekomendacji jako „puste"/nieliczące się do progu (bez tego punktu (c) próg
+3 przypadków jest trywialnie ogrywany rytualnymi odpowiedziami).
+
+**Pełny zapis** (liczby, cytaty złamań, metodologia, wszystkie zastrzeżenia) → Obsidian
+`KANBAN/Evale jako brama — dokoncz pozostale 10 plikow prozy.md`, sekcja „H5 — werdykt 2026-08-24".
+
+---
+
 ### H4 — cost gate z ABORT-em w drogich skillach (`design-tweaker`, `code-design-audit`, `web-research`)
 
 - **Co jest hipotezą:** trzy pytania self-judge przed trybem panel/full/deep; „nie" na którymkolwiek
@@ -114,26 +149,11 @@ kanałem niż proximity słów kluczowych.
   done
   ```
 - **Gdzie zapisać werdykt:** nowa karta kanban „Cost gate — held-out" + zdjęcie tej pozycji stąd.
-
----
-
-### H5 — warunek unieważnienia przy każdej rekomendacji (globalny `CLAUDE.md` + `second-opinion` + fold-in w retro)
-
-- **Co jest hipotezą:** każda pozycja „Decyzje dla Ciebie" i każda foldowana reguła niesie zdanie
-  „przestaje być trafna, gdy X" z obserwowalnym X.
-- **Data zmiany:** 2026-08-18 (`CLAUDE.global.md`, `workflow-toolkit` 1.32.0).
-- **Stan gate'a:** niezmierzony. Baseline: **0 trafień** frazy „failure condition / warunek
-  unieważnienia / staje się błędna" we wszystkich `*/skills/*/SKILL.md` przed zmianą.
-- **Soczewka:** C (zmiana treści) — per odpowiedź kończąca etap: czy każda REKO niesie X i czy X jest
-  obserwowalne, czy to wata w rodzaju „gdy zmienią się okoliczności".
-- **Ryzyko odwrotne:** rytualne doklejanie pustego warunku do każdej pozycji — to pogarsza kontrakt
-  odpowiedzi (szum w sekcji decyzji), zamiast go poprawiać. Werdykt musi osobno liczyć warunki PUSTE.
-- **Warunek wznowienia:** ≥ 3 odpowiedzi z sekcją „Decyzje dla Ciebie" po dacie zmiany.
-- **Komenda:**
-  ```bash
-  grep -rl 'Decyzje dla Ciebie' ~/.claude/projects/*/[0-9a-f]*.jsonl 2>/dev/null | head
-  ```
-- **Gdzie zapisać werdykt:** ta sama karta co H4.
+  **Uwaga (2026-08-24):** werdykt H5 (siostrzana hipoteza, ta sama data zmiany) wylądował na
+  ISTNIEJĄCEJ karcie „Evale jako brama — dokoncz pozostale 10 plikow prozy", nie na nowej „Cost
+  gate — held-out" (ta jeszcze nie istniała w momencie gdy H5 był gate'owany). Kto będzie odpalał
+  gate H4 — sprawdź, czy dorobić werdykt do TEJ SAMEJ karty co H5 (spójność) czy świadomie założyć
+  osobną „Cost gate — held-out", jak było pierwotnie planowane.
 
 ---
 
