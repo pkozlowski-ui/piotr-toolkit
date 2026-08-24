@@ -24,11 +24,31 @@
 - **Co jest hipotezą:** > 1 link → wariant A (link per ekran, brak sekcji `**Links**`);
   dokładnie 1 link → wariant B (bullety bez linków, jeden link zbiorczy w `**Links**`).
 - **Data zmiany:** 2026-08-13 (`workflow-toolkit` 1.25.0, commit `33ded25`).
-- **Stan gate'a:** `held-out C: 0 ocenianych przypadków, za mało danych` (przebieg 2026-08-13 —
-  reguła powstała tego samego dnia, zero wywołań po zmianie).
+- **Stan gate'a:** `held-out C: 3 wywołania po zmianie, 2 realnie oceniane, za mało danych na
+  wariant B` (przebieg 2026-08-24, held-out okno 2026-08-13→2026-08-24). Rozbite per branch:
+  - **Wariant A (>1 link) — POTWIERDZONY, 2/2:**
+    - `2026-08-17T13:29:07Z`, MAN-848 (`7fcefd03-…jsonl`) — draft z 2 linkami Figma, **jeden per
+      bullet** (F02 closed/single-window + multi-window), **brak sekcji `**Links**`**. Model sam
+      nazwał to „wariant A" w tekście przed draftem — obie sub-reguły MET.
+    - `2026-08-13T11:49:18Z`, MAN-825/„10-1 toggle update" (`a50d37d0-…jsonl`, Edit na karcie kanban,
+      nie w treści czatu) — draft z 2 URL (F&A `antisis-prototype.vercel.app/schools`,
+      Staff `mvp-staff-experience.vercel.app`), każdy przypięty do własnego akapitu/produktu, brak
+      sekcji `**Links**` — MET. (Nuans: URL-e są gołym tekstem, nie markdown-linkiem — inna oś, nie
+      dotyczy rozmieszczenia.)
+  - **Wariant B (=1 link) — NIE PRZETESTOWANY, 0/1 właściwych przypadków:**
+    - `2026-08-24T09:12:54Z`, MAN-896 (`adf0d2ba-…jsonl`, linia 1363) — 1 link (demo URL), ale draft
+      to jednoakapitowe ogłoszenie jednego demo, **nie lista wielu ekranów/itemów** — nie ma bulletów
+      w ogóle i nie ma sekcji `**Links**`, link leci inline blisko początku, nie „zbiorczo na końcu".
+      Werdykt: **nie dotyczy** — precondycja hipotezy (lista itemów, z których trzeba by rozproszyć
+      albo skonsolidować linki) nie zachodzi, więc mechanika wariantu B nie miała szansy się odpalić.
+      Poprzednia sesja (retro 2026-08-24) osądziła to jako „zgodne z wariantem B" licząc tylko
+      liczbę linków (=1) — ten osąd był policzeniem, nie soczewką C per-wymaganie; skorygowane tutaj.
 - **Soczewka:** C (zmiana treści) — oceniaj per wymaganie na draftach, NIE per wywołanie.
-- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE, czyli drafty, które **niosą linki**. Draft bez
-  linków to „nie dotyczy" i nie liczy się do bramki.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE **wariantu B specyficznie** — draft z dokładnie
+  1 linkiem, opisujący WIELE itemów/ekranów w bulletach (nie jednoakapitowe ogłoszenie), żeby
+  hipoteza „bullety bez linków + jeden link zbiorczy w `**Links**`" miała czego dotyczyć. Wariant A
+  ma już wystarczający dowód (2/2 czyste przypadki) — nie szukaj więcej materiału na niego, chyba że
+  trafi się kontrprzykład.
 - **Komenda:**
   ```bash
   plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
