@@ -24,6 +24,7 @@
 - **Co jest hipotezą:** > 1 link → wariant A (link per ekran, brak sekcji `**Links**`);
   dokładnie 1 link → wariant B (bullety bez linków, jeden link zbiorczy w `**Links**`).
 - **Data zmiany:** 2026-08-13 (`workflow-toolkit` 1.25.0, commit `33ded25`).
+- **Przebieg 2026-08-25:** surowe okno urosło do **7 wywołań** (z 3). Nowe od 2026-08-24: `2026-08-24T09:12`, `2026-08-24T11:27`, `2026-08-24T12:08`, `2026-08-25T09:38`, `2026-08-25T12:03`. Nieklasyfikowane — **wariant B (dokładnie 1 link) nadal 0 ocenianych**, więc gate stoi na tej samej przyczynie co poprzednio.
 - **Stan gate'a:** `held-out C: 3 wywołania po zmianie, 2 realnie oceniane, za mało danych na
   wariant B` (przebieg 2026-08-24, held-out okno 2026-08-13→2026-08-24). Rozbite per branch:
   - **Wariant A (>1 link) — POTWIERDZONY, 2/2:**
@@ -64,6 +65,7 @@
 - **Co jest hipotezą:** dopisana fraza „who executes this / which skill owns X" w `description`,
   żeby pytania o routing/handoff (nie tylko „audit this") ładowały skill.
 - **Data zmiany:** 2026-08-17 (`design-toolkit` 1.4.2, commit `860f5bf`).
+- **Przebieg 2026-08-25:** held-out **0 wywołań** — warunek wznowienia niespełniony, nic nie mierzono.
 - **Stan gate'a:** eval case 001 przeszedł 0.00→1.00 (dowód że fix DZIAŁA na tym scenariuszu),
   ale to konieczne, nie wystarczające — held-out na realnych sesjach nieodpalony (zero czasu
   od zmiany).
@@ -85,6 +87,7 @@
   na wyraźne «wyślij»" — usuwa lukę, w której model dosłownie pisał „Powiedz «wyślij»"/„czekam
   na «wyślij»".
 - **Data zmiany:** 2026-08-17 (`workflow-toolkit` 1.31.4, commit `7344c77`).
+- **Przebieg 2026-08-25:** surowe okno **6 wywołań** (≥3), klasyfikacja „nie dotyczy"/dev-set-source nierobiona — wciąż `za mało OCENIANYCH danych`, nie „za mało wywołań".
 - **Stan gate'a:** eval case 001 przeszedł 0.80→0.90, rdzeń problemu (dosłowny zakazany wzorzec)
   zniknął w OBU runach re-runu — ale to jest ta sama, konieczna-nie-wystarczająca sytuacja co H2.
   **Uwaga:** resztkowy pojedynczy flake w re-runie (inna, węższa fraza „powiedz X, przepiszę
