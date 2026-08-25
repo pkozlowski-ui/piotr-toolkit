@@ -116,6 +116,39 @@
 
 ---
 
+### Przebieg 2026-08-25 (retro sesji clever-ellis, TRZECI tego dnia) — wszystkie trzy odpalone, ZERO ruchu
+
+Odpalone `heldout_split.sh` dla H1, H2 i H3. **Żadna nie drgnęła, bo ta sesja nie wywołała ani
+`linear-ticket-draft`, ani `design-tweaker`** — pracowała w kodzie (`Antisis/antisis-prototype`,
+poz. 4 registeru sales-demo: trasa `/reset` czyszcząca stan fabuły w `localStorage`).
+
+| Hipoteza | Surowy held-out | Zmiana od 2. przebiegu | Co realnie blokuje |
+|---|---|---|---|
+| H1 | 7 wywołań (≥3) | brak | ręczna klasyfikacja per wymaganie na 7 draftach |
+| H2 | 0 wywołań | brak | brak realnych sesji z pytaniem routingowym |
+| H3 | 6 wywołań (≥3) | brak | ręczna klasyfikacja per wymaganie na 6 draftach |
+
+**Wniosek procesowy, nie kolejna hipoteza:** H1 i H3 mają dość WYWOŁAŃ już od drugiego przebiegu i
+stoją na tym samym kroku — **ręcznej klasyfikacji, której retro nie zrobi „po drodze"**. Trzeci
+przebieg pod rząd raportujący „za mało OCENIANYCH danych" przy wystarczającej liczbie wywołań nie
+mierzy już hipotezy; mierzy to, że nikt nie otworzył okna na ocenę. **Następne retro: albo zrób tę
+ocenę (≈7+6 draftów, jedno okno), albo przenieś datę odcięcia i zapisz WPROST, że to zaległość
+wykonawcza, nie brak materiału** — inaczej rejestr zamienia się w licznik odłożeń.
+
+**Nowych hipotez z tej sesji: ZERO.** Jedyna dodana soczewka (`eval/scope-selftest.mjs` w
+`antisis-prototype`, asercja podziału kluczy `localStorage` na story vs settings) ma pełny
+break-restore — trzy celowe defekty, każdy złapany (2/1/3 FAIL), po przywróceniu `all cases
+passed` — więc jest kanonem od razu, nie hipotezą. To ta granica: soczewka z break-restore nie
+trafia do tego rejestru, reguła bez obiektywnego checku trafia.
+
+**Gotcha zmierzona po drodze, warta zapisania tutaj, bo dotyczy TEGO pliku:** skille żyją w
+`~/.claude/plugins/cache/<marketplace>/<plugin>/<wersja>/` jako **KOPIA, nie symlink** do
+`piotr-toolkit`, i ta kopia bywa STARSZA niż repo (tu: cache 1.32.0 miał 145 linii, repo 223).
+Edycja `hipotezy-otwarte.md` w cache'u jest więc podwójnie bezwartościowa — przepada przy
+aktualizacji pluginu i nadpisuje starszy stan. **Rejestr edytuj ZAWSZE w `piotr-toolkit`**, nawet
+gdy skill został wczytany z cache'u.
+
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
