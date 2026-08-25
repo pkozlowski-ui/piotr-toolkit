@@ -60,8 +60,9 @@ Jeśli są zmiany w repo (`git status`) — pokaż skrót i **zaproponuj** commi
 user prosił). Pamięć w `.claude/memory/` i ADR-y też idą do commita (są git-trwałe).
 
 ### 4b — Przejrzyj rejestr otwartych hipotez (OBOWIĄZKOWY, każde retro)
-Otwórz `hipotezy-otwarte.md` (katalog tego skilla) i dla **każdej** pozycji z sekcji „Otwarte" odpal
-jej **Komendę**. Warunek wznowienia spełniony → przeprowadź gate wg `held-out-gate.md` i zapisz werdykt
+Otwórz `hipotezy-otwarte.md` **w repo źródłowym toolkitu** (`piotr-toolkit/plugins/workflow-toolkit/skills/session-retro/`), NIE w katalogu, z którego skill się załadował — ten jest kopią w `~/.claude/plugins/cache/<marketplace>/<plugin>/<wersja>/` i bywa STARSZY od repo (zmierzone 2026-08-25: `cp cache → repo` wywalił 93 linie werdyktów z poprzedniego przebiegu, w tym zamknięty branch wariantu A; złapane tylko dlatego, że `git diff --stat` pokazał `28 insertions, 93 deletions`). Cache jest read-only z definicji — nadpisuje go każda aktualizacja pluginu, więc zapis tam ginie cicho. Po każdej edycji pliku skilla sprawdź `git diff --stat` w repo: liczba usunięć większa od dodań przy „dopisuję jedną linię" znaczy, że piszesz starą wersję na nowszą.
+
+Dla **każdej** pozycji z sekcji „Otwarte" odpal jej **Komendę**. Warunek wznowienia spełniony → przeprowadź gate wg `held-out-gate.md` i zapisz werdykt
 z liczbą i nazwaną soczewką; niespełniony → nic nie rób i idź dalej (to kosztuje jedno odpalenie skryptu).
 Bez tego kroku hipoteza cicho awansuje na kanon — w `SKILL.md` wygląda jak każda inna reguła, a nikt
 do niej nie wraca. Nową hipotezę (zmiana wdrożona bez pełnego gate'a) **dopisz tu w tym samym retro**.
