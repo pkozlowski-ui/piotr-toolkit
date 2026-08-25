@@ -38,6 +38,25 @@ fi
 VAULT_ROOT="$(cd "$(dirname "$BASE_FILE")/.." && pwd)"
 [[ -f "$VAULT_ROOT/$CARD" ]] || { echo "card not found: $VAULT_ROOT/$CARD" >&2; exit 1; }
 
+# Refuse a card whose FILE NAME is not plain-safe, instead of merely quoting around it. Quoting
+# the `.base` entry (further down) keeps that file parseable, but it does nothing about the two
+# other symptoms of the same name: Obsidian materialises a phantom note at the truncation point,
+# and a `[[wikilink]]` containing `#` resolves to "note + heading anchor" instead of the card
+# (both measured — Manta board 2026-07-31, and again 2026-08-25 on a card that HAD a correctly
+# quoted `.base` entry). The defect lives in the name, so this is a hard stop with the rename
+# spelled out, not a warning that a session can read past.
+NAME_GUARD="$(dirname "${BASH_SOURCE[0]}")/kanban-card-name.sh"
+if [[ -x "$NAME_GUARD" ]]; then
+  CARD_BASENAME="$(basename "$CARD")"
+  if ! SAFE_BASENAME="$("$NAME_GUARD" check "$CARD_BASENAME" 2>/dev/null)"; then
+    echo "refusing to place a card with an unsafe name: $CARD_BASENAME" >&2
+    echo "  rename it first:" >&2
+    echo "    mv \"$VAULT_ROOT/$CARD\" \"$VAULT_ROOT/$(dirname "$CARD")/${SAFE_BASENAME}.md\"" >&2
+    echo "  then fix any [[wikilinks]] pointing at the old name and re-run this script." >&2
+    exit 1
+  fi
+fi
+
 if pgrep -x Obsidian >/dev/null 2>&1; then
   echo "obsidian running — skipping (Bases would revert the edit)"
   exit 0
