@@ -25,6 +25,16 @@
   dokładnie 1 link → wariant B (bullety bez linków, jeden link zbiorczy w `**Links**`).
 - **Data zmiany:** 2026-08-13 (`workflow-toolkit` 1.25.0, commit `33ded25`).
 - **Przebieg 2026-08-25:** surowe okno urosło do **7 wywołań** (z 3). Nowe od 2026-08-24: `2026-08-24T09:12`, `2026-08-24T11:27`, `2026-08-24T12:08`, `2026-08-25T09:38`, `2026-08-25T12:03`. Nieklasyfikowane — **wariant B (dokładnie 1 link) nadal 0 ocenianych**, więc gate stoi na tej samej przyczynie co poprzednio.
+- **Przebieg 2026-08-25 (sesja sales-demo, antisis-prototype):** `heldout_split.sh
+  workflow-toolkit:linear-ticket-draft 2026-08-13` → surowy held-out **7 wywołań** (≥3). Ręczny
+  przegląd per wymaganie **odłożony po raz DRUGI** — retro szło w sesji na ~297k kontekstu, a
+  przejrzenie 7 transkryptów kosztowało więcej niż wart był werdykt; sesja w ogóle nie dotykała
+  `linear-ticket-draft`. ⚠️ **Następne retro robi ten przegląd JAKO PIERWSZY**, zanim weźmie
+  cokolwiek innego — albo zamyka hipotezę werdyktem „za mało ocenianych, odcięcie przesunięte".
+  Surowy held-out nie urośnie od czekania, a trzecie odłożenie znaczy, że rejestr przestał działać.
+  Ten sam przebieg: **H2** (`design-tweaker` 2026-08-17) → held-out **0 wywołań**, warunek
+  niespełniony, nic nie mierzono. **H3** (`linear-ticket-draft` 2026-08-17) → **6 wywołań**, ta
+  sama blokada co H1 (brak ręcznego przeglądu).
 - **Stan gate'a:** `held-out C: 3 wywołania po zmianie, 2 realnie oceniane, za mało danych na
   wariant B` (przebieg 2026-08-24, held-out okno 2026-08-13→2026-08-24). Rozbite per branch:
   - **Wariant A (>1 link) — POTWIERDZONY, 2/2:**
