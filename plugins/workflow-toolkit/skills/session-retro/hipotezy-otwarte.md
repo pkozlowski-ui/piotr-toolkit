@@ -154,9 +154,12 @@ gdy skill został wczytany z cache'u.
 - **Co jest hipotezą:** osobny krok w retro (odpalany tylko co ~30 dni, nie co sesję), który
   przegląda wpisy `project`/`feedback` starsze niż 30 dni i sprawdza, czy zapisana decyzja faktycznie
   się sprawdziła — domyka lukę, której held-out gate nie pokrywa (ten ocenia trafność reguł/skilli,
-  nie efekt konkretnej decyzji z przeszłości).
-- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `SKILL.md` krok 4a — REKO na pytanie usera
-  inspirowane cudzym setupem archiwizacji sesji do Obsidiana).
+  nie efekt konkretnej decyzji z przeszłości). Rozszerzone o: (a) pole `metadata.status`
+  (fakt/hipoteza/założenie/decyzja) w `memory-discipline`, żeby sweep nie musiał zgadywać pewności
+  wpisu; (b) linię **Korekta:** dopisywaną do wpisu ocenionego jako nietrafny — domyka pętlę
+  decyzja→wynik→ocena→korekta zamiast kończyć na samej ocenie.
+- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `SKILL.md` krok 4a + rozszerzenie tego samego dnia
+  — REKO na pytania usera inspirowane cudzymi setupami archiwizacji sesji do Obsidiana).
 - **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony, `_decision-sweep-log.md` jeszcze
   nie istnieje.
 - **Soczewka:** per przebieg sweepu — czy realnie złapał choć jedną nietrafną/porzuconą decyzję

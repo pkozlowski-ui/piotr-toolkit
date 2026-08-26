@@ -74,7 +74,12 @@ Jeśli due:
    nadal jest stosowane bez tarcia, czy zostało po cichu porzucone). Nie zgaduj — jeśli nie widać
    dowodu, zostaw jako „bez rozstrzygnięcia" i nie fałszuj wyniku.
    - **Trafna i nadal aktualna** → zostaw, dopisz krótko „potwierdzona (data)" jeśli to nietrywialne.
-   - **Nietrafna / porzucona** → zaktualizuj lub usuń wpis (nie zostawiaj martwej reguły w kanonie).
+     Jeśli wpis ma `metadata.status`, podnieś go do `fakt`/`decyzja` (dowód już jest).
+   - **Nietrafna / porzucona** → dopisz do TEGO SAMEGO wpisu (nie osobny rejestr — patrz niżej)
+     linię **Korekta:** jedno zdanie, co zrobić inaczej następnym razem w tej samej sytuacji, potem
+     albo zaktualizuj treść na zgodną z korektą, albo usuń wpis jeśli korekta go w pełni zastępuje.
+     Domyka to pętlę decyzja→wynik→ocena→korekta — bez tej linii sweep tylko odnotowuje porażkę,
+     nie karmi nią przyszłych decyzji.
    - **Brak dowodu** → pomiń, wróć przy następnym przebiegu.
 3. Dopisz linię do `_decision-sweep-log.md`: data, liczba przejrzanych, liczba zaktualizowanych.
 

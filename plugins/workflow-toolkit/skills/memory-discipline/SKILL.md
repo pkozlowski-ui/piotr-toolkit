@@ -80,6 +80,7 @@ name: <krótki-slug-kebab-case>
 description: <jedno zdanie — służy do oceny trafności przy recall>
 metadata:
   type: user | feedback | project | reference
+  status: fakt | hipoteza | założenie | decyzja
 ---
 
 <treść; dla feedback/project dodaj linie **Why:** i **How to apply:**>
@@ -94,6 +95,24 @@ Linkuj powiązane: [[inny-slug]].
 **Kanon to `metadata.type`** (zgodnie z natywnym systemem pamięci Claude Code). Starsze warianty
 (`type:` na top-levelu w template, `node_type:` w globalnej pamięci) traktuj jako legacy —
 przy edycji migruj do `metadata.type`. Indeks: jedna linia w `MEMORY.md` (`- [Tytuł](plik.md) — hook`).
+
+### `metadata.status` — oś pewności, osobna od `type` (oś źródła)
+
+`type` mówi SKĄD wiedza pochodzi; `status` mówi JAK PEWNA jest. Bez tego pola sweep decyzji
+(`session-retro` krok 4a) musi zgadywać, czy wpis w ogóle był kiedyś czymś więcej niż założeniem —
+łatwo wtedy jednorazowa hipoteza (albo halucynacja modelu) ciężeje w pamięci jak potwierdzony fakt.
+
+- **`fakt`** — zweryfikowane, obserwowalne (np. `type=reference`, ustalenia z kodu/configu).
+- **`hipoteza`** — nieprzetestowane przypuszczenie; jeszcze nie ma za sobą dowodu (odpowiednik
+  wpisu w `hipotezy-otwarte.md`, ale dla pamięci ogólnej, nie tylko reguł skilli).
+- **`założenie`** — przyjęte robocze, na którym oparto decyzję, ale niepotwierdzone wprost.
+- **`decyzja`** — świadomy wybór z uzasadnieniem (**Why:**); to właśnie te wpisy sweep z kroku 4a
+  ocenia pod kątem wyniku i ewentualnie dopisuje korektę.
+
+Domyślnie: nowy wpis `type=project`/`type=feedback` bez wyraźnego dowodu → `status=hipoteza` albo
+`założenie`, nie `fakt`. Podnieś do `fakt`/`decyzja` dopiero gdy jest jednoznaczne uzasadnienie lub
+potwierdzenie. Brak pola `status` w istniejących wpisach = legacy — migruj przy najbliższej edycji,
+nie retroaktywnie masowo.
 
 ## Reguła promocji (retro)
 
