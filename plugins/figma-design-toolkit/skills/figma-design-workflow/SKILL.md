@@ -116,6 +116,23 @@ For each candidate: does modifying it cover ≥70% of the new use case?
 > Anti-pattern: creating `ProgressStepsWizard` when `ProgressSteps` exists and needed only a new variant/prop.
 > New components create DS debt. Always prefer extension.
 
+### Step 3b: Re-check a prior EXTEND when you land on it again
+
+"≥70% overlap → EXTEND" is a judgment call at build time, not a measurement — it can turn out
+wrong once real usage stacks up. You don't need a separate audit for this: **Step 0a/Step 1 already
+send you back to the same component's catalog entry** every time a new use case is close to an
+existing one. When that happens on a component you (or a prior session) previously extended:
+
+- Count how many variants/props it accumulated since — if a single component now juggles ≥4
+  unrelated variant axes to serve use cases that don't share a visual language, the original 70%
+  call was optimistic and the component became a variant-dump instead of DS debt reduction.
+- If so, say so before extending it further: propose splitting it now (new component for the
+  diverging use case) instead of adding a 5th axis, and note the correction in
+  `docs/design-system/components.md` next to the entry (`**Korekta:** originally extended for X,
+  overloaded by Y/Z — split recommended`).
+- If the accumulated variants still share one visual/functional identity → the EXTEND call held,
+  keep going, no note needed.
+
 ---
 
 ## Decision tree — BEFORE building anything

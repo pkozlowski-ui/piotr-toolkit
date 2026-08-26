@@ -379,6 +379,34 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H15 — `figma-design-workflow`: re-check przy powrocie do wcześniej rozszerzonego komponentu
+
+- **Co jest hipotezą:** nowy „Step 3b" w `SKILL.md` — „≥70% overlap → EXTEND" to osąd w
+  momencie budowy, nie pomiar. Zamiast nowej fazy, wpina się w naturalny reattachment: Step 0a/
+  Step 1 i tak wracają do tego samego wpisu w katalogu komponentów przy każdym kolejnym
+  podobnym use case. Gdy trafisz na komponent wcześniej rozszerzony i ma już ≥4 niepowiązane
+  osie wariantów → oryginalna decyzja EXTEND była zbyt optymistyczna, zaproponuj split zamiast
+  kolejnej osi i zapisz `Korekta:` w `docs/design-system/components.md`.
+  Dziewiąty skill z rodziny H7–H14: próg 70% to ocena wzrokowa/funkcjonalna na dany moment,
+  nigdy nie sprawdzana wobec tego, jak komponent faktycznie ewoluował.
+- **Data zmiany:** 2026-08-26 (`figma-design-toolkit`, `figma-design-workflow/SKILL.md` —
+  systematyczny sweep wszystkich skilli toolkitu pod kątem wzorca decyzja→wynik→ocena→korekta).
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony.
+- **Soczewka:** per komponent rozszerzany wielokrotnie w tym samym pliku/DS — czy Step 3b
+  faktycznie łapie moment, gdy liczba osi wariantów przekracza próg, i czy proponowany split
+  jest trafny (nie nadinterpretacja pojedynczego dodatku).
+- **Ryzyko odwrotne, którego trzeba pilnować:** próg „≥4 niepowiązane osie" jest równie
+  subiektywny jak oryginalny próg 70% — może wymusić przedwczesny split komponentu, który
+  faktycznie dobrze dzieli jedną koncepcję na warianty.
+- **Warunek wznowienia:** ≥ 2 przypadki powrotu do wcześniej rozszerzonego komponentu po dacie
+  zmiany (inny projekt/DS niż ten, na którym wzorzec spisano).
+- **Komenda:** brak automatycznego skryptu — sprawdź `docs/design-system/components.md`
+  audytowanego projektu pod kątem wpisów `Korekta:` przy komponentach.
+- **Gdzie zapisać werdykt:** nowa karta kanban lub dopisek do „Decision-sweep — held-out"
+  (wspólna z H7–H14) + zdjęcie tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
