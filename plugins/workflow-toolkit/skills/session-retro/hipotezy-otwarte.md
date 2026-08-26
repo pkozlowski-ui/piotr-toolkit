@@ -407,6 +407,34 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H16 — `ui-polish-loop`: spot-check `decisionLibrary`/`converged` na powrocie do flow
+
+- **Co jest hipotezą:** rozszerzenie kroku 0 SETUP — SETUP i tak czyta overlay/pattern-library
+  projektu przy każdym uruchomieniu na tym samym flow, więc to naturalny moment, żeby przy okazji
+  spot-checkować, czy wpisy `decisionLibrary` (T3, „intentional exception → LEAVE") wciąż pasują
+  do aktualnego screenshotu, i czy poprzednia deklaracja `converged` faktycznie przetrwała do
+  teraz. Rozbieżność → flaguje w TRIAGE jako „open judgement call" (LEAVE) albo dopisuje notatkę
+  do overlaya (converged, który jednak zregresował) zamiast cicho re-aplikować starą decyzję.
+  Dziesiąty skill z rodziny H7–H15: oba typy werdyktów są zapisywane jako fakt-na-dziś i nigdy
+  nie są odpytywane przy następnym audycie tego samego ekranu — §7 self-improvement łapie tylko
+  propozycje odrzucone W TRAKCIE jednej sesji, nie zamyka pętli MIĘDZY sesjami.
+- **Data zmiany:** 2026-08-26 (`figma-design-toolkit`, `ui-polish-loop/SKILL.md` — systematyczny
+  sweep wszystkich skilli toolkitu pod kątem wzorca decyzja→wynik→ocena→korekta).
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony.
+- **Soczewka:** per flow z powtórnym uruchomieniem po dacie zmiany — czy spot-check LEAVE/
+  converged faktycznie coś złapał, czy tylko dodaje krok bez sygnału (LEAVE zawsze wciąż trafne).
+- **Ryzyko odwrotne, którego trzeba pilnować:** spot-check każdego LEAVE przy każdym powrocie do
+  flow to koszt (kolejne screenshoty/porównania) nawet gdy nic się nie zmieniło — jeśli DS i tak
+  jest stabilny, krok generuje pracę bez korzyści.
+- **Warunek wznowienia:** ≥ 2 powtórne uruchomienia `ui-polish-loop` na tym samym flow po dacie
+  zmiany (inny projekt niż ten, na którym wzorzec spisano).
+- **Komenda:** brak automatycznego skryptu — sprawdź czy drugie uruchomienie na tym samym flow
+  zawiera notatkę o LEAVE/converged z poprzedniego przebiegu.
+- **Gdzie zapisać werdykt:** nowa karta kanban lub dopisek do „Decision-sweep — held-out"
+  (wspólna z H7–H15) + zdjęcie tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13

@@ -89,6 +89,14 @@ The overlay declares, at minimum:
 0. **SETUP** — name the flow and every screen's node id from the registry (T2) or by hand (T0/T1).
    Baseline screenshot of each screen. Read the project's overlay and any accumulated
    pattern-library/playbook before working from memory.
+   **Re-run on a flow that already has entries:** `decisionLibrary` LEAVE entries and a prior
+   `converged` declaration (§6) are both calls written as fact-on-the-day, never re-checked. While
+   reading the overlay, spot-check each LEAVE entry that applies to a screen in THIS flow against
+   its current screenshot — does the exception still hold, or did the DS evolve past it since it
+   was recorded? A LEAVE that no longer matches → flag it in TRIAGE (§4) as "open judgement call,
+   re-ask" instead of silently re-applying it. Same for a prior `converged`: if this run exists at
+   all, something regressed or grew — note in the overlay whether the earlier convergence held
+   until now or broke quietly (no fix needed, just the correction on record for the next reader).
 1. **AUDIT (per screen + cross-screen)** — three layers (§3):
    - **3a Mechanical** (auto, T1) — run the project's gate per screen. Pass = all counts zero /
      `pass:true`. **T0: skip; findings come from 3b instead.**
