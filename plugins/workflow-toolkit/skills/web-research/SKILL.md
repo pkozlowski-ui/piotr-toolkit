@@ -186,6 +186,34 @@ Adapt sections to the angle; drop ones that don't apply. Base template:
 - Unknowns named in their own section — a confident gap beats a confident guess.
 - Calibrate confidence: in `deep` mode, mark high/medium/low confidence per key finding.
 
+## Trafność po czasie — pętla korekty (analog do `session-retro` krok 4a)
+
+Ten skill ma ten sam problem co pamięć sesji, sweep feedbacku i audyt użycia: raport to zbiór
+**twierdzeń o przyszłości/rynku/technologii** (trend, prognoza, „state of X") zapisywany jako fakt na
+dziś, bez żadnego mechanizmu sprawdzającego, czy się sprawdził. Trafia do Obsidian `Research/` (reguła
+globalnego CLAUDE.md) i tam zastyga — nikt nie wraca porównać prognozy z tym, co się realnie stało.
+
+**Nie jest to nowa faza ani harmonogram** (nie ma naturalnego momentu jak re-pull w CLOSE) — trigger
+to **ponowne wywołanie tego skilla na temat, który już ma raport w `Research/`**. To jedyny moment,
+w którym praca i tak już się dzieje i jest kontekst do porównania.
+
+**Krok 0b (przed Intake, gdy temat pokrywa się z istniejącym raportem):**
+1. Sprawdź `Research/` (przez `obsidian_search_notes` albo listing folderu) pod kątem raportu na
+   ten sam/pokrewny temat.
+2. Jeśli jest → **przed nowym researchem** zestaw 2–3 kluczowe twierdzenia starego raportu
+   (`## Key findings`, `## Market / Technology trends`) z tym, co ustalisz w nowym. Nie zgaduj z
+   pamięci — to musi być realne porównanie na świeżo znalezionych źródłach.
+3. **Potwierdzone** → dopisz do starej notatki krótko `**Potwierdzone (data):** <co>`.
+4. **Sfalsyfikowane** → dopisz do starej notatki `**Korekta (data):** <co się zmieniło + czy dany
+   typ źródła/prognozy wymaga większej rezerwy następnym razem>`. To jest właściwy cel korekty —
+   kalibracja zaufania do KLASY źródeł/prognoz (np. „prognozy rynkowe Gartnera dla kategorii X w
+   tym raporcie nie trafiły — traktuj podobne liczby z większym marginesem"), nie tylko odnotowanie
+   pojedynczej pomyłki.
+5. Brak nakładania się tematów → pomiń, nic nie rób. Nie twórz sztucznego porównania.
+
+To domyka pętlę decyzja→wynik→ocena→korekta bez nowego rejestru: korekta ląduje w tej samej notatce,
+którą i tak ktoś znajdzie następnym razem, gdy temat wróci.
+
 ## Using it across projects
 
 - It's **global** via the `workflow-toolkit` plugin — available in every Claude Code project, no

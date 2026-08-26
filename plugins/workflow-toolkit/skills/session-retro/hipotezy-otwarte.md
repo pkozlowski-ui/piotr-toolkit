@@ -256,6 +256,33 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H10 — `web-research`: pętla korekty przy ponownym researchu na ten sam temat
+
+- **Co jest hipotezą:** krok 0b — gdy nowe wywołanie skilla dotyczy tematu z istniejącym raportem
+  w Obsidian `Research/`, zestaw kluczowe twierdzenia starego raportu z aktualnym stanem PRZED
+  napisaniem nowego raportu; potwierdzone → oznacz w starej notatce; sfalsyfikowane → dopisz
+  `Korekta (data)` z kalibracją zaufania do KLASY źródeł/prognoz, nie tylko pojedynczej pomyłki.
+  Czwarty skill z tym samym wzorcem co H7/H8/H9: twierdzenie zapisane jako fakt-na-dziś, nigdy
+  nieskonfrontowane z wynikiem.
+- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `SKILL.md` web-research — na prośbę usera „zrób
+  podobny sweep dla web-research, ma podobny problem").
+- **Stan gate'a:** `0 przebiegów` — dopiero wdrożone, zero powtórnych researchy na ten sam temat po
+  zmianie.
+- **Soczewka:** per przebieg — czy krok 0b faktycznie się odpalił (temat pokrywał się ze starym
+  raportem) i czy porównanie było realne (na świeżych źródłach), nie rytualne odhaczenie.
+- **Ryzyko odwrotne, którego trzeba pilnować:** krok 0b dodaje pracę do KAŻDEGO researchu na
+  powtarzający się temat, nawet gdy stary raport jest za świeży, żeby cokolwiek się zmieniło —
+  trzeba osądzić, czy w ogóle jest co porównywać, nie porównywać rytualnie.
+- **Warunek wznowienia:** ≥ 3 przebiegi `web-research` po dacie zmiany, gdzie temat faktycznie
+  pokrywał się z istniejącym raportem w `Research/` (rzadkie — ten skill nie jest wołany często na
+  te same tematy, więc to może potrwać dłużej niż H7–H9).
+- **Komenda:** brak automatycznego skryptu — sprawdź w vaulcie `Research/`, czy któraś notatka ma
+  dopisaną linię `**Korekta (` albo `**Potwierdzone (` po dacie zmiany.
+- **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7/H8/H9) + zdjęcie
+  tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
