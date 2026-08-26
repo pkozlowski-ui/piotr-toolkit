@@ -190,6 +190,12 @@ tags: [high-priority]        # opcjonalnie; wikilinki we frontmatter → lista w
 
 **Status:** wzorzec wypróbowany na **jednym** boardzie (antisis-prototype, 2026-08-14, backfill na 5 kartach) bez obiektywnego checku, że jest ogólnie lepszy — zgodnie z regułą „ewolucja skilla tylko przez validation-gate" (globalny CLAUDE.md), traktuj to jako **do potwierdzenia**, nie jako zamknięty kanon. Zanim rozszerzysz to na kolejny board, sprawdź czy ten board w ogóle ma taki problem (rozproszone powiązania między kartami, ticket Linear wspominany tylko w prozie) — jeśli nie, nie wymuszaj pól „bo tak robi inny projekt".
 
+**Wpisane do rejestru hipotez (H11)** — `workflow-toolkit:session-retro` → `hipotezy-otwarte.md`. Bez
+tego wpisu ta hipoteza żyje tylko jako słowo „hipoteza" w prozie SKILL.md, którego krok 4b retro
+NIE czyta — sama etykieta nie jest mechanizmem, dokładnie ta pułapka, przed którą ostrzega
+`hipotezy-otwarte.md` we własnym nagłówku. Warunek wznowienia i komenda żyją w rejestrze, nie tutaj
+(nie duplikuj — przy zmianie edytuj tam).
+
 **Motywacja (dowód, nie tylko intuicja):** `.base` boardu antisis-prototype ma już zdefiniowany drugi wymiar grupowania — klucz `"note.status\x1fnote.related"` w `cardOrders`/`swimlaneOrders` — ale żadna karta nigdy nie ustawiała property `related`, więc ten swimlane nigdy się nie aktywował. To **nie jest nowy mechanizm Bases** wymyślony tu — to odblokowanie już istniejącej konfiguracji przez wypełnienie pola, które dotąd było puste. Przed dodaniem tych pól na innym boardzie sprawdź analogicznie jego `.base` — może mieć ten sam martwy swimlane albo nie mieć go wcale (wtedy `related:` nadal wolno użyć jako czystego tekstowego pola, ale bez efektu na grupowanie).
 
 - **`related:`** — lista wikilinków w cudzysłowach (ten sam gotcha co inne wikilinki w YAML — nigdy plain `[[A]], [[B]]`) do kart powiązanych tematycznie, ale **poza** relacją epic/sub-task: spun-off-from, blocks/unblocks, ten sam temat widziany z innej karty. Różnica względem `epic:` — `epic` koduje **hierarchię** (jedna karta-indeks + jej sub-taski, patrz sekcja „Epiki"); `related` koduje **płaską sieć** cross-cutting powiązań, która może przecinać epiki albo łączyć karty bez żadnego epika.

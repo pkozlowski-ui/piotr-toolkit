@@ -283,6 +283,40 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H11 — `obsidian-kanban`: pola `related:`/`linear:` (cross-cutting powiązania poza epic/sub-task)
+
+- **Co jest hipotezą:** dwa nowe pola frontmattera karty — `related:` (płaska sieć powiązań poza
+  hierarchią epic/sub-task) i `linear:` (sam klucz ticketu, nie URL/kopia stanu) — mają uczynić
+  powiązania między kartami queryowalnymi zamiast żyć wyłącznie w prozie. Wypróbowane na JEDNYM
+  boardzie (antisis-prototype), backfill na 5 kartach, bez sprawdzenia że pomaga gdziekolwiek indziej.
+- **Piąty skill z tym samym wzorcem co H7–H10, ale inny wariant problemu:** tu hipoteza była już
+  SAMA SIEBIE nazwała „hipotezą" wprost w SKILL.md — ale samo słowo w prozie nie jest mechanizmem
+  (dokładnie ostrzeżenie z nagłówka tego rejestru). Krok 4b retro czyta TEN plik, nie prozę
+  poszczególnych skilli — więc hipoteza bez wpisu tutaj byłaby niewidoczna dla sweepu i cicho
+  awansowałaby na kanon przez sam upływ czasu, mimo deklarowanego statusu „do potwierdzenia".
+- **Data zmiany:** 2026-08-14 (`obsidian-toolkit`, wzorzec wprowadzony na antisis-prototype); wpisane
+  do rejestru dopiero 2026-08-26 na prośbę usera „zrób podobny sweep dla obsidian-kanban, ma podobny
+  problem" — czyli hipoteza żyła 12 dni poza zasięgiem sweepu.
+- **Stan gate'a:** `0 ocenianych przypadków poza dev-setem` — jedyny dowód to backfill, na którym
+  hipoteza powstała (dev-set, nie held-out).
+- **Soczewka:** per board — czy pola faktycznie były wypełniane na kolejnym boardzie (nie tylko
+  antisis-prototype) i czy queryowalność (`related` swimlane, `linear:` lookup) realnie ujawniła coś,
+  czego nie było widać w prozie karty.
+- **Ryzyko odwrotne, którego trzeba pilnować:** wymuszanie pól na boardzie, który nie ma problemu
+  rozproszonych powiązań — koszt (dwa dodatkowe pola do utrzymania per karta) bez korzyści.
+- **Warunek wznowienia:** ≥ 3 boardy OCENIANE (inne niż antisis-prototype) z realnie wypełnionymi
+  polami `related:`/`linear:` po dacie zmiany.
+- **Komenda:**
+  ```bash
+  grep -rl "^related:" "<vault>"/*/KANBAN 2>/dev/null | wc -l
+  grep -rl "^linear:" "<vault>"/*/KANBAN 2>/dev/null | wc -l
+  ```
+  (ścieżka vaultu/folderu boardu per projekt — brak jednego wspólnego korzenia).
+- **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7–H10) + zdjęcie
+  tej pozycji stąd + aktualizacja sekcji „Powiązania" w `obsidian-kanban/SKILL.md`.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
