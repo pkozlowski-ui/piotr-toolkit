@@ -26,6 +26,30 @@ For adding annotation layers to Figma (e.g. ARIA overlay), load `figma-console` 
 
 ---
 
+## Step 0 — Re-audit: check the prior report before writing a new one
+
+Every row in the "Audit output format" table and every ARIA role mapping (below) is a call written as
+fact-on-the-day: a measured ratio, or a role *guessed from the layer's name* (layer naming is
+inconsistent across files — `Dropdown` might really be a `button` that opens a menu). Neither is
+ever checked against what the developer actually shipped.
+
+**Trigger:** this screen/component already has a prior accessibility audit or handoff spec (a
+`docs/*accessibility*` file, a prior "Audit output" table in the conversation history, or a note
+in `code-design-audit`'s a11y layer for the same screen).
+
+**When it fires:**
+1. Pull the prior findings table (or handoff spec) for this exact screen.
+2. For each prior finding, check whether it was fixed as recommended — re-run the Step 1 contrast
+   script or re-inspect the layer, don't assume from memory.
+3. **Fixed as recommended** → skip it, no need to restate.
+4. **Fixed differently, or the ARIA-role guess didn't match what got implemented** → note it
+   inline in the new audit as `**Korekta:** <original finding> assumed X, actual implementation
+   did Y` — this is the signal that a layer-naming pattern or a mapping-table row is unreliable
+   for this project's convention, not just a one-off miss.
+5. No prior report for this screen → skip this step, proceed to Step 1 normally.
+
+---
+
 ## Step 1 — Color contrast audit
 
 Verify the palette passes WCAG 2.1 AA **before** auditing components.

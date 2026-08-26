@@ -354,6 +354,31 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H14 — `figma-accessibility`: re-audyt ekranu przed nowym raportem
+
+- **Co jest hipotezą:** nowy „Step 0" w `SKILL.md` — zanim skill napisze nowy raport a11y dla
+  ekranu, który ma już wcześniejszy raport/handoff spec, porównuje poprzednie znaleziska z tym,
+  co realnie zaimplementowano (re-mierzy kontrast, sprawdza czy mapowanie ARIA z nazwy warstwy
+  trafiło). Rozbieżność → `**Korekta:**` w nowym raporcie zamiast cichego nadpisania.
+  Ósmy skill z rodziny H7–H13: werdykty (kontrast, rola ARIA-z-nazwy-warstwy) to zgadywanie
+  semantyki na dany dzień, nigdy nie sprawdzane wobec tego, co deweloper faktycznie zbudował.
+- **Data zmiany:** 2026-08-26 (`figma-design-toolkit`, `figma-accessibility/SKILL.md` —
+  systematyczny sweep wszystkich skilli toolkitu pod kątem wzorca decyzja→wynik→ocena→korekta).
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony, zero re-audytów zaobserwowanych.
+- **Soczewka:** per ekran audytowany po raz drugi (redesign, kolejna runda handoffu) — czy Step 0
+  faktycznie odnalazł poprzedni raport i wygenerował `Korekta:` tam, gdzie mapowanie z nazwy
+  warstwy się nie sprawdziło, zamiast pisać znaleziska od zera.
+- **Ryzyko odwrotne, którego trzeba pilnować:** re-mierzenie kontrastu/ARIA za każdym razem, gdy
+  ekran w ogóle nie ma poprzedniego raportu w zasięgu — krok jawnie wymaga triggera (istniejący
+  raport), nie ma być uruchamiany na pusto.
+- **Warunek wznowienia:** ≥ 2 audyty tego samego ekranu/komponentu po dacie zmiany.
+- **Komenda:** brak automatycznego skryptu — sprawdź czy drugi audyt tego samego ekranu zawiera
+  sekcję `Korekta:` odnoszącą się do poprzedniego raportu.
+- **Gdzie zapisać werdykt:** nowa karta kanban lub dopisek do „Decision-sweep — held-out"
+  (wspólna z H7–H13) + zdjęcie tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
