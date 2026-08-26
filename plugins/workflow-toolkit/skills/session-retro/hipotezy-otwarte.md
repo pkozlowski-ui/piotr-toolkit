@@ -177,6 +177,32 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H8 — `obsidian-feedback-sweep`: pętla korekty klasyfikacji w kroku CLOSE
+
+- **Co jest hipotezą:** rozszerzenie fazy 5 CLOSE (re-pull, który i tak już się dzieje) o sprawdzenie,
+  czy klasyfikacja/routing zamykanego itemu się sprawdziły (reopened z pushbackiem, Owner nadpisał
+  routing, „Do now" odrzucone) — i dopisanie korekty do reguł domenowych projektu (`CLAUDE.md`/
+  `.claude/memory/`), nie tylko do rejestru. Ten sam wzorzec decyzja→wynik→ocena→korekta co H7
+  (`session-retro` krok 4a), przeniesiony na inny skill z identycznym problemem: klasyfikacja to
+  decyzja zapisywana bez późniejszej weryfikacji trafności.
+- **Data zmiany:** 2026-08-26 (`obsidian-toolkit`, `SKILL.md` obsidian-feedback-sweep — na prośbę
+  usera „zrób podobny sweep dla obsidian-feedback-sweep, ma podobny problem").
+- **Stan gate'a:** `0 przebiegów` — dopiero wdrożone, zero sweepów po zmianie.
+- **Soczewka:** per przebieg CLOSE — czy sprawdzenie trafności faktycznie złapało choć jeden przypadek
+  błędnej klasyfikacji/routingu (nie tylko potwierdziło wszystko jako trafne, co jest rytualne).
+- **Ryzyko odwrotne, którego trzeba pilnować:** krok wydłuża CLOSE bez korzyści, jeśli re-pull rzadko
+  niesie sygnał zwrotny (reopened/nadpisany routing to rzadkie zdarzenia) — wtedy koszt (czas per
+  sweep) przewyższa wartość.
+- **Warunek wznowienia:** ≥ 3 przebiegi CLOSE po dacie zmiany, z czego przynajmniej jeden faktycznie
+  dopisał korektę do reguł domenowych (dowód, że mechanizm coś łapie, nie tylko odhacza).
+- **Komenda:** brak automatycznego skryptu (proces manualny w Obsidianie) — sprawdź ręcznie w
+  rejestrach `Feedback Pipeline/Done/`, czy któryś ma dopisaną linię korekty w `CLAUDE.md`/
+  `.claude/memory/` projektu z odniesieniem do tego sweepu.
+- **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7) + zdjęcie tej
+  pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13

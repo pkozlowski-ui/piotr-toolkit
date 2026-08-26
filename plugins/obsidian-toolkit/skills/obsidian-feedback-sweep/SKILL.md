@@ -118,6 +118,28 @@ Po wytworzeniu rejestru **utwórz lekką kartę-wskaźnik na tablicy zadań** (K
 
 **Krok raportu (TWARDE — siatka bezpieczeństwa, żeby rezultaty nie umknęły).** Closeout sweepu **musi** zawierać wprost linię: „karta-trigger: `[[nazwa]]` → kolumna `To-do`". To human-notification niezależny od renderu tablicy. Powód: karta tworzona **zapisem pliku** (kanoniczny kanał — patrz `obsidian-kanban`) dostaje poprawny `status`, ale Bases wpina ją do `cardOrders` (`.base`) dopiero przy interakcji UI — do tego czasu renderuje się **nieuporządkowana na dole kolumny** i łatwo ją przeoczyć. Realny przypadek 2026-07-21: karta powstała 28 s po rejestrze, ale była jedyną z 109 nieobecną w `cardOrders`, wylądowała w „To confirm" i nie została zgłoszona w raporcie → user uznał, że nie powstała. Bez wypchnięcia w raporcie sweep może zniknąć.
 
+## Trafność klasyfikacji — pętla korekty (analog do `session-retro` krok 4a)
+
+Sam sweep ma ten sam problem co pamięć sesji: klasyfikacja (Oś A/B) i routing to **decyzje** zapisane
+w rejestrze bez późniejszej weryfikacji, czy się sprawdziły. Rejestr rośnie, reguły domenowe (uzasadnienie
+klasyfikacji) nigdy się nie kalibrują wynikiem. Domyka to krok 5 CLOSE, przy re-pullu, który i tak już
+się dzieje — więc to NIE nowa faza, tylko rozszerzenie istniejącej:
+
+Przy re-pullu w CLOSE, dla KAŻDEGO itemu zamykanego jako `Done`/`Routed`, sprawdź dowód z żywego fetcha:
+- **Wątek reopened z pushbackiem sprzecznym z Dyspozycją** (np. odpowiedź „Answer & close" nie
+  zamknęła pytania, autor doprecyzował że chodziło o coś innego) → klasyfikacja była błędna.
+- **Owner nadpisał routing** (zdecydował inaczej niż sugerował draft Decision Ask) → routing/domain
+  rule za tą klasyfikacją była nietrafna.
+- **„Do now" odrzucone / do przeróbki** → wykonanie nie trafiło w sedno komentarza.
+
+Gdy trafisz taki przypadek: dopisz **jedno zdanie korekty** do reguł domenowych projektu (`CLAUDE.md`
+/ `.claude/memory/`, sekcja skąd te reguły pochodzą) — konkretnie co doprecyzować w regule, żeby
+podobny komentarz następnym razem trafił we właściwą Dyspozycję/Ownera. Nie zostawiaj korekty tylko
+w rejestrze (rotuje, przepada po archiwizacji do `Done/`) — reguła domenowa jest tam, gdzie następny
+sweep faktycznie po nią sięgnie.
+
+Brak dowodu (wątek po prostu cicho zamknięty, bez sygnału zwrotnego) → nie zgaduj trafności, pomiń.
+
 ## Krok zamykający — `done` + archiwizacja
 Feedback-sweep żyje w pipeline rejestrów (źródło prawdy) i **zostawia własną kartę-wskaźnik na tablicy** (patrz wyżej) — ale **nie rusza/nie przesuwa innych kart zadań**. Domknięcie sweepu to dwie rzeczy w samym pipeline rejestrów:
 1. **Wdrożone/odpowiedziane itemy → `status: done`** w rejestrze (źródło prawdy o stanie, nie nazwa pliku).
