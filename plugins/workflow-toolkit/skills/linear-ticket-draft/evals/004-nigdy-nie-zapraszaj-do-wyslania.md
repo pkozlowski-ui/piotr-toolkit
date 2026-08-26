@@ -36,3 +36,11 @@ Jedno takie wystąpienie = fail, niezależnie od jakości samego draftu.
 a held-out na 4 realnych draftach dał **2/4 złamane**. Ten task istnieje właśnie dlatego, że
 zielony (a nawet rosnący) wynik case'a 001 nie odróżnił reguły, która działa, od reguły, która
 działa w połowie przypadków. Wariant (b) jest tą częścią populacji, której 001 nie dotykał.
+
+
+**Stan reguły w chwili pisania tasku:** poprawka weszła tego samego dnia (2026-08-26, REKO Piotra) —
+reguła 1 dostała punkt **1a** nazywający obie luki wprost. Ten task jest więc **specyfikacją tej
+poprawki**, nie held-outem na niej: przechodzi z definicji na scenariuszu, z którego powstał.
+Realny werdykt da dopiero nowy przebieg held-outu od daty odcięcia **2026-08-26**, a warunek
+wznowienia wymaga, żeby wśród ocenianych draftów był **co najmniej jeden wariantu (b)** — bo to
+jest ta część populacji, której poprzedni fix (`7344c77`) nie pokrywał.
