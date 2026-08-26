@@ -39,6 +39,28 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
    inicjuje wysyłkę sam, nieproszony pytaniem. Dopiero gdy user **sam** to zainicjuje, zadaj **jedno**
    pytanie: **komentarz czy podmiana opisu (description)?** — i wtedy użyj Linear MCP (`save_comment` /
    `save_issue`).
+
+   **1a. Dwie luki, przez które ta reguła realnie przecieka (zmierzone held-outem 2026-08-26:
+   2 z 4 draftów po fixie `7344c77` nadal ją łamały — dlatego są wypisane osobno, a nie „wynikają"
+   z akapitu wyżej).**
+   - **Sekcja decyzji NIE jest wyjątkiem.** Kontrakt odpowiedzi wymaga nazwanej rekomendacji przy
+     każdej pozycji, i model wypełnia ją prośbą o zgodę: **„REKO: potwierdź słowem «wyślij»"** —
+     realny fail na `MAN-595`. Zakaz obowiązuje w CAŁEJ odpowiedzi: w prozie, w podsumowaniu,
+     w sekcji decyzji, w podpisie. Draft nie jest pozycją do decyzji — jest dostarczonym
+     artefaktem, więc **nie wystawiaj go jako decyzji do potwierdzenia**. Jeśli nic innego nie ma
+     do rozstrzygnięcia, napisz wprost „nic ode mnie nie potrzebujesz" i skończ.
+   - **Zablokowana próba wysyłki nie odblokowuje pytania.** Gdy user napisał „wstaw to" i akcja
+     padła (classifier, brak zgody, błąd MCP), naturalny odruch to poprosić o zgodę jeszcze raz —
+     to jest ten sam zakaz. **Powiedz, CO zablokowało i CO user może zrobić sam, w trybie
+     oznajmującym, bez pytania i bez formuły oczekiwania.**
+   - Nie łącz też pytania o kanał z zaproszeniem: **„powiedz «wyślij» i doprecyzuj czy jako
+     komentarz czy description"** (realny fail na `MAN-896`) to jedno i drugie w jednym zdaniu.
+     Pytanie „komentarz czy description?" pada **wyłącznie po** tym, jak user sam zainicjował.
+
+   **Status reguły 1: HIPOTEZA — NIE zwalidowana.** Held-out 2026-08-26 dał 2/4 (`ODRZUCONA`),
+   punkt 1a jest odpowiedzią na te dwa faile. Wywoływacz: `skills/session-retro/hipotezy-otwarte.md`
+   (H3); specyfikacja: `evals/004-nigdy-nie-zapraszaj-do-wyslania.md`. Nie zdejmuj tej adnotacji,
+   dopóki nowy przebieg nie da ≥ 3 ocenianych draftów z zerem złamań.
 2. Prośba o poprawkę draftu (krócej, inny ton, inne sekcje) ≠ zgoda na wysyłkę.
 3. **Timing przy epicu/wątku (TWARDE):** jeśli ticket należy do **aktywnego epica z otwartymi sub-taskami** (patrz skill `obsidian-kanban` → „Epiki") — **NIE draftuj teraz**. Draft opisu/komentarza opisującego rozwiązanie powstaje **dopiero gdy cały wątek jest zbudowany** (wszystkie sub-taski domknięte). Powód: komentarz z opisem rozwiązania, po którym rozwiązanie się jeszcze zmienia, dezaktualizuje się. Gdy wątek trwa — zbieraj materiał, ale wstrzymaj draft do końca.
 
@@ -48,22 +70,24 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
 - **Pisz jak człowiek wypełniający ticket. Zero śladów AI:** bez kursywy (`*...*`), bez em-dashy (—),
   bez przesadnie równoległych fraz, bez „Note:", bez emoji, bez „we're excited / delivered a robust…".
 - **Bold tylko na mini-nagłówki sekcji** (`**Screens**`, `**Not included**`). Bullety dla list.
-- **Rozmieszczenie linków rozstrzyga ICH LICZBA (TWARDA, decyzja Piotra 2026-08-13 — zastępuje
-  wcześniejszy standard „zawsze kontekstowo" z 2026-08-05).** Policz linki, które draft ma nieść,
-  i wybierz jeden z dwóch wariantów — nigdy oba naraz:
-  - **> 1 link → wariant A, link per ekran.** Każdy element wymieniony w `**Screens**` dostaje SWÓJ
-    WŁASNY link wpięty w tym samym bullet-poincie, i **żadnej zbiorczej sekcji `**Links**` na końcu**.
-    Format bulleta: `- Screen name: what it does. [Figma](url)` (markdown link, nie goły URL —
-    czytelniej w renderze Linear). Reviewer klika prosto w opisany ekran.
-  - **dokładnie 1 link → wariant B, jeden link zbiorczy.** Bullety w `**Screens**` zostają BEZ linków,
-    a link (żywy prototyp / sekcja z wszystkimi ekranami obok siebie) idzie jako jedyna pozycja
-    w `**Links**` na końcu. Rozbijanie jednego linku na sześć bulletów-duplikatów jest szumem.
+- **Link idzie DO ekranu, którego dotyczy — nigdy do zbiorczej sekcji na końcu (TWARDA,
+  decyzja Piotra 2026-08-13, uproszczona 2026-08-26 po zamknięciu held-outu).** Każdy element
+  wymieniony w `**Screens**` dostaje SWÓJ WŁASNY link wpięty w tym samym bullet-poincie, i
+  **żadnej zbiorczej sekcji `**Links**` na końcu**. Format bulleta:
+  `- Screen name: what it does. [Figma](url)` (markdown link, nie goły URL — czytelniej
+  w renderze Linear). Reviewer klika prosto w opisany ekran.
   URL z node-id: `…?node-id=ID-z-myślnikiem` (np. `4180-137260`).
-  **Status: obowiązująca, ale HIPOTEZA behawioralna** — drugi przebieg gate'a (2026-08-13) dał
-  `held-out C: 0 ocenianych przypadków, za mało danych` (zero wywołań po zmianie, bo reguła powstała
-  tego samego dnia). Stosuj jak regułę, ale przy następnej retro sprawdź ją na ≥ 3 draftach niosących
-  linki, zanim ktokolwiek nazwie ją zwalidowaną. Wywoływacz siedzi w rejestrze
-  `skills/session-retro/hipotezy-otwarte.md` (pozycja H1) — retro sprawdza go co przebieg.
+  **Status: ZWALIDOWANA** — held-out 2026-08-26, 3/3 czyste przypadki (`MAN-848` 2 linki,
+  `MAN-825` 2 URL-e, ticket Family Portal 3 linki), zero kontrprzykładów.
+  **Wariant B USUNIĘTY 2026-08-26 — nie odtwarzaj go.** Przez cztery przebiegi held-outu
+  („1 link → bullety bez linków + jeden link zbiorczy w `**Links**`") nie znalazł ani jednego
+  przypadku, w którym mógłby się odpalić: **każdy realny draft z dokładnie jednym linkiem
+  okazywał się jednoakapitową odpowiedzią, nie listą ekranów w bulletach** (`MAN-896` —
+  ogłoszenie reskinu; `MAN-595` — odpowiedź na komentarz Toma). To była reguła bez populacji,
+  nie reguła bez danych, więc zamiast czekać na materiał — zdjęta. Jeden link przy jednym
+  ekranie i tak trafia w ten sam bullet co ekran; jeden link przy jednym akapicie zostaje
+  w akapicie. *Wraca do rozważenia dopiero, gdy pojawi się realny draft z dokładnie 1 linkiem
+  opisujący WIELE ekranów w bulletach — wtedy populacja istnieje i pytanie jest otwarte na nowo.*
 - **⚠️ Jeden draft = JEDNA lista linków, licz PRZED pokazaniem (regresja 2026-08-06, MAN-781 — nie w
   Linearze, w analogicznym Figma-comment draftcie tej samej dyscypliny, więc reguła i tak dotyczy tego
   skilla).** Realny fail: draft komentarza wymieniał 3 ekrany, ale treść komentarza linkowała tylko 2
@@ -73,10 +97,9 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
   liczba w liście). Fix nie jest kosmetyczny — to jest DOKŁADNIE reguła z akapitu wyżej („nie osobna
   sekcja linków na końcu"), złamana przez zbudowanie drugiej listy PO fakcie zamiast poprawienia
   oryginalnego draftu. **Przed pokazaniem JAKIEGOKOLWIEK draftu z linkami policz linki i sprawdź dwie
-  rzeczy: (1) to JEDYNE miejsce z linkami w całej odpowiedzi; (2) w wariancie A (> 1 link) każdy
-  wymieniony z nazwy element ma swój link — zgodność 1:1.** W wariancie B (dokładnie 1 link) zgodności
-  1:1 się NIE liczy — jeden link do całości przy sześciu nazwanych ekranach jest poprawny. Brakuje
-  linku w wariancie A → dopisz go W TYM SAMYM miejscu w treści, nie jako dodatkową listę obok.
+  rzeczy: (1) to JEDYNE miejsce z linkami w całej odpowiedzi; (2) każdy wymieniony z nazwy element
+  ma swój link — zgodność 1:1.** Brakuje linku → dopisz go W TYM SAMYM miejscu w treści, nie jako
+  dodatkową listę obok.
 
 ## Czego NIE robić
 - **Nigdy link do GitHub PR (TWARDA, recurring — Piotr poprawiał to wielokrotnie, ostatnio na
@@ -93,19 +116,34 @@ niemierzalny skill (`held-out-gate.md` → „Czego NIE robić").
 ## Struktura (elastyczna — tnij puste sekcje)
 1. **Nagłówek** — krótka nazwa zakresu (bez em-dasha).
 2. 1 zdanie kontekstu (gdzie zbudowane; ew. rename / przeniesienia).
-3. **Screens** (albo What's built) — bullety: ekran/element + 1 linia co robi. **Wariant A (> 1 link):**
-   + link do TEGO ekranu wpięty w ten sam bullet (`[Figma](url)`). **Wariant B (1 link):** bez linków tutaj.
+3. **Screens** (albo What's built) — bullety: ekran/element + 1 linia co robi, + link do TEGO ekranu
+   wpięty w ten sam bullet (`[Figma](url)`).
 4. Krótki akapit per kluczowy obszar, jeśli potrzebny.
 5. **Not included** — co świadomie poza zakresem i dokąd należy (fakt, nie decyzja).
-6. **Figma** (lub **Links**) — **tylko w wariancie B**, jako jedyna pozycja: prototyp/Vercel albo
-   sekcja z wszystkimi ekranami naraz. W wariancie A tej sekcji NIE MA (linki żyją przy ekranach) —
-   nie duplikuj tu linków ekranów. NIGDY link do PR (patrz „Czego NIE robić").
+6. ~~**Figma** / **Links** — sekcja zbiorcza na końcu~~ 🗑️ **usunięta 2026-08-26 razem z wariantem B.**
+   Linki żyją przy ekranach, których dotyczą; jeden link do żywego prototypu, który nie należy do
+   żadnego pojedynczego ekranu, wchodzi w zdanie kontekstu (punkt 2). NIGDY link do PR (patrz
+   „Czego NIE robić").
 
 ## Długość: description vs komentarz
 - **Opis ticketu (description)** = ten strukturalny draft — kompletny, ale skondensowany.
 - **Komentarz dyskusyjny** = krótko, 2–4 zdania + linki (patrz memory `feedback-linear-brevity`);
   pełny write-up, jeśli długi, idzie do Obsidiana, nie do Linear.
 - Gdy user mówi „cały opis" → wersja kompletna (description); domyślnie trzymaj zwięźle.
+
+## Korekta z edycji przed wysyłką (pętla dla sygnału POZA formalnymi regułami)
+
+Reguły stylu tego skilla (1, link-placement) mają już pełną obsługę held-out gate'em — to NIE jest
+luka. Luka jest gdzie indziej: gdy user **edytuje draft przed wklejeniem** (skraca, zmienia opis
+zakresu, poprawia faktyczny błąd o tym co zbudowano) — to jest darmowy sygnał zwrotny o trafności
+treści, nie tylko stylu, i dziś nic go nie zbiera. Pojedyncza edycja to nie dowód wzorca — ale gdy
+**ten sam typ poprawki powtórzy się** (np. dwa razy z rzędu user dopisuje coś, co skill pominął, albo
+usuwa coś, co skill dodał mimo „Czego NIE robić") → to już kandydat na hipotezę, nie przypadek.
+
+Gdy zauważysz powtórkę: dopisz nową hipotezę do `../session-retro/hipotezy-otwarte.md` wg wzorca
+istniejących wpisów (co, kiedy, soczewka, warunek wznowienia) — **nie** utwardzaj reguły w tym pliku
+od razu na podstawie dwóch przypadków (to złamałoby validation-gate, ten sam błąd, przed którym
+ostrzega `session-retro`). Jedna edycja bez powtórki → nic nie rób, to szum.
 
 ## Po „wyślij"
 1. Zapytaj raz: komentarz czy description.

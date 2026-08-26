@@ -19,66 +19,32 @@
 
 ## Otwarte
 
-### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY
+### ~~H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY~~ 🗑️ ZAMKNIĘTA 2026-08-26
 
-- **Co jest hipotezą:** > 1 link → wariant A (link per ekran, brak sekcji `**Links**`);
-  dokładnie 1 link → wariant B (bullety bez linków, jeden link zbiorczy w `**Links**`).
-- **Data zmiany:** 2026-08-13 (`workflow-toolkit` 1.25.0, commit `33ded25`).
-- **Przebieg 2026-08-25:** surowe okno urosło do **7 wywołań** (z 3). Nowe od 2026-08-24: `2026-08-24T09:12`, `2026-08-24T11:27`, `2026-08-24T12:08`, `2026-08-25T09:38`, `2026-08-25T12:03`. Nieklasyfikowane — **wariant B (dokładnie 1 link) nadal 0 ocenianych**, więc gate stoi na tej samej przyczynie co poprzednio.
-- **Przebieg 2026-08-25 (sesja sales-demo, antisis-prototype):** `heldout_split.sh
-  workflow-toolkit:linear-ticket-draft 2026-08-13` → surowy held-out **7 wywołań** (≥3). Ręczny
-  przegląd per wymaganie **odłożony po raz DRUGI** — retro szło w sesji na ~297k kontekstu, a
-  przejrzenie 7 transkryptów kosztowało więcej niż wart był werdykt; sesja w ogóle nie dotykała
-  `linear-ticket-draft`. ⚠️ **Następne retro robi ten przegląd JAKO PIERWSZY**, zanim weźmie
-  cokolwiek innego — albo zamyka hipotezę werdyktem „za mało ocenianych, odcięcie przesunięte".
-  Surowy held-out nie urośnie od czekania, a trzecie odłożenie znaczy, że rejestr przestał działać.
-  Ten sam przebieg: **H2** (`design-tweaker` 2026-08-17) → held-out **0 wywołań**, warunek
-  niespełniony, nic nie mierzono. **H3** (`linear-ticket-draft` 2026-08-17) → **6 wywołań**, ta
-  sama blokada co H1 (brak ręcznego przeglądu).
-- **Stan gate'a:** `held-out C: 3 wywołania po zmianie, 2 realnie oceniane, za mało danych na
-  wariant B` (przebieg 2026-08-24, held-out okno 2026-08-13→2026-08-24). Rozbite per branch:
-  - **Wariant A (>1 link) — POTWIERDZONY, 2/2:**
-    - `2026-08-17T13:29:07Z`, MAN-848 (`7fcefd03-…jsonl`) — draft z 2 linkami Figma, **jeden per
-      bullet** (F02 closed/single-window + multi-window), **brak sekcji `**Links**`**. Model sam
-      nazwał to „wariant A" w tekście przed draftem — obie sub-reguły MET.
-    - `2026-08-13T11:49:18Z`, MAN-825/„10-1 toggle update" (`a50d37d0-…jsonl`, Edit na karcie kanban,
-      nie w treści czatu) — draft z 2 URL (F&A `antisis-prototype.vercel.app/schools`,
-      Staff `mvp-staff-experience.vercel.app`), każdy przypięty do własnego akapitu/produktu, brak
-      sekcji `**Links**` — MET. (Nuans: URL-e są gołym tekstem, nie markdown-linkiem — inna oś, nie
-      dotyczy rozmieszczenia.)
-  - **Wariant B (=1 link) — NIE PRZETESTOWANY, 0/1 właściwych przypadków:**
-    - `2026-08-24T09:12:54Z`, MAN-896 (`adf0d2ba-…jsonl`, linia 1363) — 1 link (demo URL), ale draft
-      to jednoakapitowe ogłoszenie jednego demo, **nie lista wielu ekranów/itemów** — nie ma bulletów
-      w ogóle i nie ma sekcji `**Links**`, link leci inline blisko początku, nie „zbiorczo na końcu".
-      Werdykt: **nie dotyczy** — precondycja hipotezy (lista itemów, z których trzeba by rozproszyć
-      albo skonsolidować linki) nie zachodzi, więc mechanika wariantu B nie miała szansy się odpalić.
-      Poprzednia sesja (retro 2026-08-24) osądziła to jako „zgodne z wariantem B" licząc tylko
-      liczbę linków (=1) — ten osąd był policzeniem, nie soczewką C per-wymaganie; skorygowane tutaj.
-- **Przebieg 2026-08-26 (retro sesji sales-demo, CZWARTY) — klasyfikacja WYKONANA, delegowana do
-  subagenta zamiast po raz czwarty odłożona.** Przejrzane wszystkie 5 draftów z okna. **Ocenianych
-  wariantu B: 0/3** → werdykt `ZA MAŁO OCENIANYCH`, ale **z inną przyczyną niż przez trzy poprzednie
-  przebiegi**: to nie jest zaległość wykonawcza. Każdy realny case z DOKŁADNIE 1 linkiem wychodzi
-  jako **jednoakapitowa odpowiedź, nie lista itemów w bulletach** (`MAN-896` — ogłoszenie reskinu,
-  zero bulletów; `MAN-595` — krótka odpowiedź na komentarz Toma, zero bulletów), więc precondycja
-  wariantu B **strukturalnie się nie odpala w realnym ruchu**. Dwa dalsze wywołania nie wyprodukowały
-  draftu w ogóle (jeden świadomie wstrzymany, jeden zjechał w infra). Wariant A dostał **trzecie**
-  potwierdzenie (ticket Family Portal, 3 linki, 3 bullety, brak sekcji `**Links**`).
-  ⚠️ **Otwarte pytanie procesowe, nie kolejne odłożenie:** czy warunek wznowienia jest osiągalny.
-  Jeśli „1 link + wiele itemów" nie występuje w tym mixie zadań, wariant B jest regułą bez populacji
-  i należy go **usunąć ze skilla**, a nie czekać na materiał. Do decyzji Piotra.
-- **Soczewka:** C (zmiana treści) — oceniaj per wymaganie na draftach, NIE per wywołanie.
-- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE **wariantu B specyficznie** — draft z dokładnie
-  1 linkiem, opisujący WIELE itemów/ekranów w bulletach (nie jednoakapitowe ogłoszenie), żeby
-  hipoteza „bullety bez linków + jeden link zbiorczy w `**Links**`" miała czego dotyczyć. Wariant A
-  ma już wystarczający dowód (2/2 czyste przypadki) — nie szukaj więcej materiału na niego, chyba że
-  trafi się kontrprzykład.
-- **Komenda:**
-  ```bash
-  plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
-    workflow-toolkit:linear-ticket-draft 2026-08-13
-  ```
-- **Gdzie zapisać werdykt:** karta `KANBAN/Archive/Held-out gate — pierwszy realny przebieg na
-  linear-ticket-draft.md` (sekcja kolejnego przebiegu) + zdjęcie adnotacji „HIPOTEZA" z `SKILL.md`.
+**Werdykt: wariant A ZWALIDOWANY (3/3), wariant B USUNIĘTY ze skilla jako reguła bez populacji.**
+
+Cztery przebiegi held-outu. Wariant A („> 1 link → link per ekran, brak sekcji `**Links**`") zebrał
+**trzy czyste przypadki** (`MAN-848` 2 linki / 2 bullety, `MAN-825` 2 URL-e per produkt, ticket
+Family Portal 3 linki / 3 bullety) i zero kontrprzykładów — awansuje na regułę, adnotacja HIPOTEZA
+zdjęta ze `SKILL.md`.
+
+Wariant B („= 1 link → bullety bez linków + jeden link zbiorczy w `**Links**`") zebrał **0/3
+ocenianych** — i to nie była zaległość wykonawcza. Każdy realny draft z dokładnie jednym linkiem
+okazywał się **jednoakapitową odpowiedzią, nie listą ekranów w bulletach** (`MAN-896` — ogłoszenie
+reskinu; `MAN-595` — odpowiedź na komentarz Toma), więc precondycja tej reguły nie zachodzi
+w obecnym mixie zadań. **Decyzja Piotra (REKO 2026-08-26): usunąć wariant B zamiast czekać na
+materiał** — reguła bez populacji jest kosztem czytania skilla bez żadnego zysku. Punkty 3 i 6
+struktury oraz reguła zgodności 1:1 uproszczone w tym samym ruchu.
+
+*Wraca do rozważenia, gdy pojawi się realny draft z dokładnie 1 linkiem opisujący WIELE ekranów
+w bulletach — wtedy populacja istnieje i pytanie jest otwarte na nowo.*
+
+**Lekcja procesowa (ważniejsza niż sam werdykt):** trzy przebiegi pod rząd raportowały „za mało
+ocenianych", traktując to jak brak materiału. Czwarty przejrzał drafty i okazało się, że materiał
+nigdy nie miał się pojawić. **„Za mało ocenianych" trzeci raz z rzędu przy wystarczającej liczbie
+WYWOŁAŃ nie znaczy „czekamy dłużej" — znaczy „otwórz okno i sprawdź, czy populacja w ogóle
+istnieje".** Klasyfikacja jest robotą mechaniczną i należy ją delegować do subagenta, a nie
+odkładać, bo retro jest na wyczerpanym kontekście.
 
 ---
 
@@ -128,6 +94,23 @@
   nie wystarczający: w realnych sesjach compliance ≈ **50%**, nie 100%. Wpadka zmaterializowana
   jako `evals/004-nigdy-nie-zapraszaj-do-wyslania.md` (rationale) — do przepisania na case CLI
   razem z realną poprawką reguły. **Adnotacji „HIPOTEZA" z `SKILL.md` NIE zdejmować.**
+- **Poprawka wdrożona 2026-08-26 (REKO Piotra), gate przemierzony OD NOWA od tej daty.** Reguła 1
+  dostała punkt **1a** nazywający obie zmierzone luki wprost, zamiast liczyć, że wynikają
+  z ogólnego zakazu: (a) **sekcja decyzji nie jest wyjątkiem** — kontrakt odpowiedzi wymusza nazwaną
+  rekomendację i model wypełniał ją formą "REKO: potwierdź słowem wyślij" (`MAN-595`); draft nie
+  jest pozycją do decyzji, więc nie wystawia się go do potwierdzenia; (b) **zablokowana próba wysyłki
+  nie odblokowuje pytania** — po padniętym "wstaw to" mówisz w trybie oznajmującym, co zablokowało
+  i co user może zrobić sam; (c) pytania o kanał nie łączy się z zaproszeniem (`MAN-896`:
+  "powiedz wyślij i doprecyzuj czy jako komentarz czy description" to jedno i drugie naraz).
+- **Nowa data odcięcia held-outu: 2026-08-26** (poprzednia 2026-08-17 zamknięta werdyktem
+  `ODRZUCONA`). Warunek wznowienia bez zmian: >= 3 oceniane drafty, ale teraz **musi być wśród nich
+  co najmniej jeden po zablokowanej próbie wysyłki** — to jest ta część populacji, której poprzedni
+  fix nie pokrywał, więc przebieg bez niej nie zmierzy poprawki.
+- **Zaktualizowana komenda:**
+  ```bash
+  plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
+    workflow-toolkit:linear-ticket-draft 2026-08-26
+  ```
 - **Soczewka:** doctrine-compliance — oceniaj per realny draft wysłany do Lineara/Figmy po dacie
   zmiany, sprawdzając czy PADA jakakolwiek formuła zaproszenia do wysyłki.
 - **Warunek wznowienia:** ≥ 3 przypadki OCENIANE, czyli realne drafty `linear-ticket-draft` po
@@ -314,6 +297,29 @@ gdy skill został wczytany z cache'u.
   (ścieżka vaultu/folderu boardu per projekt — brak jednego wspólnego korzenia).
 - **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7–H10) + zdjęcie
   tej pozycji stąd + aktualizacja sekcji „Powiązania" w `obsidian-kanban/SKILL.md`.
+
+---
+
+### H12 — `linear-ticket-draft`: korekta z edycji przed wysyłką (sygnał poza formalnymi regułami)
+
+- **Co jest hipotezą:** nowy krok w SKILL.md — gdy user powtarzalnie (≥2×) edytuje draft przed
+  wklejeniem tym samym typem poprawki, dopisz NOWĄ hipotezę do tego rejestru zamiast tracić sygnał.
+  Różni się od H1/H3 (ten sam skill, ale te dwa są już w pełni obsłużone held-out gate'em i dotyczą
+  STYLU/reguł twardych) — H12 łapie sygnał o TREŚCI/trafności draftu, który nie ma jeszcze żadnej
+  formalnej reguły do złamania, więc dziś ginie bez śladu.
+- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `SKILL.md` linear-ticket-draft — na prośbę usera
+  „zrób podobny sweep dla linear-ticket-draft, ma podobny problem"; szósty skill z rodziny H7–H11).
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony, zero edycji-po-zmianie zaobserwowanych.
+- **Soczewka:** per sesja z draftem tego skilla — czy powtarzalna edycja (2×+ ten sam typ poprawki)
+  faktycznie skutkuje nowym wpisem w tym rejestrze, nie tylko cichą poprawką w locie.
+- **Ryzyko odwrotne, którego trzeba pilnować:** nadinterpretacja pojedynczej edycji jako wzorca —
+  krok wprost zabrania tworzenia hipotezy z jednego przypadku (to złamałoby validation-gate).
+- **Warunek wznowienia:** ≥ 2 sesje po dacie zmiany, w których user edytował draft tym samym typem
+  poprawki, żeby sprawdzić czy krok faktycznie doprowadził do zapisania nowej hipotezy.
+- **Komenda:** brak automatycznego skryptu — sprawdź czy przybyła nowa hipoteza (numer > H12) w tym
+  pliku z uzasadnieniem odwołującym się do edycji drafta `linear-ticket-draft`.
+- **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7–H11) + zdjęcie
+  tej pozycji stąd.
 
 ---
 
