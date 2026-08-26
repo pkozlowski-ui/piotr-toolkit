@@ -19,35 +19,6 @@
 
 ## Otwarte
 
-### ~~H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY~~ 🗑️ ZAMKNIĘTA 2026-08-26
-
-**Werdykt: wariant A ZWALIDOWANY (3/3), wariant B USUNIĘTY ze skilla jako reguła bez populacji.**
-
-Cztery przebiegi held-outu. Wariant A („> 1 link → link per ekran, brak sekcji `**Links**`") zebrał
-**trzy czyste przypadki** (`MAN-848` 2 linki / 2 bullety, `MAN-825` 2 URL-e per produkt, ticket
-Family Portal 3 linki / 3 bullety) i zero kontrprzykładów — awansuje na regułę, adnotacja HIPOTEZA
-zdjęta ze `SKILL.md`.
-
-Wariant B („= 1 link → bullety bez linków + jeden link zbiorczy w `**Links**`") zebrał **0/3
-ocenianych** — i to nie była zaległość wykonawcza. Każdy realny draft z dokładnie jednym linkiem
-okazywał się **jednoakapitową odpowiedzią, nie listą ekranów w bulletach** (`MAN-896` — ogłoszenie
-reskinu; `MAN-595` — odpowiedź na komentarz Toma), więc precondycja tej reguły nie zachodzi
-w obecnym mixie zadań. **Decyzja Piotra (REKO 2026-08-26): usunąć wariant B zamiast czekać na
-materiał** — reguła bez populacji jest kosztem czytania skilla bez żadnego zysku. Punkty 3 i 6
-struktury oraz reguła zgodności 1:1 uproszczone w tym samym ruchu.
-
-*Wraca do rozważenia, gdy pojawi się realny draft z dokładnie 1 linkiem opisujący WIELE ekranów
-w bulletach — wtedy populacja istnieje i pytanie jest otwarte na nowo.*
-
-**Lekcja procesowa (ważniejsza niż sam werdykt):** trzy przebiegi pod rząd raportowały „za mało
-ocenianych", traktując to jak brak materiału. Czwarty przejrzał drafty i okazało się, że materiał
-nigdy nie miał się pojawić. **„Za mało ocenianych" trzeci raz z rzędu przy wystarczającej liczbie
-WYWOŁAŃ nie znaczy „czekamy dłużej" — znaczy „otwórz okno i sprawdź, czy populacja w ogóle
-istnieje".** Klasyfikacja jest robotą mechaniczną i należy ją delegować do subagenta, a nie
-odkładać, bo retro jest na wyczerpanym kontekście.
-
----
-
 ### H2 — `design-tweaker` description: trigger na pytania meta/routingowe o WŁASNE granice
 
 - **Co jest hipotezą:** dopisana fraza „who executes this / which skill owns X" w `description`,
@@ -324,6 +295,38 @@ gdy skill został wczytany z cache'u.
 ---
 
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
+
+### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26
+
+**Werdykt: wariant A ZWALIDOWANY (3/3), wariant B USUNIĘTY ze skilla jako reguła bez populacji.**
+
+Cztery przebiegi held-outu. Wariant A („> 1 link → link per ekran, brak sekcji `**Links**`") zebrał
+**trzy czyste przypadki** (`MAN-848` 2 linki / 2 bullety, `MAN-825` 2 URL-e per produkt, ticket
+Family Portal 3 linki / 3 bullety) i zero kontrprzykładów — awansuje na regułę, adnotacja HIPOTEZA
+zdjęta ze `SKILL.md`.
+
+Wariant B („= 1 link → bullety bez linków + jeden link zbiorczy w `**Links**`") zebrał **0/3
+ocenianych** — i to nie była zaległość wykonawcza. Każdy realny draft z dokładnie jednym linkiem
+okazywał się **jednoakapitową odpowiedzią, nie listą ekranów w bulletach** (`MAN-896` — ogłoszenie
+reskinu; `MAN-595` — odpowiedź na komentarz Toma), więc precondycja tej reguły nie zachodzi
+w obecnym mixie zadań. **Decyzja Piotra (REKO 2026-08-26): usunąć wariant B zamiast czekać na
+materiał** — reguła bez populacji jest kosztem czytania skilla bez żadnego zysku. Punkty 3 i 6
+struktury oraz reguła zgodności 1:1 uproszczone w tym samym ruchu.
+
+*Wraca do rozważenia, gdy pojawi się realny draft z dokładnie 1 linkiem opisujący WIELE ekranów
+w bulletach — wtedy populacja istnieje i pytanie jest otwarte na nowo.*
+
+**Lekcja procesowa (ważniejsza niż sam werdykt):** trzy przebiegi pod rząd raportowały „za mało
+ocenianych", traktując to jak brak materiału. Czwarty przejrzał drafty i okazało się, że materiał
+nigdy nie miał się pojawić. **„Za mało ocenianych" trzeci raz z rzędu przy wystarczającej liczbie
+WYWOŁAŃ nie znaczy „czekamy dłużej" — znaczy „otwórz okno i sprawdź, czy populacja w ogóle
+istnieje".** Klasyfikacja jest robotą mechaniczną i należy ją delegować do subagenta, a nie
+odkładać, bo retro jest na wyczerpanym kontekście.
+
+**Pełny zapis (przebieg 3, 2026-08-26)** → Obsidian
+`KANBAN/Archive/Held-out gate — pierwszy realny przebieg na linear-ticket-draft.md`.
+
+---
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
 
