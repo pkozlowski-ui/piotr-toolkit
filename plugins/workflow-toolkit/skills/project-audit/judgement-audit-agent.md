@@ -17,6 +17,18 @@ Kroki:
 
 2. Ustal okno czasowe: znajdź ostatni raport w `docs/audits/` (jeśli jest). Zbierz `git log --stat` od daty ostatniego audytu do teraz (jeśli brak — ostatnie ~{{EVERY_DAYS}} dni). To pokazuje CO się działo.
 
+2b. **Korekta poprzedniego raportu (gdy istnieje).** Zanim napiszesz nowe znaleziska, przejdź
+   po znaleziskach osądu z poprzedniego raportu (🔴/🟡/⚫) i dla każdego sprawdź w `git log`
+   z kroku 2, czy propozycja została wykonana, odrzucona, czy zignorowana:
+   - **Wykonana zgodnie z propozycją** → nic nie pisz (cichy sukces, nie zaśmiecaj raportu).
+   - **Odrzucona lub wykonana INACZEJ niż proponowano** (np. reguła oznaczona jako „martwa"
+     okazała się żywa gdzie indziej, „sprzeczność" była zamierzonym wyjątkiem) → dopisz w nowym
+     raporcie jedno zdanie `**Korekta:** <znalezisko z <data> było błędne, bo X>` w sekcji
+     „Znaleziska osądu" tego przebiegu — to kalibruje przyszłe czytanie tego samego typu sygnału
+     (np. „martwa deklaracja" wymaga też sprawdzenia innych plików, nie tylko jednego).
+   - **Wciąż nierozstrzygnięta** (brak commitu, który by ją adresował) → pomiń, nie zgaduj.
+   Nie twórz tego kroku, jeśli poprzedniego raportu nie ma — to pierwszy przebieg.
+
 3. **Audyt OSĄDU** (to czego linter nie złapie — czytaj, nie tylko licz):
    - **Reguły faktycznie łamane** — porównaj zmiany z `git log` z regułami w CLAUDE.md (projekt + global `~/.claude/CLAUDE.md`). Np. token-compliance, quality gates, deklaracja-z-dowodem, reguły językowe, gates specyficzne dla projektu. Wskaż konkretne naruszenia z plikiem/commitem.
    - **Sprzeczności** — czy jakaś reguła w CLAUDE.md przeczy innej regule lub kanonowi w docs (np. dwie różne wartości dla tego samego przypadku, dwa różne kanony).

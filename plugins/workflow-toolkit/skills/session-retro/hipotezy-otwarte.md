@@ -323,6 +323,37 @@ gdy skill został wczytany z cache'u.
 
 ---
 
+### H13 — `project-audit` warstwa 2: korekta poprzedniego raportu osądu
+
+- **Co jest hipotezą:** nowy krok 2b w `judgement-audit-agent.md` — przed pisaniem nowych
+  znalezisk agent sprawdza w `git log`, czy propozycje z POPRZEDNIEGO raportu (`docs/audits/`)
+  zostały wykonane zgodnie z diagnozą, odrzucone, czy wykonane inaczej. Gdy diagnoza była
+  błędna (np. reguła oznaczona jako „martwa deklaracja" okazała się żywa gdzie indziej) →
+  dopisuje `**Korekta:**` w bieżącym raporcie zamiast milcząco przejść do nowych znalezisk.
+  Siódmy skill z rodziny H7–H12, ale inny wariant: tu werdykty (🔴/🟡/⚫) i tak już trafiają do
+  trwałego artefaktu (`docs/audits/<data>-hygiene.md`) i skill i tak wraca do tego samego
+  materiału co `EVERY_DAYS` — brakowało tylko porównania z poprzednim przebiegiem, nie
+  nowego mechanizmu retencji.
+- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `judgement-audit-agent.md` — systematyczny
+  sweep wszystkich skilli toolkitu pod kątem tego samego wzorca decyzja→wynik→ocena→korekta).
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony; wymaga co najmniej dwóch
+  kolejnych przebiegów scheduled agenta na TYM SAMYM projekcie, żeby krok 2b miał co porównać.
+- **Soczewka:** per projekt z zarejestrowanym scheduled agentem — czy drugi i kolejne przebiegi
+  faktycznie odnoszą się do poprzedniego raportu, i czy `Korekta:` pojawia się tylko gdy
+  diagnoza realnie była błędna (nie jako rytualny wpis).
+- **Ryzyko odwrotne, którego trzeba pilnować:** krok 2b wydłuża prompt agenta o kolejną fazę
+  czytania — jeśli poprzedni raport jest długi/stary, agent może zgadywać zamiast realnie
+  sprawdzać `git log`, co dałoby fałszywe `Korekta:` bez pokrycia w commitach.
+- **Warunek wznowienia:** ≥ 2 przebiegi warstwy 2 po dacie zmiany na tym samym projekcie
+  (potrzebny co najmniej jeden projekt z aktywnym scheduled agentem — dziś żaden nie jest
+  potwierdzony jako uruchomiony w tym repo).
+- **Komenda:** brak automatycznego skryptu — sprawdź `docs/audits/` audytowanego projektu:
+  czy drugi i kolejne raporty zawierają sekcję odnoszącą się do znalezisk z poprzedniego pliku.
+- **Gdzie zapisać werdykt:** nowa karta kanban lub dopisek do „Decision-sweep — held-out"
+  (wspólna z H7–H12) + zdjęcie tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13
