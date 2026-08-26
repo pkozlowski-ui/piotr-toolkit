@@ -59,10 +59,15 @@ Audyt nie jest jednorazowy — działa w pętli **zmierz → porównaj → utwar
 2. **Przebieg porównawczy:** odpal warstwy 1–2 (deterministyczne, ~darmowe) i porównaj wyniki
    z **tabelą baseline'ów z poprzedniego raportu** (`AUDIT-USAGE.local.md`). Warstwy 3–4
    (subagenty) tylko dla metryk, które się nie poprawiły, i nowych anomalii.
-3. **Rozstrzygnięcia per hipoteza:**
-   - poprawa vs baseline → fix trzyma; eval zostaje jako regresyjny strażnik,
-   - brak zmiany / regres → hipoteza wraca do puli; następny fix **innym kanałem**
-     (wyżej w hierarchii egzekucji), nie mocniejszym sformułowaniem tego samego,
+3. **Rozstrzygnięcia per hipoteza** (pisz werdykt jako `metadata.status` z `memory-discipline` —
+   `fakt` gdy potwierdzony baseline'em, nie `hipoteza` na zawsze):
+   - poprawa vs baseline → fix trzyma; status → `fakt`; eval zostaje jako regresyjny strażnik,
+   - brak zmiany / regres → dopisz **Korektę** WPROST do wpisu hipotezy w `hipotezy-otwarte.md`
+     (nie tylko „wraca do puli" gołosłownie) — jedno zdanie: który kanał zawiódł i czego NIE
+     próbować drugi raz na tej samej hipotezie. Bez tej linii kolejny przebieg audytu odkrywa tę
+     samą ślepą uliczkę od zera, bo generyczne „wraca do puli" nie niesie żadnej informacji
+     zwrotnej. Dopiero potem wybierz następny fix **innym kanałem** (wyżej w hierarchii
+     egzekucji), zgodnie z korektą,
    - nowa wpadka → nowy task w `evals/` + wiersz w tabeli baseline'ów.
 4. **Zaktualizuj raport** (nowe baseline'y = punkt odniesienia następnego przebiegu).
 5. **Saturacja = sygnał zdrowia:** gdy 2 kolejne przebiegi nie wnoszą nowych findingów,

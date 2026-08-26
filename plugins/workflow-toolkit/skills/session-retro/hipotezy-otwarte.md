@@ -54,6 +54,18 @@
       albo skonsolidować linki) nie zachodzi, więc mechanika wariantu B nie miała szansy się odpalić.
       Poprzednia sesja (retro 2026-08-24) osądziła to jako „zgodne z wariantem B" licząc tylko
       liczbę linków (=1) — ten osąd był policzeniem, nie soczewką C per-wymaganie; skorygowane tutaj.
+- **Przebieg 2026-08-26 (retro sesji sales-demo, CZWARTY) — klasyfikacja WYKONANA, delegowana do
+  subagenta zamiast po raz czwarty odłożona.** Przejrzane wszystkie 5 draftów z okna. **Ocenianych
+  wariantu B: 0/3** → werdykt `ZA MAŁO OCENIANYCH`, ale **z inną przyczyną niż przez trzy poprzednie
+  przebiegi**: to nie jest zaległość wykonawcza. Każdy realny case z DOKŁADNIE 1 linkiem wychodzi
+  jako **jednoakapitowa odpowiedź, nie lista itemów w bulletach** (`MAN-896` — ogłoszenie reskinu,
+  zero bulletów; `MAN-595` — krótka odpowiedź na komentarz Toma, zero bulletów), więc precondycja
+  wariantu B **strukturalnie się nie odpala w realnym ruchu**. Dwa dalsze wywołania nie wyprodukowały
+  draftu w ogóle (jeden świadomie wstrzymany, jeden zjechał w infra). Wariant A dostał **trzecie**
+  potwierdzenie (ticket Family Portal, 3 linki, 3 bullety, brak sekcji `**Links**`).
+  ⚠️ **Otwarte pytanie procesowe, nie kolejne odłożenie:** czy warunek wznowienia jest osiągalny.
+  Jeśli „1 link + wiele itemów" nie występuje w tym mixie zadań, wariant B jest regułą bez populacji
+  i należy go **usunąć ze skilla**, a nie czekać na materiał. Do decyzji Piotra.
 - **Soczewka:** C (zmiana treści) — oceniaj per wymaganie na draftach, NIE per wywołanie.
 - **Warunek wznowienia:** ≥ 3 przypadki OCENIANE **wariantu B specyficznie** — draft z dokładnie
   1 linkiem, opisujący WIELE itemów/ekranów w bulletach (nie jednoakapitowe ogłoszenie), żeby
@@ -103,6 +115,19 @@
   **Uwaga:** resztkowy pojedynczy flake w re-runie (inna, węższa fraza „powiedz X, przepiszę
   sekcję" — niedotycząca wysyłki) potraktowany jako szum; jeśli held-out pokaże, że to się
   powtarza w realnych sesjach, może to być osobny, węższy finding, nie dowód że fix nie działa.
+- **Przebieg 2026-08-26 (retro sesji sales-demo) — GATE PRZESZEDŁ, HIPOTEZA ODRZUCONA.**
+  Warunek wznowienia spełniony: **4 oceniane** drafty po 2026-08-17 (`MAN-848`, `MAN-896`,
+  ticket Family Portal, `MAN-595`). **SPEŁNIONE 2 · ZŁAMANE 2.** Dwa realne drafty emitują
+  dokładnie ten wzorzec, który fix miał usunąć: `MAN-896` → „powiedz «wyślij» i doprecyzuj czy
+  jako komentarz czy description"; `MAN-595` → „REKO: potwierdź słowem «wyślij»" (po tym, jak
+  classifier zablokował próbę usera). Borderline w `MAN-848`: sam draft czysty, ale retro tej
+  samej sesji pisze „karta … czeka na Twoje «wyślij»" — opisowe, nie imperatywne, policzone jako
+  spełnione. Żaden case nie jest dev-setem (fix `7344c77` wszedł 2026-08-17, wszystkie wywołania
+  późniejsze; `MAN-848` tego samego dnia, ale po zmianie).
+  **Werdykt: `ODRZUCONA` — reguła NIE awansuje na kanon.** Eval case 001 (0.80→0.90) był konieczny,
+  nie wystarczający: w realnych sesjach compliance ≈ **50%**, nie 100%. Wpadka zmaterializowana
+  jako `evals/004-nigdy-nie-zapraszaj-do-wyslania.md` (rationale) — do przepisania na case CLI
+  razem z realną poprawką reguły. **Adnotacji „HIPOTEZA" z `SKILL.md` NIE zdejmować.**
 - **Soczewka:** doctrine-compliance — oceniaj per realny draft wysłany do Lineara/Figmy po dacie
   zmiany, sprawdzając czy PADA jakakolwiek formuła zaproszenia do wysyłki.
 - **Warunek wznowienia:** ≥ 3 przypadki OCENIANE, czyli realne drafty `linear-ticket-draft` po
@@ -200,6 +225,34 @@ gdy skill został wczytany z cache'u.
   `.claude/memory/` projektu z odniesieniem do tego sweepu.
 - **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7) + zdjęcie tej
   pozycji stąd.
+
+---
+
+### H9 — `usage-audit` krok 3 „Pętla ulepszania": Korekta wpisana do hipotezy zamiast gołego „wraca do puli"
+
+- **Co jest hipotezą:** gdy przebieg audytu stwierdza „brak zmiany / regres" dla hipotezy z
+  `hipotezy-otwarte.md`, dopisz do TEGO wpisu jedno zdanie korekty (który kanał zawiódł, czego nie
+  próbować drugi raz), zamiast generycznego „wraca do puli" bez treści. Werdykt „fix trzyma" pisz
+  jako `metadata.status: fakt` (schemat `memory-discipline`), nie zostawiaj hipotezy wiecznie
+  hipotezą mimo potwierdzenia. Ten sam wzorzec co H7/H8, trzeci skill z identycznym problemem:
+  decyzja (fix na hipotezę) zapisana bez odzysku informacji zwrotnej dla następnej próby.
+- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `SKILL.md` usage-audit — na prośbę usera „zrób
+  podobny sweep dla usage-audit, ma podobny problem").
+- **Stan gate'a:** `0 przebiegów` — dopiero wdrożone, żaden przebieg audytu jeszcze nie stosował tej
+  wersji kroku 3.
+- **Soczewka:** per przebieg audytu — czy „regres" faktycznie skutkuje dopisaną Korektą w
+  `hipotezy-otwarte.md` (nie tylko w lokalnym, git-excluded `AUDIT-USAGE.local.md`, gdzie ginie przy
+  następnym przebiegu/migracji — sedno tej klasy problemu to trwałość informacji zwrotnej, nie sam
+  fakt jej istnienia).
+- **Ryzyko odwrotne, którego trzeba pilnować:** Korekta wpisywana rytualnie, bez realnej treści
+  („nie zadziałało, spróbuj czegoś innego") — wtedy nic nie różni się od status quo.
+- **Warunek wznowienia:** ≥ 3 przebiegi `usage-audit` po dacie zmiany zakończone werdyktem „regres"
+  na którejkolwiek hipotezie z rejestru, z czego przynajmniej jeden ma faktycznie treściwą Korektę
+  (nie rytualną).
+- **Komenda:** brak automatycznego skryptu — sprawdź `git log -p -- plugins/workflow-toolkit/skills/session-retro/hipotezy-otwarte.md`
+  po dacie zmiany, czy któryś commit dopisuje linię `Korekta:` do istniejącego wpisu H1–H6.
+- **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7/H8) + zdjęcie
+  tej pozycji stąd.
 
 ---
 
