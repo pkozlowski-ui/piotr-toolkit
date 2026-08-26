@@ -149,6 +149,31 @@ aktualizacji pluginu i nadpisuje starszy stan. **Rejestr edytuj ZAWSZE w `piotr-
 gdy skill został wczytany z cache'u.
 
 
+### H7 — `session-retro` krok 4a: miesięczny sweep trafności decyzji
+
+- **Co jest hipotezą:** osobny krok w retro (odpalany tylko co ~30 dni, nie co sesję), który
+  przegląda wpisy `project`/`feedback` starsze niż 30 dni i sprawdza, czy zapisana decyzja faktycznie
+  się sprawdziła — domyka lukę, której held-out gate nie pokrywa (ten ocenia trafność reguł/skilli,
+  nie efekt konkretnej decyzji z przeszłości).
+- **Data zmiany:** 2026-08-26 (`workflow-toolkit`, `SKILL.md` krok 4a — REKO na pytanie usera
+  inspirowane cudzym setupem archiwizacji sesji do Obsidiana).
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony, `_decision-sweep-log.md` jeszcze
+  nie istnieje.
+- **Soczewka:** per przebieg sweepu — czy realnie złapał choć jedną nietrafną/porzuconą decyzję
+  (nie tylko potwierdził wszystko jako aktualne, co byłoby rytualne i nic nie dowodzi).
+- **Ryzyko odwrotne, którego trzeba pilnować:** sweep staje się rytuałem „wszystko potwierdzone" bez
+  realnej weryfikacji dowodu — wtedy koszt (czas na retro) rośnie bez korzyści.
+- **Warunek wznowienia:** ≥ 3 przebiegi sweepu wykonane (wpisy w `_decision-sweep-log.md`), z czego
+  przynajmniej jeden faktycznie zaktualizował/usunął wpis (dowód, że mechanizm coś łapie, nie tylko
+  odhacza).
+- **Komenda:**
+  ```bash
+  cat .claude/memory/_decision-sweep-log.md 2>/dev/null | wc -l
+  ```
+- **Gdzie zapisać werdykt:** nowa karta kanban „Decision-sweep — held-out" + zdjęcie tej pozycji stąd.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### Z1 — poszerzenie hooka `route-skills.sh` o intent „komentarz do Figmy" — ODRZUCONE 2026-08-13

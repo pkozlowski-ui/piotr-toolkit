@@ -59,6 +59,31 @@ Build-logi **archiwizuj (`mv`), nie kasuj**. Propose-first przy niejasnych (czy 
 Jeśli są zmiany w repo (`git status`) — pokaż skrót i **zaproponuj** commit (nie commituj sam, chyba że
 user prosił). Pamięć w `.claude/memory/` i ADR-y też idą do commita (są git-trwałe).
 
+### 4a — Miesięczny sweep trafności decyzji (warunkowy — nie każde retro)
+Cel: zamknąć pętlę „decyzja → efekt", której `memory-discipline` i held-out gate nie pokrywają (te
+oceniają trafność reguł/skilli, nie tego, czy konkretna decyzja z przeszłości się opłaciła).
+
+Uruchom TYLKO gdy od ostatniego przebiegu minęło ~30 dni. Datę ostatniego przebiegu trzymaj w
+`.claude/memory/_decision-sweep-log.md` (jedna linia na przebieg: data + liczba przejrzanych). Brak
+pliku = nigdy nie odpalany → odpal teraz.
+
+Jeśli due:
+1. Znajdź wpisy typu `project`/`feedback` starsze niż 30 dni, które zawierają jednoznaczną decyzję
+   (nie samą obserwację) i nie były jeszcze oznaczone jako zweryfikowane.
+2. Dla każdego: sprawdź obserwowalny efekt (czy warunek unieważnienia się spełnił, czy podejście
+   nadal jest stosowane bez tarcia, czy zostało po cichu porzucone). Nie zgaduj — jeśli nie widać
+   dowodu, zostaw jako „bez rozstrzygnięcia" i nie fałszuj wyniku.
+   - **Trafna i nadal aktualna** → zostaw, dopisz krótko „potwierdzona (data)" jeśli to nietrywialne.
+   - **Nietrafna / porzucona** → zaktualizuj lub usuń wpis (nie zostawiaj martwej reguły w kanonie).
+   - **Brak dowodu** → pomiń, wróć przy następnym przebiegu.
+3. Dopisz linię do `_decision-sweep-log.md`: data, liczba przejrzanych, liczba zaktualizowanych.
+
+**Warunek unieważnienia tego kroku:** liczba aktywnych wpisów decyzyjnych urośnie na tyle (patrz cap
+z kroku 3b), że ręczny przegląd całości przestaje się skalować — wtedy zamień na losowy sampling N
+zamiast przeglądu wszystkich kandydatów. To hipoteza (brak jeszcze obiektywnego checku, że sweep
+faktycznie łapie porzucone decyzje) — dopisana do `hipotezy-otwarte.md`, gate przy pierwszej realnej
+okazji do potwierdzenia/obalenia.
+
 ### 4b — Przejrzyj rejestr otwartych hipotez (OBOWIĄZKOWY, każde retro)
 Otwórz `hipotezy-otwarte.md` **w repo źródłowym toolkitu** (`piotr-toolkit/plugins/workflow-toolkit/skills/session-retro/`), NIE w katalogu, z którego skill się załadował — ten jest kopią w `~/.claude/plugins/cache/<marketplace>/<plugin>/<wersja>/` i bywa STARSZY od repo (zmierzone 2026-08-25: `cp cache → repo` wywalił 93 linie werdyktów z poprzedniego przebiegu, w tym zamknięty branch wariantu A; złapane tylko dlatego, że `git diff --stat` pokazał `28 insertions, 93 deletions`). Cache jest read-only z definicji — nadpisuje go każda aktualizacja pluginu, więc zapis tam ginie cicho. Po każdej edycji pliku skilla sprawdź `git diff --stat` w repo: liczba usunięć większa od dodań przy „dopisuję jedną linię" znaczy, że piszesz starą wersję na nowszą.
 
