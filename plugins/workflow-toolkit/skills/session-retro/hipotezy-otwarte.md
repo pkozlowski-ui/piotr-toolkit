@@ -337,6 +337,30 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 - **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7–H11) + zdjęcie
   tej pozycji stąd.
 
+### H13 — `guard-claudemd-bloat.sh`: limit BAJTÓW (~40 KB) zamiast (albo obok) limitu linii
+
+- **Co jest hipotezą:** zmiana guardu z `LIMIT=240` linii na limit bajtów ~40 KB (40 960 B,
+  `wc -c`), ewentualnie oba naraz. **Guard NIE został zmieniony** — to propozycja czekająca na check.
+- **Skąd:** audyt workflow 2026-08-27 (Manta Vault, „Workflow audit — AI harness, gates, koszty")
+  + refaktor anti-bloat `antisis-prototype` PR #664: projektowy CLAUDE.md miał **98 286 B w 242
+  liniach** — mieścił się o włos w limicie linii, a ważył ~29k tokenów always-on. Limit linii nie
+  łapie puchnięcia W SZERZ (jedna linia po 5 400 B); dowód: linie 21/54/58 starego pliku po
+  1,5–5,4 KB każda. Po refaktorze plik ma 40 930 B / 234 linie — limit bajtów by go pilnował,
+  limit linii dalej pozwala mu urosnąć z powrotem do ~98 KB bez jednego bloku.
+- **Ryzyko odwrotne, którego trzeba pilnować:** projekty z CLAUDE.md < 240 linii ale > 40 KB,
+  które dziś przechodzą — twardy blok mógłby zablokować legalne edycje w innych repo
+  (guard jest globalny dla wszystkich `*CLAUDE.md|*AGENTS.md`); przed utwardzeniem zmierzyć
+  `wc -c` wszystkich plików instrukcji, które guard realnie widuje.
+- **Soczewka:** fire/silent na obu osiach — (a) Write/Edit powiększający plik > 40 KB przy
+  < 240 liniach → blok (dziś: przechodzi — to jest luka); (b) edycja skracająca/neutralna
+  na pliku już > 40 KB → przechodzi (guard blokuje tylko powiększanie); (c) plik < 40 KB,
+  edycja mała → przechodzi. Break-restore per gałąź, jak w kanonie gate'ów.
+- **Warunek wznowienia:** ≥ 3 realne edycje plików instrukcji > 30 KB po dacie wpisu
+  (żeby zobaczyć, czy klasa „wide bloat" w ogóle wraca), ALBO decyzja Piotra „utwardzaj".
+- **Komenda:** `find ~/Documents -maxdepth 4 \( -name CLAUDE.md -o -name AGENTS.md \) -exec wc -c {} +`
+  (rozkład rozmiarów = czy 40 KB to dobry próg) + test hooka na payloadzie Write z 41 KB treści.
+- **Gdzie zapisać werdykt:** karta kanban audytu workflow 2026-08-27 + zdjęcie tej pozycji stąd.
+
 ---
 
 ### Przebieg 2026-08-27 (retro sesji gate-block `--only`, antisis-prototype) — zero ruchu
