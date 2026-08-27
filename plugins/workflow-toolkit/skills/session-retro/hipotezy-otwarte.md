@@ -77,20 +77,19 @@
   `ODRZUCONA`). Warunek wznowienia bez zmian: >= 3 oceniane drafty, ale teraz **musi być wśród nich
   co najmniej jeden po zablokowanej próbie wysyłki** — to jest ta część populacji, której poprzedni
   fix nie pokrywał, więc przebieg bez niej nie zmierzy poprawki.
-- **Zaktualizowana komenda:**
+- **Soczewka:** doctrine-compliance — oceniaj per realny draft wysłany do Lineara/Figmy po dacie
+  zmiany, sprawdzając czy PADA jakakolwiek formuła zaproszenia do wysyłki.
+- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (musi zawierać ≥1 po zablokowanej próbie wysyłki —
+  patrz wyżej), czyli realne drafty `linear-ticket-draft` po **2026-08-26**.
+- **Komenda:**
   ```bash
   plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
     workflow-toolkit:linear-ticket-draft 2026-08-26
   ```
-- **Soczewka:** doctrine-compliance — oceniaj per realny draft wysłany do Lineara/Figmy po dacie
-  zmiany, sprawdzając czy PADA jakakolwiek formuła zaproszenia do wysyłki.
-- **Warunek wznowienia:** ≥ 3 przypadki OCENIANE, czyli realne drafty `linear-ticket-draft` po
-  dacie zmiany.
-- **Komenda:**
-  ```bash
-  plugins/workflow-toolkit/skills/usage-audit/scripts/heldout_split.sh \
-    workflow-toolkit:linear-ticket-draft 2026-08-17
-  ```
+  *(Poprawiona 2026-08-27 — commit `00cd066`, który dopisał „Nowa data odcięcia: 2026-08-26" i osobny
+  blok „Zaktualizowana komenda" z tą datą, zostawił NIŻEJ stary blok „Komenda" ze STARĄ datą 2026-08-17
+  nietknięty. Kanban-karta „Held-out przegląd hipotez" skopiowała ten stary blok jako priorytet H3 —
+  scalone w jeden, poprawny blok, żeby drugi retro nie mierzył już zamkniętego okna.)*
 - **Gdzie zapisać werdykt:** j.w. + zdjęcie tej pozycji stąd.
 
 ---
@@ -127,6 +126,43 @@ Edycja `hipotezy-otwarte.md` w cache'u jest więc podwójnie bezwartościowa —
 aktualizacji pluginu i nadpisuje starszy stan. **Rejestr edytuj ZAWSZE w `piotr-toolkit`**, nawet
 gdy skill został wczytany z cache'u.
 
+### Przebieg 2026-08-27 (osobna sesja dedykowana temu przeglądowi, per kanban „Held-out przegląd hipotez") — WSZYSTKIE pozycje odpalone, ZERO ruchu, 2 błędy w rejestrze naprawione
+
+Odpalone `heldout_split.sh`/ręczny check dla **wszystkich 8 pozycji z „Otwarte"** (H2, H3, H7–H12)
+**+ dwóch pozycji z „Zamknięte", których held-out realnie stoi na zero i nie ma dowodu klasyfikacji**
+(H4 — trzy skille, H6). H5 pominięty świadomie: jego warunek wznowienia wymaga ślepego DRUGIEGO
+sędziego, którego ta sesja (jeden model, bez zewnętrznego oceniającego) nie może dostarczyć.
+
+| Hipoteza | Held-out (nowe okno) | Zmiana vs poprzedni przebieg | Co blokuje |
+|---|---|---|---|
+| H2 | 0 wywołań | brak | zero realnych sesji z pytaniem routingowym |
+| H3 | 2 wywołania (okno 2026-08-26..dziś, **1 dzień**) | nowe okno (poprawka wdrożona wczoraj) | za mało czasu, nie zaległość |
+| H4a (design-tweaker) | 0 | brak | zero wywołań skilla po 08-18 |
+| H4b (code-design-audit) | 0 | brak | zero wywołań skilla po 08-18 |
+| H4c (web-research) | 0 | brak (2 wywołania total od 07-01, oba przed 08-18) | skill rzadko wołany w ogóle |
+| H6 (ux-copy) | 0 (0 nawet w dev-secie — brak dowodu, że skill kiedykolwiek wystartował przez `Skill()`) | brak | zero adopcji, nie tylko zero held-outu |
+| H7 | `_decision-sweep-log.md` nie istnieje nigdzie (`find` po całym `~`) | brak | mechanizm nieodpalony ani razu |
+| H8 | 0 plików w `Feedback Pipeline/Done` zmodyfikowanych po 2026-08-26 | brak | zero CLOSE po zmianie |
+| H9 | `git log` na tym pliku po 2026-08-26 — same commity WPROWADZAJĄCE H7–H12, żaden nie dopisuje `Korekta:` do H1–H6 | brak | zero przebiegów usage-audit z regresem |
+| H10 | 1 nowy plik w `Research/` po 2026-08-26 (`MAN-909 translation management UI`), ale bez istniejącego raportu na ten temat wcześniej — krok 0b nie miał czego porównać | brak | temat bez poprzednika, nie zaległość |
+| H11 | 19× `related:`, 13× `linear:` na JEDYNYM boardzie w vault (`find` = 1 plik `.base` w całym Manta Vault) | rośnie na tym boardzie, ale warunek pyta o INNY board, którego nie ma | **strukturalnie niespełnialny dziś** — patrz notatka w sekcji H11 |
+| H12 | brak nowego wpisu > H12 w rejestrze | brak | zero sesji z powtarzalną edycją drafta po zmianie |
+
+**Naprawione po drodze (bugi w samym rejestrze, nie w hipotezach):**
+1. **H3 miała dwa sprzeczne bloki „Komenda"** — nowy (2026-08-26) i stary nietknięty (2026-08-17),
+   pozostawiony przez commit `00cd066`. Kanban-karta zlecająca ten przegląd skopiowała STARY blok
+   jako polecenie dla H3 — scalone w jeden. Bez tej naprawy kolejne retro (i ta karta) mierzyłyby
+   zamknięte już okno.
+2. **H11 ma dziś niespełnialny warunek wznowienia** — wymaga innego boardu niż antisis-prototype,
+   a w całym dostępnym vault istnieje dokładnie jeden plik `.base`. Dopisana notatka w sekcji H11,
+   żeby czwarty/piąty przebieg nie odpalał tego samego grepa bez sprawdzenia najpierw.
+
+**Wniosek procesowy:** żadna pozycja nie osiągnęła progu ≥3 OCENIANYCH przypadków — w większości
+dlatego, że skille źródłowe (`design-tweaker`, `code-design-audit`, `ux-copy`, `web-research`,
+sweep-mechanizmy H7–H10/H12) po prostu rzadko/nigdy się odpalają, nie dlatego, że ktoś odkłada
+klasyfikację (różnica względem H1's lekcji z 2026-08-25 — tam populacja BYŁA i czekała na ręczną
+robotę; tu populacji często w ogóle nie ma). Jedyny wyjątek to H3, gdzie 1 dzień od poprawki to za
+mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 
 ### H7 — `session-retro` krok 4a: miesięczny sweep trafności decyzji
 
@@ -268,6 +304,15 @@ gdy skill został wczytany z cache'u.
   (ścieżka vaultu/folderu boardu per projekt — brak jednego wspólnego korzenia).
 - **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7–H10) + zdjęcie
   tej pozycji stąd + aktualizacja sekcji „Powiązania" w `obsidian-kanban/SKILL.md`.
+- **Zmierzone 2026-08-27: warunek wznowienia jest dziś STRUKTURALNIE niespełnialny, nie tylko
+  „za mało danych".** `find` po całym `Manta Vault` (jedyny vault z dostępem w tej sesji) znajduje
+  dokładnie **JEDEN plik `.base`** (`KANBAN/-Kanban Board.base`) — czyli **zero innych boardów w
+  ogóle istnieje**, nie tylko zero z wypełnionymi polami. Adopcja NA TYM boardzie urosła (19×
+  `related:`, 13× `linear:`, było 5 przy backfillu 2026-08-14) — silny sygnał, że mechanizm coś daje
+  tam, gdzie żyje, ale to nie jest to, co „Warunek wznowienia" pyta (inny board). Dopóki nie powstanie
+  drugi board, ten gate nie ma czego mierzyć — nie odpalaj `Komendy` ponownie bez sprawdzenia najpierw,
+  czy drugi board już istnieje (`find <vault> -iname "*.base"` na każdym vault, do którego jest
+  dostęp), inaczej to czwarty/piąty przebieg z tym samym zerem.
 
 ---
 
