@@ -343,9 +343,10 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 
 Sesja czysto kodowa (tryb selektywny `--only` w `.claude/scripts/gate-block.mjs`, PR #662) — nie
 wywołała ŻADNEGO skilla z pozycji otwartych. `heldout_split.sh`: **H2** (`design-tweaker` 2026-08-17)
-→ held-out **0 wywołań**, warunek niespełniony. **H3** (`linear-ticket-draft` 2026-08-17) → surowe
-okno rośnie (strumień 08-13 ma już 12 wywołań), ale sesja skilla nie dotknęła — wg reguły z przebiegu
-2026-08-27 (rano) przegląd czeka na sesję, która skill realnie odpali, i idzie NA START. **H7–H12**
+→ held-out **0 wywołań**, warunek niespełniony. **H3** (`linear-ticket-draft`, nowe odcięcie
+2026-08-26 po werdykcie ODRZUCONA) → sesja skilla nie dotknęła, zero nowych draftów w oknie od 08-26
+(strumień od 08-13 ma 12 wywołań, wszystkie sprzed nowego odcięcia albo już ocenione) — przegląd czeka
+na sesję, która skill realnie odpali (musi zawierać ≥1 przypadek po zablokowanej próbie wysyłki). **H7–H12**
 (checki manualne) — żadna sesja tego typu nie zaszła, nic nie mierzono. **Nowych hipotez: ZERO** —
 jedyne nowe checki tej sesji (walidacja `--only`: fire/silent/closure/dangling) mają pełny lustrzany
 break-restore w `gate-block.mjs --selftest` (15/15), więc są kanonem od razu, nie hipotezą.
