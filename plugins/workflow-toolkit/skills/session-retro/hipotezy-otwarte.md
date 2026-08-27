@@ -355,7 +355,7 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
   < 240 liniach → blok (dziś: przechodzi — to jest luka); (b) edycja skracająca/neutralna
   na pliku już > 40 KB → przechodzi (guard blokuje tylko powiększanie); (c) plik < 40 KB,
   edycja mała → przechodzi. Break-restore per gałąź, jak w kanonie gate'ów.
-- **Warunek wznowienia:** ≥ 3 realne edycje plików instrukcji > 30 KB po dacie wpisu
+- **Warunek wznowienia (potwierdzony REKO Piotra 2026-08-27 — czekamy, nie utwardzamy):** ≥ 3 realne edycje plików instrukcji > 30 KB po dacie wpisu
   (żeby zobaczyć, czy klasa „wide bloat" w ogóle wraca), ALBO decyzja Piotra „utwardzaj".
 - **Komenda:** `find ~/Documents -maxdepth 4 \( -name CLAUDE.md -o -name AGENTS.md \) -exec wc -c {} +`
   (rozkład rozmiarów = czy 40 KB to dobry próg) + test hooka na payloadzie Write z 41 KB treści.
