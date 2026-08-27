@@ -339,6 +339,22 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 
 ---
 
+### Przebieg 2026-08-27 (retro sesji gate-block `--only`, antisis-prototype) — zero ruchu
+
+Sesja czysto kodowa (tryb selektywny `--only` w `.claude/scripts/gate-block.mjs`, PR #662) — nie
+wywołała ŻADNEGO skilla z pozycji otwartych. `heldout_split.sh`: **H2** (`design-tweaker` 2026-08-17)
+→ held-out **0 wywołań**, warunek niespełniony. **H3** (`linear-ticket-draft` 2026-08-17) → surowe
+okno rośnie (strumień 08-13 ma już 12 wywołań), ale sesja skilla nie dotknęła — wg reguły z przebiegu
+2026-08-27 (rano) przegląd czeka na sesję, która skill realnie odpali, i idzie NA START. **H7–H12**
+(checki manualne) — żadna sesja tego typu nie zaszła, nic nie mierzono. **Nowych hipotez: ZERO** —
+jedyne nowe checki tej sesji (walidacja `--only`: fire/silent/closure/dangling) mają pełny lustrzany
+break-restore w `gate-block.mjs --selftest` (15/15), więc są kanonem od razu, nie hipotezą.
+Gotcha cache-vs-repo z 2026-08-25 potwierdzona kolejny raz: cache pluginu (1.32.0) nadal serwuje
+starą wersję TEGO pliku (H1/H4/H5/H6 widoczne jako otwarte) — komendy odpalone najpierw z cache'owej
+listy; werdykty spisane z repo.
+
+---
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26
