@@ -390,6 +390,12 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
   4. **Kanał `gate-block` = tryb `--hook`** (2 podprocesy node przy KAŻDYM starcie sesji, zmierzone
      +~40 ms, cały audyt 111 ms). Tanie dziś — ale to jedyna soczewka odpalająca cudzy skrypt
      w SessionStart, więc koszt rośnie razem z tym skryptem, nie z tym plikiem.
+  5. **Trzy zacieśnione liczniki CLAUDE.md** (antisis-prototype #674, `8ad93e82`): `maxLines`
+     380→280, `maxLineChars` 5200→1800, `designMarkerBaseline` 55→20 — po refaktorze #664 miały
+     zapas 1,6× / 3,7× / 3,4×, czyli świeciły ✅ nie mierząc niczego. Fire/silent per licznik
+     ZWERYFIKOWANY (próg o 1 pod wartość bieżącą → każdy strzela), więc mechanika żyje; hipotezą
+     jest to samo co w punkcie 3 — czy „dziś + ~20%" to zapas zapalający się rzadko i sensownie,
+     czy zbyt ciasny na naturalny rytm dopisek do always-on.
 - **Data zmiany:** 2026-08-28 (REKO 1 i 3 audytu workflow 2026-08-27; karta kanban
   „Wpięcie weryfikacji REKO 1-3 w rutyny").
 - **Soczewka:** stosunek sygnał/szum per soczewka — liczony na PRZEBIEGACH audytu, nie na
@@ -399,7 +405,10 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 - **Warunek wznowienia:** ≥ 5 przebiegów `hygiene-audit` (scheduled `hygiene-audit-antisys`, co
   ~3 dni → ~2 tygodnie) PO 2026-08-28, każdy z zapisanym stanem tych trzech checków. Werdykt
   per liczba: wszystkie zapalenia trafione → próg trzyma; ≥ 2 zapalenia bez defektu → poluzuj
-  TĘ liczbę (nie wszystkie) i dopisz powód.
+  TĘ liczbę (nie wszystkie) i dopisz powód. Przy licznikach CLAUDE.md (punkty 3 i 5) „trafione"
+  znaczy: zapalenie skończyło się zwinięciem treści ALBO świadomym podniesieniem progu W TYM SAMYM
+  commicie — podniesienie w oddzielnym commicie „bo się nie mieści" liczy się jako NIEtrafione,
+  bo dokładnie to zamienia licznik w dekorację (i tak powstał zapas 3,7×, który tu zaciskamy).
 - **Komenda:**
   ```bash
   # stan trzech checków na dziś (json = pełny raport, także checki pomijane w --hook)
