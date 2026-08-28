@@ -45,3 +45,11 @@ Skill `obsidian-feedback-sweep` czyta to stąd — bez tego nie zgaduje ludzi an
   Sales → **Courtney & Kara** · Design/UI/copy → **Piotr** (Dominique = domain check).
 - **Reguły:** powierzchnie Manta (2px Manta Gradient + Icon/Sparkles, `MantaInsightCard`), max 1–2 elementy Manta/kontekst.
 - **Build philosophy:** concept-of-the-future — `Do now` = buduj w Figmie teraz; done = token audit count:0 + screenshot.
+- **Code↔design lookup(-i) + Code Sync** (3 prototypy tier `engineering`, ADR 0009 — `sales demo` poza zakresem, nie ma osi faz):
+  | Apka | Lookup | Oś iteracji / kryterium trafienia | Plik Code Sync |
+  |---|---|---|---|
+  | Staff Experience | `eval/manifest.json` | `phase` (mvp/map/mlp) — hit = `phase != lighthouse` | `Code Sync/Code Sync — Staff.md` |
+  | Find & Apply (Guardian) | `eval/manifest.fa.json` | `scope` (full/oct1, CIĘCIE nie faza) — hit = node istnieje w manifeście | `Code Sync/Code Sync — Find & Apply.md` |
+  | Family Portal | `eval/manifest.fp.json` | brak osi (Lighthouse-only, 0/94 ekranów niesie `phase`) — hit = node istnieje w manifeście | `Code Sync/Code Sync — Family Portal.md` |
+  | *(component-level)* Design System (`@antisis/ds`) | `docs/design-system/figma-registry.json` (component `id` = master node) | tier-agnostyczny, brak osi iteracji — hit = node istnieje w registry jako komponent | `Code Sync/Code Sync — Design System.md` (7. pole „Dotyczy ekranów") |
+  Rozstrzygnij którą apkę (albo: czy to komponent DS, nie ekran) dotyczy edytowany node PRZED wyborem lookupu (po Flow/sekcji/stronie Figmy, nie zgaduj).

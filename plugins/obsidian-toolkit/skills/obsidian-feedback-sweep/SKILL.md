@@ -40,14 +40,31 @@ Skill koduje **proces**. To, co specyficzne dla projektu, czytaj z `CLAUDE.md` /
 - **Folder Delight** (np. `Delight/`) + nazwa żywej kolekcji — trwała baza pozytywu (patrz „Delight Registry").
 - **Scope kanału** — czy to Obsidian-only (drafty, człowiek wkleja ręcznie) czy mirror do Linear/Figmy.
 - **Reguły domenowe** do uzasadniania klasyfikacji (np. reguły design systemu, brand, terminologia).
-- **Code↔design lookup** (opcjonalnie, tylko gdy projekt ma zbudowany kod obok Figmy) — tania,
+- **Code↔design lookup(-i)** (opcjonalnie, tylko gdy projekt ma zbudowany kod obok Figmy) — tania,
   offline tabela/mechanizm `node ↔ route/plik ↔ faza`, jeśli projekt taki utrzymuje. Bez niego
   edycja Figmy na node z już shipped kodem jest niewidoczna aż do przypadkowego re-audytu tej
   trasy — zmierzony gap, nie hipoteza (antisis-prototype, 2026-08-28: sweep zmienił shipped node,
   kod dryfował dzień dłużej niż trzeba). Gdy config to daje → patrz krok ACT/„Do now" niżej.
-- **Folder Code Sync** (np. `Code Sync/`) + nazwa żywej kolekcji — trwała baza edycji Figmy na
-  shipped ekranach i ich status wdrożenia (patrz „Code Sync Registry"). Wymaga code↔design lookup
-  wyżej — bez niego nie ma czym trafiać node'y.
+  **Monorepo z wieloma apkami/prototypami → WIELE lookupów, jeden per apka** (osobny manifest/schemat
+  per prototyp — różne apki bywają na różnych osiach iteracji, np. faza vs scope vs brak osi wcale;
+  nie zgaduj że jeden schemat pasuje do wszystkich, sprawdź każdy manifest osobno).
+- **Folder Code Sync** (np. `Code Sync/`) + **mapa lookup → plik rejestru**, jedna para na apkę/prototyp
+  — trwała baza edycji Figmy na shipped ekranach danej apki i ich status wdrożenia (patrz „Code Sync
+  Registry"). Wymaga code↔design lookup wyżej — bez niego nie ma czym trafiać node'y. **Jeden wspólny
+  plik na N apek miesza kontekst** (antisis-prototype, 2026-08-28: pierwsza wersja tego mechanizmu
+  wystartowała z jednym plikiem `Code Sync — Manta.md`, rozbita tego samego dnia na 3 pliki per
+  prototyp, gdy okazało się że każda apka ma własny manifest/oś iteracji) — domyślnie zakładaj
+  osobny plik per lookup, nie jeden wspólny, chyba że projekt naprawdę ma jeden monolit.
+- **Component-level lookup** (opcjonalnie, gdy projekt ma tier-agnostyczny design system współdzielony
+  przez wiele apek — np. `packages/design-system`) — TRZECI rodzaj lookupu, osobny od per-app manifestów:
+  node = MASTER komponentu (component/component-set), nie ekran. Fan-out jednej edycji to N ekranów ×
+  N apek naraz (każda apka może renderować ten sam komponent), więc trafienie tutaj NIE mapuje 1:1 na
+  jedną trasę jak w per-app lookupie — wymaga dodatkowego kroku „Dotyczy ekranów" (patrz „Code Sync
+  Registry" niżej). Sprawdzaj RÓWNOLEGLE do per-app manifestów w kroku ACT, nie zamiast nich —
+  edytowany node zwykle trafia tylko w jeden z dwóch typów lookupu (mastery komponentów żyją na
+  stronach DS, ekrany na stronach Flow/produktowych), ale jeśli oba typy dają trafienie, sprawdź
+  kontekst strony node'a zamiast zgadywać. Loguje się do WŁASNEGO, osobnego pliku Code Sync (nie do
+  żadnego per-app pliku) — patrz „Code Sync Registry".
 
 Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupełnienie z szablonu.
 
@@ -75,11 +92,23 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 3. ROUTE     Dyspozycja = "Needs decision" → przypisz Ownera (macierz) + Consulted (RACI-lite, 1 primary)
 4. ACT       Answer & close  → draft odpowiedzi (odpowiedz na pytanie)
              Do now          → PRZED zapisem w Figmie: jeśli config projektu ma code↔design lookup
-                               (patrz wyżej), sprawdź nim edytowany node. Trafienie + node nie jest
-                               szkicem/Lighthouse → wykonaj zmianę w Figmie jak zwykle, ALE dopisz
-                               wpis `status: not-synced` do Code Sync Registry (patrz niżej) —
-                               kod dryfuje inaczej cicho aż do przypadkowego re-audytu. Brak configu
-                               Code Sync albo brak trafienia (node poza manifestem / Lighthouse) →
+                               (patrz wyżej), sprawdź nim edytowany node — **wieloapkowy projekt: użyj
+                               lookupu WŁAŚCIWEGO dla apki/prototypu, w którym leży edytowany ekran**
+                               (config mapuje lookup → plik rejestru 1:1; nie sprawdzaj wszystkich
+                               lookupów na chybił trafił, ustal apkę z node_id/Flow najpierw). **Projekt
+                               z component-level lookupem (patrz wyżej): sprawdź RÓWNOLEGLE i ten —
+                               edytowany node bywa MASTEREM komponentu DS (żyje na stronie DS, nie
+                               Flow/produktowej), nie ekranem; trafienie tu idzie do WŁASNEGO pliku
+                               Code Sync (component-level), nie do żadnego per-app pliku, i wymaga
+                               dodatkowego ustalenia „Dotyczy ekranów" (patrz Code Sync Registry).**
+                               Trafienie
+                               + node nie jest szkicem/Lighthouse (kryterium „nie jest szkicem" zależy
+                               od osi iteracji TEJ apki — faza, scope, albo sama obecność w manifeście,
+                               jeśli apka nie ma jeszcze osi faz; patrz config) → wykonaj zmianę w
+                               Figmie jak zwykle, ALE dopisz wpis `status: not-synced` do WŁAŚCIWEGO
+                               pliku Code Sync Registry (patrz niżej) — kod dryfuje inaczej cicho aż
+                               do przypadkowego re-audytu. Brak configu Code Sync albo brak trafienia
+                               (node poza wszystkimi manifestami / Lighthouse) →
                                pomiń, wykonaj/zaproponuj zmianę designu jak zwykle (wg
                                build-philosophy projektu)
              Needs decision  → zbuduj jasną część UI + draft Decision Ask dla Ownera
@@ -207,16 +236,23 @@ lookup** w configu (patrz „Konfiguracja per-projekt"); bez zbudowanego kodu ob
 śledzić. Cel: gdy sweep edytuje node z już shipped kodem, ta zmiana ma zostać widoczna aż do faktycznego
 zsynchronizowania — nie zgubiona w rotującym, archiwizowanym rejestrze feedbacku.
 
-**Gdzie:** osobny folder (config per-projekt, typowo `Code Sync/`), jedna **żywa kolekcja**
-(`type: code-sync-log`), pogrupowana wewnątrz notatki na sekcje `## Not synced` / `## Synced` (nie
-osobny plik na wpis) — dzięki temu „co jeszcze czeka" jest jednym spojrzeniem u góry.
+**Gdzie:** osobny folder (config per-projekt, typowo `Code Sync/`), **jedna żywa kolekcja PER
+CODE↔DESIGN LOOKUP** (`type: code-sync-log`), pogrupowana wewnątrz notatki na sekcje `## Not synced` /
+`## Synced` (nie osobny plik na wpis) — dzięki temu „co jeszcze czeka" jest jednym spojrzeniem u góry,
+**per apka/prototyp**. Projekt z N lookupami (monorepo, N prototypów) = N plików, nie jeden — jeden
+wspólny plik na wiele apek miesza kontekst (antisis-prototype, 2026-08-28: `Code Sync — Manta.md`
+wystartował jako jeden plik, rozbity tego samego dnia na `Code Sync — Staff.md` / `— Find & Apply.md`
+/ `— Family Portal.md`, gdy trzeci prototyp dostał własny manifest). Config per-projekt trzyma mapę
+`lookup → plik rejestru`.
 
-**Jedno wejście:** krok ACT sweepu, dyspozycja **„Do now"**, gdy code↔design lookup trafi w node
-i node nie jest szkicem/Lighthouse (patrz krok 4 protokołu). Nie ma ręcznego gestu odpowiednika
-„zapisz do delight" — ten rejestr istnieje tylko jako produkt uboczny sweepu, bo tylko sweep zna
-zarówno edycję Figmy, jak i jej node ID.
+**Jedno wejście:** krok ACT sweepu, dyspozycja **„Do now"**, gdy code↔design lookup WŁAŚCIWY dla
+edytowanej apki trafi w node i node nie jest szkicem/Lighthouse (patrz krok 4 protokołu — kryterium
+„nie jest szkicem" czytaj z osi iteracji TEJ apki, nie zakładaj że każda apka ma tę samą oś: jedna
+apka może filtrować po `phase`, druga po `scope`, trzecia nie mieć osi wcale i liczyć samą obecność
+node'a w manifeście). Nie ma ręcznego gestu odpowiednika „zapisz do delight" — ten rejestr istnieje
+tylko jako produkt uboczny sweepu, bo tylko sweep zna zarówno edycję Figmy, jak i jej node ID.
 
-**Wpis (MUST — 6 pól):**
+**Wpis (MUST — 6 pól; component-level: 7, patrz niżej):**
 | Pole | Co |
 |---|---|
 | **Co się zmieniło w Figmie** | opis / verbatim komentarza, który spowodował edycję |
@@ -225,6 +261,16 @@ zarówno edycję Figmy, jak i jej node ID.
 | **Status** | `not-synced` / `synced` — jedyne pole, które się zmienia po utworzeniu wpisu |
 | **Źródło** | link do sweep register, który wykrył zmianę |
 | **Zsynchronizowano** | data + link PR/commit — puste dopóki `not-synced` |
+
+**Component-level lookup → osobny plik, 7. pole obowiązkowe:** gdy trafienie jest w component-level
+lookupie (master komponentu DS, nie ekran — patrz „Konfiguracja per-projekt"), wpis idzie do WŁASNEGO
+pliku Code Sync (np. `Code Sync — Design System.md`), NIE do żadnego per-app pliku, i dokłada pole
+**„Dotyczy ekranów"** (lista route'ów/apek, które faktycznie renderują ten komponent — ustalona
+grepem po imporcie/użyciu nazwy komponentu w kodzie WSZYSTKICH apek, nie zgadywana) między „Node" a
+„Gdzie w kodzie". Bez tego pola wpis nie mówi nic o skali fan-outu, co jest właśnie powodem, dla
+którego ta klasa edycji dostaje osobny plik zamiast trafiać do jednej apki na chybił trafił
+(antisis-prototype, 2026-08-28: `FP/StageTrack`, master używany przez `FP/ChildJourneyCard` w Family
+Portal — walidacja tego mechanizmu przy backfillu retroaktywnym).
 
 **Zasady:**
 - **Trwałość:** wpis nigdy nie jest kasowany. Sync zmienia `status` + dopisuje „Zsynchronizowano" —
