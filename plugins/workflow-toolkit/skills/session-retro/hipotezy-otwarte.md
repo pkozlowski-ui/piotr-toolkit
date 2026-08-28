@@ -454,6 +454,10 @@ zbudujesz") poszła do pamięci projektu jako obserwacja z jednego przypadku, ni
   (próg >40 mechanicznych wywołań narzędzi bez Task/Agent w oknie, per sesja) — to osobny, już
   break-restore'owany kanał (selftest 23/23), egzekwujący na poziomie hooka, nie na treści skilla.
   Ta hipoteza mierzy WYŁĄCZNIE efekt zmiany treści w `ui-polish-loop`/`usage-audit`.
+- **Domknięcie luki 2026-08-28:** REKO 7 objęło pierwotnie tylko te dwa skille — `obsidian-feedback-sweep`
+  (mechanika CAPTURE/CLASSIFY) był pominięty. Dopisany 2026-08-28 (ten sam wzorzec: Haiku/low dla
+  CAPTURE, Sonnet/medium dla CLASSIFY) — trzeci skill w tej samej hipotezie, mierzony tym samym
+  audytem tokenów.
 - **Data zmiany:** 2026-08-28 (REKO 7 audytu workflow 2026-08-27, karta „Fable inspects my workflow").
 - **Soczewka:** T (trigger/adoption) — `scripts/adoption_scan.sh` per skill nie mierzy tego wprost
   (mierzy wywołania SKILLA, nie subagentów WEWNĄTRZ jego kroków), więc metryka sukcesu jest z audytu

@@ -68,6 +68,21 @@ Skill koduje **proces**. To, co specyficzne dla projektu, czytaj z `CLAUDE.md` /
 
 Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupełnienie z szablonu.
 
+## Tryb wykonania — delegacja do subagentów (domyślnie, bez pytania)
+Mechaniczne kroki sweepu nie niosą osądu — deleguj je, chyba że user każe inaczej:
+- **CAPTURE (krok 1)** — pobranie komentarzy (`figma_get_comments`), grupowanie po wątku, filtrowanie
+  po watermarku/autorze/resolved, `node_id` → ekran/Flow lookup → **subagent Haiku, effort low**
+  (czysta mechanika zbierania, zero interpretacji).
+- **CLASSIFY (krok 2)** — Oś A/B + uzasadnienie regułami domenowymi projektu → **subagent Sonnet,
+  effort medium** (wymaga kontekstu i znanej reguły, ale nie ambiwalentnego osądu).
+- **ROUTE/ACT/CLOSE (kroki 3-5) + finalny triage, drafty odpowiedzi, Decision Ask** zostają w głównej
+  sesji — tam jest osąd (kto decyduje, jak sformułować odpowiedź, czy klasyfikacja się broni), nie
+  mechanika.
+Subagent zwraca **skondensowaną deltę** do głównej sesji (patrz CAPTURE 1b — surowy output i tak nie
+mieści się w kontekście), nie wklejony raw fetch. Domyka REKO 7 audytu workflow 2026-08-27 (hipoteza
+H15, `session-retro/hipotezy-otwarte.md`) — dotąd zapisane tylko dla `ui-polish-loop`/`usage-audit`,
+feedback-sweep pominięty.
+
 ## Protokół — 5 faz
 
 ```
