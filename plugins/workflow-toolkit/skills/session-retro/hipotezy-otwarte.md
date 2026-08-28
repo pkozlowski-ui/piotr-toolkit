@@ -179,6 +179,31 @@ ale draft nigdy nie powstał (robota była już zrobiona w równoległej sesji).
 **Nowych hipotez z tej sesji: ZERO** — jedyna lekcja („karta `To confirm` = czytaj natywny kanał zanim
 zbudujesz") poszła do pamięci projektu jako obserwacja z jednego przypadku, nie do skilla jako reguła.
 
+### Przebieg 2026-08-28 wieczór (retro sesji „runtime gates Guardian/FP", antisis-prototype) — ZERO ruchu, sesja nie dotknęła żadnego mierzonego skilla
+
+| Hipoteza | Held-out | Zmiana | Co blokuje |
+|---|---|---|---|
+| H1/H3 (`linear-ticket-draft`, okno od 2026-08-13) | 15 wywołań | brak vs przebieg 08-28 rano | ręczny przegląd per wymaganie — wariant B (dokładnie 1 link + lista itemów w bulletach) nadal 0 OCENIANYCH |
+| H3 (`linear-ticket-draft`, okno od 2026-08-17) | 14 wywołań | — | j.w. |
+| H2/H4a (`design-tweaker`, okno od 2026-08-17) | 1 wywołanie | brak | próg ≥3 niespełniony |
+
+Sesja pracowała wyłącznie w CI/kodzie (`design-gates.yml`, warstwy runtime dla Guardiana i FP) —
+**nie odpaliła ani `linear-ticket-draft`, ani `design-tweaker`**, więc zgodnie z regułą z przebiegu
+2026-08-26 to NIE liczy się jako kolejne odłożenie ręcznego przeglądu.
+
+**Nowych hipotez z tej sesji: ZERO.** Trzy rzeczy dodane do repo produktowego mają obiektywny check
+i są kanonem od razu, nie hipotezą: macierz po apkach w `design-gates.yml` (break-restore 3 warstwy ×
+2 apki = 6/6 fire→silent), `eval/warm-routes.mjs` (break-restore: dead-port → exit 1), oraz cztery
+pliki `parity-allow` w trybie strict (residual 0/0 na wszystkich czterech). To ta sama granica co
+zapisana w przebiegu 2026-08-25: soczewka z break-restore nie trafia do tego rejestru.
+
+**Gotcha zmierzona po drodze — czysto wykonawcza, nie reguła skilla, więc tylko ślad tutaj:**
+kontekst `matrix` GitHub Actions **nie jest dostępny w job-level `if`**. `if: needs.x.outputs[matrix.a.k]`
+nie daje błędu walidacji z komunikatem — daje startup failure całego workflow: run bez jobów, pusty
+`check-runs`, zero adnotacji. Kosztowało dwa ślepe failed runy. Rozwiązanie: job poprzedzający emituje
+CAŁĄ macierz jako JSON, konsument robi `matrix: ${{ fromJSON(needs.changes.outputs.apps) }}`. Kanon
+tej gotchy siedzi w komentarzu w `design-gates.yml` w repo produktowym, nie tutaj.
+
 ### H7 — `session-retro` krok 4a: miesięczny sweep trafności decyzji
 
 - **Co jest hipotezą:** osobny krok w retro (odpalany tylko co ~30 dni, nie co sesję), który
