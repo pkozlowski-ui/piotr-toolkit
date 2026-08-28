@@ -86,6 +86,16 @@ The overlay declares, at minimum:
 
 ## 2. The loop
 
+**Execution mode (default, not a suggestion):** steps 0 (SETUP screenshots), 1·3a (mechanical gate),
+1·3c (cross-screen measurement — instance diffing, padding/CTA-size comparison, active-state check)
+and 4 (RE-AUDIT re-run) are mechanical measurement, not judgement — **a subagent runs them by
+default** (Haiku, effort low, for gate calls and instance/measurement diffing; Sonnet, effort
+medium, when a step needs to follow a known pattern rather than just measure, e.g. re-running a
+multi-screen sweep against the registry). The main session stays on 1·3b (craft/judgement,
+delegated further to `design-tweaker` per §3b), §4 triage, and §6 convergence calls — the parts that
+need taste or a decision, not more measurement. Override only on explicit user instruction to run a
+step inline.
+
 0. **SETUP** — name the flow and every screen's node id from the registry (T2) or by hand (T0/T1).
    Baseline screenshot of each screen. Read the project's overlay and any accumulated
    pattern-library/playbook before working from memory.

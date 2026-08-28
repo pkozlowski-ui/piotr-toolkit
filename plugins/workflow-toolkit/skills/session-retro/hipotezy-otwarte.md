@@ -423,6 +423,39 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 
 ---
 
+### H15 — delegacja jako DOMYŚLNY tryb w skillach sweep/audyt podnosi udział subagentów
+
+- **Co jest hipotezą:** REKO 7 audytu workflow 2026-08-27 (karta „Fable inspects my workflow") —
+  tekstowy nudge („rozważ delegację") w skillach mechanicznych nie działał (dowód: audyt tokenów,
+  subagenci 15%→11,9% requestów w oknie; 4/20 sesji z 30–85 wywołaniami narzędzi, zero delegacji).
+  Zmiana: `ui-polish-loop` (§2, sekcja „Execution mode") i `usage-audit` (§ Twarde reguły wykonania)
+  przepisane z „rozważ subagenta" na deterministyczne „krok X wykonuje subagent Haiku/low (mechanika)
+  lub Sonnet/medium (rutyna), chyba że user każe inaczej". Hipoteza: to podniesie udział subagentów
+  w kolejnych audytach tokenów — sam zapis w SKILL.md wystarczy, bez zmiany kanału egzekucji
+  (hook/gate). **Ryzyko odwrotne** (znane z „Hierarchia egzekucji" w `usage-audit`): sam opis w
+  SKILL.md nie egzekwuje — jeśli hipoteza nie utrzyma się po 2 pomiarach, następny krok to hook/gate,
+  nie trzecia wersja tego samego zdania.
+- **Co NIE jest tą hipotezą:** eskalacja checku `model-delegation-threshold` w `hygiene-audit.mjs`
+  (próg >40 mechanicznych wywołań narzędzi bez Task/Agent w oknie, per sesja) — to osobny, już
+  break-restore'owany kanał (selftest 23/23), egzekwujący na poziomie hooka, nie na treści skilla.
+  Ta hipoteza mierzy WYŁĄCZNIE efekt zmiany treści w `ui-polish-loop`/`usage-audit`.
+- **Data zmiany:** 2026-08-28 (REKO 7 audytu workflow 2026-08-27, karta „Fable inspects my workflow").
+- **Soczewka:** T (trigger/adoption) — `scripts/adoption_scan.sh` per skill nie mierzy tego wprost
+  (mierzy wywołania SKILLA, nie subagentów WEWNĄTRZ jego kroków), więc metryka sukcesu jest z audytu
+  tokenów, nie z `usage-audit` warstwy 1: **udział subagentów w requestach > 15% w 2 kolejnych
+  audytach tokenów z rzędu** (kadencja audytu: 1. i 15. dnia miesiąca).
+- **Warunek unieważnienia:** 2 kolejne audyty tokenów (najbliższe: 2026-09-01, 2026-09-15) BEZ
+  wzrostu udziału subagentów powyżej baseline'u 11,9% → zmiana treści skilli nie działa; nie pisz
+  trzeciej wersji tego samego nudge'u — eskaluj do hooka/gate'a (ten sam ruch co REKO na
+  `model-delegation-threshold`, tylko wymuszony zamiast opisany) albo do decyzji Piotra o wycofaniu.
+- **Komenda:** ręczny audyt tokenów wg istniejącego procesu (poza `usage-audit` — ten skill mierzy
+  wywołania skilli, nie rozkład modeli w oknie); porównaj udział subagentów z baseline'em 11,9%
+  z audytu 2026-08-27.
+- **Gdzie zapisać werdykt:** karta kanban „Fable inspects my workflow" (sekcja `## Rezultat`) +
+  zdjęcie tej pozycji stąd.
+
+---
+
 ### Przebieg 2026-08-27 (retro sesji gate-block `--only`, antisis-prototype) — zero ruchu
 
 Sesja czysto kodowa (tryb selektywny `--only` w `.claude/scripts/gate-block.mjs`, PR #662) — nie

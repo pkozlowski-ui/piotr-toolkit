@@ -205,6 +205,37 @@ if (cfg.modelPolicy) {
       ok ? null : (delegTotal === 0
         ? `${mechSessions} sesji z mechaniczną robotą Figma, 0 delegacji → deleguj sweepy/audyty do Haiku/Sonnet (subagent), nie rób ich na modelu głównej sesji`
         : `${mechSessions} sesji z mechaniką Figma, delegacje są (${delegTotal}) ale ŻADNA na Haiku → mechanikę (sweepy, audyty, batch-edycje) kieruj do subagenta Haiku/low, nie Sonnet/Opus`));
+
+    // 7b) ESKALACJA (REKO 7 audytu workflow 2026-08-27): powyższy check jest zbiorczy (sesje
+    //     z Figma-mechaniką w oknie) i uśrednia — jedna ciężka sesja bez delegacji ginie w
+    //     agregacie obok czystych. Ten check jest PER SESJA i liczy WSZYSTKIE narzędzia (nie
+    //     tylko figma_execute): dowód potrzeby = audyt tokenów 2026-08-27, subagenci
+    //     15%→11,9% requestów, 4/20 sesji z 30–85 wywołaniami narzędzi i zero delegacji —
+    //     nudge tekstowy w skillach nie wystarczał, próg tu jest mechaniczny.
+    const toolUseRe = /"type"\s*:\s*"tool_use"/g;
+    const sessions = [];
+    if (existsSync(projRoot)) {
+      const entries2 = readdirSync(projRoot, { withFileTypes: true });
+      for (const e of entries2.filter(x => x.isFile() && x.name.endsWith('.jsonl'))) {
+        const p = join(projRoot, e.name);
+        if (!inWindow(p)) continue;
+        try {
+          const content = readFileSync(p, 'utf8');
+          const toolCalls = (content.match(toolUseRe) || []).length;
+          const sid = e.name.replace(/\.jsonl$/, '');
+          const subDir2 = join(projRoot, sid, 'subagents');
+          let hasDelegation = false;
+          if (existsSync(subDir2)) {
+            try { hasDelegation = readdirSync(subDir2).some(f => f.startsWith('agent-') && f.endsWith('.jsonl')); } catch { /* skip */ }
+          }
+          sessions.push({ sid, toolCalls, hasDelegation });
+        } catch { /* skip */ }
+      }
+    }
+    const mechCallsThreshold = mp.mechCallsThreshold ?? 40;
+    const thr = evalDelegationThreshold({ sessions, threshold: mechCallsThreshold });
+    add('model-delegation-threshold', `sesje >${mechCallsThreshold} wywołań bez delegacji (${mp.windowDays || 3}d)`,
+      thr.value, null, thr.ok, thr.detail);
   } catch { /* higiena modelu nigdy nie blokuje audytu */ }
 }
 
@@ -455,6 +486,22 @@ function evalCiNightly({ runs = null, maxMinutes = 10, maxAgeHours = 48, now = D
   };
 }
 
+/**
+ * REKO 7 (audyt workflow 2026-08-27) — eskalacja "delegacja vs mechanika" z sygnału
+ * zbiorczego (7, powyżej) do PER SESJA: sesja z >threshold wywołań narzędzi i ZERO
+ * delegacji (subagent) w oknie → finding, niezależnie od tego, jak wygląda reszta okna.
+ */
+function evalDelegationThreshold({ sessions = [], threshold = 40 }) {
+  const offenders = sessions.filter(s => s.toolCalls > threshold && !s.hasDelegation);
+  return {
+    ok: offenders.length === 0,
+    value: `${offenders.length} sesji >${threshold} wywołań bez delegacji`,
+    detail: offenders.length
+      ? `${offenders.map(s => `${s.sid.slice(0, 8)}:${s.toolCalls}`).join(', ')} → deleguj sweepy/audyty do subagenta (Haiku mechanika / Sonnet rutyna), nie rób ich w głównej sesji`
+      : null,
+  };
+}
+
 // ---------- break-restore (syntetyczne fixtury — nie czyta projektu, nie rusza repo) ----------
 
 function runSelftest() {
@@ -580,6 +627,35 @@ function runSelftest() {
   {
     const r = evalCiNightly({ runs: [], maxMinutes: 10, now: NOW });
     t('ci-nightly fire: zero runów → finding', r.ok === false && /brak runu ze schedule/.test(r.value), JSON.stringify(r));
+  }
+
+  // --- soczewka model-delegation-threshold (REKO 7, 2026-08-27) ---
+  // silent: sesja ciężka, ale delegowała
+  {
+    const r = evalDelegationThreshold({ sessions: [{ sid: 's1', toolCalls: 55, hasDelegation: true }], threshold: 40 });
+    t('deleg-threshold silent: 55 wywołań ALE delegacja jest → brak findingu', r.ok === true && r.detail === null, JSON.stringify(r));
+  }
+  // silent: dużo sesji, żadna nie przekracza progu
+  {
+    const r = evalDelegationThreshold({ sessions: [{ sid: 's1', toolCalls: 12, hasDelegation: false }, { sid: 's2', toolCalls: 40, hasDelegation: false }], threshold: 40 });
+    t('deleg-threshold silent: max 40 (nie >40) bez delegacji → brak findingu (próg ostry)', r.ok === true, JSON.stringify(r));
+  }
+  // fire: pojedyncza sesja >40 wywołań, zero delegacji
+  {
+    const r = evalDelegationThreshold({ sessions: [{ sid: 'abc12345', toolCalls: 41, hasDelegation: false }], threshold: 40 });
+    t('deleg-threshold fire: 41 wywołań, 0 delegacji → finding z sid i licznikiem', r.ok === false && /abc12345:41/.test(r.detail), JSON.stringify(r));
+  }
+  // fire: 4/20 sesji ciężkich bez delegacji (kształt dowodu z REKO 7) — reszta czysta nie maskuje
+  {
+    const heavy = Array.from({ length: 4 }, (_, i) => ({ sid: `h${i}`, toolCalls: 41 + i * 15, hasDelegation: false }));
+    const clean = Array.from({ length: 16 }, (_, i) => ({ sid: `c${i}`, toolCalls: 5, hasDelegation: false }));
+    const r = evalDelegationThreshold({ sessions: [...heavy, ...clean], threshold: 40 });
+    t('deleg-threshold fire: 4/20 sesji ciężkich bez delegacji → finding liczy tylko offenderów (nie 20)', r.ok === false && /^4 sesji/.test(r.value), JSON.stringify(r));
+  }
+  // silent: brak sesji w oknie
+  {
+    const r = evalDelegationThreshold({ sessions: [], threshold: 40 });
+    t('deleg-threshold silent: puste okno → brak findingu', r.ok === true, JSON.stringify(r));
   }
 
   const pass = results.filter(Boolean).length;

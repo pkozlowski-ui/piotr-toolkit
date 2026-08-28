@@ -32,8 +32,13 @@ w katalogu tego skilla obok — konwencja `evals/`), NIGDY automatyczne przepisy
 ## Twarde reguły wykonania
 
 - **Transkrypty są wielkie (GB)** — NIGDY nie czytaj plików JSONL w całości; tylko grep /
-  ekstrakcja skryptem + wąskie okna wokół trafień. Warstwy 3–4 deleguj do subagentów
-  (Sonnet/medium) z tym samym zakazem.
+  ekstrakcja skryptem + wąskie okna wokół trafień.
+- **Delegacja domyślna, nie do rozważenia:** warstwy 1–2 (skan skryptami — czysta mechanika,
+  zero osądu) wykonuje subagent **Haiku, effort low**; warstwy 3–4 (missed triggery, outcome
+  tracing — wymagają czytania okien i klasyfikacji) wykonuje subagent **Sonnet, effort medium**,
+  z tym samym zakazem czytania JSONL w całości. Główna sesja NIE skanuje transkryptów sama —
+  zbiera wynik subagenta i robi syntezę/werdykt (§ Rozstrzygnięcia per hipoteza). Odstępstwo
+  tylko na jawne polecenie usera.
 - **Interpretacja liczników — pułapki:**
   - Skille **auto-behavioral** (mają działać bez wołania, np. coding-principles): licznik ich
     nie mierzy — 0× ≠ brak wartości. Sprawdzaj ślady zachowania, nie wywołania.
