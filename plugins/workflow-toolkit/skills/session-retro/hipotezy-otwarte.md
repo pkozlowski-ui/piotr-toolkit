@@ -287,6 +287,11 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 - **Data zmiany:** 2026-08-14 (`obsidian-toolkit`, wzorzec wprowadzony na antisis-prototype); wpisane
   do rejestru dopiero 2026-08-26 na prośbę usera „zrób podobny sweep dla obsidian-kanban, ma podobny
   problem" — czyli hipoteza żyła 12 dni poza zasięgiem sweepu.
+- **Przebieg 2026-08-28 (retro sesji „Reset family portal state", antisis-prototype):** sesja
+  domknęła jedną kartę (bez ticketu Linear i bez powiązań cross-cutting → słusznie zero nowych pól),
+  ale board to **antisis-prototype, czyli dev-set** — warunek wznowienia mówi wprost „≥ 3 boardy INNE
+  niż antisis-prototype", więc przypadek nie liczy się do held-outu i **nic nie mierzono**. Stan bez
+  zmian: `0 ocenianych poza dev-setem`.
 - **Stan gate'a:** `0 ocenianych przypadków poza dev-setem` — jedyny dowód to backfill, na którym
   hipoteza powstała (dev-set, nie held-out).
 - **Soczewka:** per board — czy pola faktycznie były wypełniane na kolejnym boardzie (nie tylko
