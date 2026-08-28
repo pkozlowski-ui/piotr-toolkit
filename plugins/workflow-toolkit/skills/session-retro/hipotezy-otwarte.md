@@ -164,6 +164,21 @@ klasyfikację (różnica względem H1's lekcji z 2026-08-25 — tam populacja BY
 robotę; tu populacji często w ogóle nie ma). Jedyny wyjątek to H3, gdzie 1 dzień od poprawki to za
 mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 
+### Przebieg 2026-08-28 (retro sesji MAN-578/F16, antisis-prototype) — ZERO ruchu, sesja nie dotknęła żadnego mierzonego skilla
+
+Odpalone `heldout_split.sh` dla dwóch pozycji, których warunek dawał się sprawdzić jednym wywołaniem:
+
+| Hipoteza | Held-out | Zmiana | Co blokuje |
+|---|---|---|---|
+| H3 (`linear-ticket-draft`, okno od 2026-08-13) | 15 wywołań (z 13 w przebiegu 08-27 wieczór) | +2 surowe | ręczny przegląd per wymaganie — nadal 0 OCENIANYCH przypadków wariantu B (dokładnie 1 link) |
+| H4a (`design-tweaker`, okno od 2026-08-13) | 1 wywołanie | +1 | próg ≥3 niespełniony |
+
+Sesja **nie odpaliła** `linear-ticket-draft` — hook routingu podniósł go przy słowie „draft do Linear",
+ale draft nigdy nie powstał (robota była już zrobiona w równoległej sesji). Zgodnie z regułą z przebiegu
+2026-08-26 ręczny przegląd czeka na sesję, która skill REALNIE wywoła, i idzie wtedy NA START sesji.
+**Nowych hipotez z tej sesji: ZERO** — jedyna lekcja („karta `To confirm` = czytaj natywny kanał zanim
+zbudujesz") poszła do pamięci projektu jako obserwacja z jednego przypadku, nie do skilla jako reguła.
+
 ### H7 — `session-retro` krok 4a: miesięczny sweep trafności decyzji
 
 - **Co jest hipotezą:** osobny krok w retro (odpalany tylko co ~30 dni, nie co sesję), który
