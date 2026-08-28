@@ -475,6 +475,35 @@ zbudujesz") poszła do pamięci projektu jako obserwacja z jednego przypadku, ni
 
 ---
 
+### H16 — `reinject-rules.sh`: PL narracja rozszerzona z finałów na bloki robocze
+
+- **Co jest hipotezą:** dopisany punkt 4 do reguł re-injectowanych co turę — „PL nie tylko w finałach:
+  bieżące komunikaty robocze (co robisz, co znalazłeś, dlaczego zmieniasz kierunek) też po polsku,
+  nie tylko podsumowanie na końcu". Poprzednia treść hooka nie mówiła NIC o narracji roboczej,
+  tylko o kontrakcie odpowiedzi (finałach) — hipoteza jest to, że jedno zdanie w tym samym kanale,
+  który już realnie działa (`reinject-rules.sh` cytowany w `context-watch.sh` jako precedens
+  „ten kanał w tym repo realnie działa"), wystarczy bez nowego mechanizmu (np. lintu na blokach).
+- **Skąd:** audyt workflow 2026-08-27 (REKO 10), karta kanban „REKO 9-10 — stop-hooki warunkowo +
+  domkniecie przeciekow EN w narracji". Zmierzone przy tym audycie: **13% bloków roboczych po
+  angielsku przy 100% PL na zamknięciach** — czyli luka jest specyficznie w narracji W TRAKCIE
+  pracy, nie w finałach (te już były 100% zgodne bez tej zmiany).
+- **Data zmiany:** 2026-08-28 (`workflow-toolkit`, `hooks/reinject-rules.sh`, punkt 4).
+- **Stan gate'a:** `0 przebiegów` — zmiana dopiero wdrożona, zero sesji po niej.
+- **Soczewka:** T/C mieszane — per sesja PO zmianie: policz udział bloków ROBOCZYCH (nie
+  finałowych) po angielsku vs po polsku; porównaj z baseline 13% z audytu 2026-08-27.
+- **Ryzyko odwrotne, którego trzeba pilnować:** re-injection co turę już jest długi (4 punkty) —
+  jeśli ten punkt nie obniży odsetka EN, kolejny krok to NIE piąte zdanie w tym samym hooku
+  (przeciążenie kanału), tylko inny mechanizm (np. lekki lint na blokach roboczych).
+- **Warunek wznowienia:** ≥ 3 sesje OCENIANE po 2026-08-28 z co najmniej jednym blokiem roboczym
+  (żeby był w ogóle co mierzyć) — ręczny przegląd transkryptu per sesja, klasyfikacja per blok
+  roboczy PL/EN.
+- **Komenda:** brak automatycznego skryptu — ręczny przegląd transkryptów sesji po dacie zmiany,
+  ten sam sposób liczenia co audyt 2026-08-27 (bloki robocze vs finałowe, per język).
+- **Gdzie zapisać werdykt:** karta kanban „REKO 9-10 — stop-hooki warunkowo + domkniecie przeciekow
+  EN w narracji" (Archive po domknięciu) + zdjęcie tej pozycji stąd.
+
+---
+
 ### Przebieg 2026-08-27 (retro sesji gate-block `--only`, antisis-prototype) — zero ruchu
 
 Sesja czysto kodowa (tryb selektywny `--only` w `.claude/scripts/gate-block.mjs`, PR #662) — nie
