@@ -40,6 +40,14 @@ Skill koduje **proces**. To, co specyficzne dla projektu, czytaj z `CLAUDE.md` /
 - **Folder Delight** (np. `Delight/`) + nazwa żywej kolekcji — trwała baza pozytywu (patrz „Delight Registry").
 - **Scope kanału** — czy to Obsidian-only (drafty, człowiek wkleja ręcznie) czy mirror do Linear/Figmy.
 - **Reguły domenowe** do uzasadniania klasyfikacji (np. reguły design systemu, brand, terminologia).
+- **Code↔design lookup** (opcjonalnie, tylko gdy projekt ma zbudowany kod obok Figmy) — tania,
+  offline tabela/mechanizm `node ↔ route/plik ↔ faza`, jeśli projekt taki utrzymuje. Bez niego
+  edycja Figmy na node z już shipped kodem jest niewidoczna aż do przypadkowego re-audytu tej
+  trasy — zmierzony gap, nie hipoteza (antisis-prototype, 2026-08-28: sweep zmienił shipped node,
+  kod dryfował dzień dłużej niż trzeba). Gdy config to daje → patrz krok ACT/„Do now" niżej.
+- **Folder Code Sync** (np. `Code Sync/`) + nazwa żywej kolekcji — trwała baza edycji Figmy na
+  shipped ekranach i ich status wdrożenia (patrz „Code Sync Registry"). Wymaga code↔design lookup
+  wyżej — bez niego nie ma czym trafiać node'y.
 
 Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupełnienie z szablonu.
 
@@ -66,7 +74,14 @@ Brak configu w projekcie → **nie zgaduj ludzi ani reguł**; zaproponuj uzupeł
 2. CLASSIFY  Oś A (Typ) + Oś B (Dyspozycja), uzasadnione regułami domenowymi projektu
 3. ROUTE     Dyspozycja = "Needs decision" → przypisz Ownera (macierz) + Consulted (RACI-lite, 1 primary)
 4. ACT       Answer & close  → draft odpowiedzi (odpowiedz na pytanie)
-             Do now          → wykonaj/zaproponuj zmianę designu (wg build-philosophy projektu)
+             Do now          → PRZED zapisem w Figmie: jeśli config projektu ma code↔design lookup
+                               (patrz wyżej), sprawdź nim edytowany node. Trafienie + node nie jest
+                               szkicem/Lighthouse → wykonaj zmianę w Figmie jak zwykle, ALE dopisz
+                               wpis `status: not-synced` do Code Sync Registry (patrz niżej) —
+                               kod dryfuje inaczej cicho aż do przypadkowego re-audytu. Brak configu
+                               Code Sync albo brak trafienia (node poza manifestem / Lighthouse) →
+                               pomiń, wykonaj/zaproponuj zmianę designu jak zwykle (wg
+                               build-philosophy projektu)
              Needs decision  → zbuduj jasną część UI + draft Decision Ask dla Ownera
              Defer/Phase-2   → zaloguj + tag fazy (zaznacz intencję, nie tylko odłóż)
              Capture→Delight → dopisz wpis do Delight Registry (Kto·Co·Na czym·Dlaczego·Jak reużyć·Źródło);
@@ -185,6 +200,52 @@ scope: <projekt / zakres>        # np. "antisis — internal team"
 updated: <ISO>                   # ostatni dopisany wpis
 ```
 (Brak `status`/`last-swept`/`closed` — kolekcja nie ma cyklu życia; jest wieczna.)
+
+## Code Sync Registry — trwała baza Figma→kod dryfu
+Ta sama natura co Delight (kumuluje się, nigdy nie archiwizowana) — ale wymaga **projektu z code↔design
+lookup** w configu (patrz „Konfiguracja per-projekt"); bez zbudowanego kodu obok Figmy nie ma czego
+śledzić. Cel: gdy sweep edytuje node z już shipped kodem, ta zmiana ma zostać widoczna aż do faktycznego
+zsynchronizowania — nie zgubiona w rotującym, archiwizowanym rejestrze feedbacku.
+
+**Gdzie:** osobny folder (config per-projekt, typowo `Code Sync/`), jedna **żywa kolekcja**
+(`type: code-sync-log`), pogrupowana wewnątrz notatki na sekcje `## Not synced` / `## Synced` (nie
+osobny plik na wpis) — dzięki temu „co jeszcze czeka" jest jednym spojrzeniem u góry.
+
+**Jedno wejście:** krok ACT sweepu, dyspozycja **„Do now"**, gdy code↔design lookup trafi w node
+i node nie jest szkicem/Lighthouse (patrz krok 4 protokołu). Nie ma ręcznego gestu odpowiednika
+„zapisz do delight" — ten rejestr istnieje tylko jako produkt uboczny sweepu, bo tylko sweep zna
+zarówno edycję Figmy, jak i jej node ID.
+
+**Wpis (MUST — 6 pól):**
+| Pole | Co |
+|---|---|
+| **Co się zmieniło w Figmie** | opis / verbatim komentarza, który spowodował edycję |
+| **Node** | `nodeId` + link Figma |
+| **Gdzie w kodzie** | plik(i)/route, które code↔design lookup zwrócił |
+| **Status** | `not-synced` / `synced` — jedyne pole, które się zmienia po utworzeniu wpisu |
+| **Źródło** | link do sweep register, który wykrył zmianę |
+| **Zsynchronizowano** | data + link PR/commit — puste dopóki `not-synced` |
+
+**Zasady:**
+- **Trwałość:** wpis nigdy nie jest kasowany. Sync zmienia `status` + dopisuje „Zsynchronizowano" —
+  wpis zostaje jako historia (przegląd cross-iteracja, nie tylko per-sweep).
+- **Kto zmienia status:** domyślnie kod-side agent, który faktycznie zweryfikował i zmergował fix
+  (ten sam moment co „done z dowodem" — nie deklaracja bez weryfikacji). Właściciel projektu może to
+  nadpisać ręcznie w każdej chwili.
+- **Cadence sync-u — miękka, nie na każdą edycję.** Wpis stoi jako `not-synced` do najbliższego z:
+  kod i tak dotyka tego ekranu z innego powodu, pre-demo/pre-deploy pass, kolejny pełny audyt
+  design↔kod na tym flow. Wpisy zalegające długo ponad tę cadencję są sygnałem do zaostrzenia
+  procesu (twarda brama zamiast miękkiego logu), nie do zgadywania progu z góry.
+- Code Sync **nie** tworzy karty na Kanbanie automatycznie (rejestr sam jest widokiem „co czeka") i
+  **nie** rusza rejestru feedbacku.
+
+**Frontmatter kolekcji:**
+```yaml
+type: code-sync-log
+scope: <projekt / zakres>
+updated: <ISO>
+created: <ISO>
+```
 
 ## Propose-first (dyscyplina zapisu)
 Każdy zapis do vaultu pokazuj **najpierw jako propozycję**, czekaj na OK.
