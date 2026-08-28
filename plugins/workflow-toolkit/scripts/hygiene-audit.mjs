@@ -6,6 +6,7 @@
 //   node .claude/scripts/hygiene-audit.mjs           pełny raport (human)
 //   node .claude/scripts/hygiene-audit.mjs --hook     cichy gdy czysto; raport tylko gdy są ⚠️ (dla SessionStart)
 //   node .claude/scripts/hygiene-audit.mjs --json      maszynowy (dla agent-audytu, warstwa 2)
+//   node .claude/scripts/hygiene-audit.mjs --selftest  break-restore soczewek na syntetycznych fixturach (nie czyta projektu)
 //
 // Kontrakt: exit 0 zawsze (hook nie może blokować sesji). Sygnał niesie treść, nie kod wyjścia.
 
@@ -18,6 +19,10 @@ import { execSync } from 'node:child_process';
 // jest CWD — uruchamiaj z roota repo (hook i cron agent robią cd do repo najpierw).
 const root = process.cwd();
 const cfgPath = join(root, '.claude', 'audit-invariants.json');
+
+// Break-restore soczewek (fire/silent na syntetycznych fixturach) — PRZED czytaniem configu,
+// żeby dało się odpalić z dowolnego katalogu. Kontrakt: exit 1 gdy którakolwiek gałąź nie strzela.
+if (process.argv.includes('--selftest')) process.exit(runSelftest() ? 0 : 1);
 
 if (!existsSync(cfgPath)) process.exit(0); // brak configu = ten projekt nie ma higieny, cicho wyjdź
 const cfg = JSON.parse(readFileSync(cfgPath, 'utf8'));
@@ -277,6 +282,57 @@ if (cfg.registryNodeIds && cfg.registryNodeIds.reportPath) {
   }
 }
 
+// 11) blok gate'a Figmy — żywe soczewki + break-restore trybu selektywnego (REKO 1, audyt 2026-08-27).
+//     Stan, nie efekt. Offline i tani (2× ~40 ms), więc jedzie też w trybie --hook.
+//     Logika w evalGateBlock() (na dole pliku) — czysta funkcja, żeby miała break-restore.
+if (cfg.gateBlock && cfg.gateBlock.script) {
+  try {
+    const scriptPath = join(root, cfg.gateBlock.script);
+    if (!existsSync(scriptPath)) {
+      add('gate-block', 'blok gate\'a (soczewki + selftest)', 'brak skryptu', 0, false,
+        `${cfg.gateBlock.script} nie istnieje → REKO 1 (tryb selektywny --only) zniknął z drzewa albo ścieżka w configu zgniła`);
+    } else {
+      // `2>&1` nie jest kosmetyka: gate-block wypisuje raport `--check` na STDERR (console.error),
+      // a execSync zwraca tylko stdout — bez scalenia strumieni licznik soczewek jest niewidoczny
+      // i check raportowal "nie doszedl do pomiaru" na w pelni zdrowym skrypcie (zmierzone 2026-08-28).
+      const run = args => {
+        try {
+          return { out: execSync(`node ${JSON.stringify(scriptPath)} ${args} 2>&1`, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 20000 }), exit: 0 };
+        } catch (e) {
+          return { out: `${e.stdout || ''}${e.stderr || ''}`, exit: e.status == null ? 1 : e.status };
+        }
+      };
+      const c = run('--check');
+      const t = run('--selftest');
+      const r = evalGateBlock({
+        checkOut: c.out, checkExit: c.exit, selftestOut: t.out, selftestExit: t.exit,
+        expectedAudits: cfg.gateBlock.expectedAudits ?? null,
+        minSelftestCases: cfg.gateBlock.minSelftestCases ?? null,
+      });
+      add('gate-block', 'blok gate\'a (soczewki · selftest)', r.value, null, r.ok, r.detail);
+    }
+  } catch { /* higiena gate'a nigdy nie blokuje audytu */ }
+}
+
+// 12) czas ostatniego nightly bramki CI (REKO 3, audyt 2026-08-27).
+//     Wymaga sieci (`gh run list`), więc — jak git-freshness — POMIJANY w trybie --hook:
+//     SessionStart zostaje offline, a pomiar bierze audyt osądu (--json, co ~3 dni) i ręczny run.
+//     Logika w evalCiNightly() (na dole pliku).
+if (cfg.ciNightly && cfg.ciNightly.workflow && mode !== 'hook') {
+  try {
+    const cn = cfg.ciNightly;
+    let runs = null;
+    try {
+      const raw = execSync(
+        `gh run list --workflow=${JSON.stringify(cn.workflow)} -L ${cn.sampleSize || 10} --json createdAt,updatedAt,event,conclusion,databaseId`,
+        { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 20000 });
+      runs = JSON.parse(raw);
+    } catch { /* brak gh / brak sieci → runs zostaje null = BRAK POMIARU, nie zielone */ }
+    const r = evalCiNightly({ runs, maxMinutes: cn.maxMinutes ?? 10, maxAgeHours: cn.maxAgeHours ?? 48 });
+    add('ci-nightly', `ostatni nightly ${cn.workflow} (czas, próg ${cn.maxMinutes ?? 10} min)`, r.value, null, r.ok, r.detail);
+  } catch { /* higiena CI nigdy nie blokuje audytu */ }
+}
+
 // --- output ---
 const warnings = checks.filter(c => !c.ok);
 
@@ -305,3 +361,229 @@ if (warnings.length) {
 }
 process.stdout.write(lines.join('\n') + '\n');
 process.exit(0);
+
+// ============================================================================
+// Soczewki wydzielone jako CZYSTE funkcje — żeby dały się złamać i przywrócić
+// bez odpalania CI ani Figmy. Deklaracje są hoistowane, więc runSelftest()
+// (wywoływany na górze pliku) widzi je mimo położenia na końcu.
+// ============================================================================
+
+/**
+ * REKO 1 — blok gate'a Figmy. Trzy asercje, bo dwie pierwsze same z siebie ZIELENIEJĄ,
+ * gdy tryb selektywny `--only` zniknie z drzewa: rewert zabiera 4 case'y break-restore,
+ * a werdykt selftestu zostaje PASS. Dlatego skala selftestu (liczba case'ów) jest częścią
+ * checku, nie tylko jego werdykt.
+ *   (a) `--check`: WERDYKT pass + żywe soczewki == deklarowane == próg z configu
+ *   (b) `--selftest`: WERDYKT PASS i zero failujących case'ów
+ *   (c) liczba case'ów selftestu >= minSelftestCases z configu
+ */
+function evalGateBlock({ checkOut = '', checkExit = 0, selftestOut = '', selftestExit = 0, expectedAudits = null, minSelftestCases = null }) {
+  const problems = [];
+
+  const mAud = /\*Audit:\s*(\d+)\/(\d+)/.exec(checkOut);
+  const live = mAud ? Number(mAud[1]) : null;
+  const declared = mAud ? Number(mAud[2]) : null;
+  if (mAud === null) {
+    problems.push('`--check` nie wypisał licznika soczewek (`*Audit: n/m`) → skrypt nie doszedł do pomiaru');
+  } else {
+    if (live !== declared) problems.push(`żywe soczewki ${live}/${declared} (brakujące albo martwe)`);
+    if (expectedAudits != null && declared !== expectedAudits) {
+      problems.push(`skrypt deklaruje ${declared} soczewek, config oczekuje ${expectedAudits} → skala zmieniła się bez podniesienia progu w tym samym commicie`);
+    }
+  }
+
+  const mCheckVerdict = /^\[gate-block\] WERDYKT:\s*(\S+)/m.exec(checkOut);
+  if (!mCheckVerdict) problems.push('`--check` bez linii WERDYKT');
+  else if (mCheckVerdict[1].toLowerCase() !== 'pass') problems.push(`\`--check\` WERDYKT: ${mCheckVerdict[1]}`);
+  if (checkExit !== 0) problems.push(`\`--check\` exit ${checkExit}`);
+
+  const mSt = /selftest WERDYKT:\s*(\w+)\s*\((\d+)\/(\d+)\)/.exec(selftestOut);
+  const stPassed = mSt ? Number(mSt[2]) : null;
+  const stTotal = mSt ? Number(mSt[3]) : null;
+  if (mSt === null) {
+    problems.push('`--selftest` nie wypisał werdyktu → break-restore nie przebiegł');
+  } else {
+    if (mSt[1].toUpperCase() !== 'PASS' || stPassed !== stTotal) problems.push(`selftest ${stPassed}/${stTotal} (${mSt[1]})`);
+    if (minSelftestCases != null && stTotal < minSelftestCases) {
+      problems.push(`selftest ma ${stTotal} case'ów, baseline ${minSelftestCases} → break-restore schudł (werdykt PASS tego NIE pokaże); przywróć case'y albo obniż baseline świadomie w tym samym commicie`);
+    }
+  }
+  if (selftestExit !== 0) problems.push(`\`--selftest\` exit ${selftestExit}`);
+
+  return {
+    ok: problems.length === 0,
+    value: `soczewki ${live ?? '?'}/${declared ?? '?'} · selftest ${stPassed ?? '?'}/${stTotal ?? '?'}`,
+    detail: problems.length ? problems.join(' | ') : null,
+  };
+}
+
+/**
+ * REKO 3 — czas ostatniego nightly bramki CI. Trzy RÓŻNE fakty, świadomie rozdzielone
+ * (zlanie ich w jedno "nie ok" gubi kierunek naprawy):
+ *   • zmierzony przekroczony czas          → koszt CI urósł, patrz najdłuższy job
+ *   • nightly starszy niż maxAgeHours      → BRAK POMIARU (harmonogram nie odpalił)
+ *   • zero runów ze `schedule`             → nightly w ogóle nie chodzi
+ * Bierze wyłącznie `event: schedule`: workflow_dispatch mierzy moment, w którym ktoś stał
+ * nad tym ręcznie (i zwykle na rozgrzanym cache'u), więc jako "nightly" kłamie.
+ */
+function evalCiNightly({ runs = null, maxMinutes = 10, maxAgeHours = 48, now = Date.now() }) {
+  if (runs === null) {
+    return { ok: false, value: 'brak pomiaru', detail: '`gh run list` nie zwrócił danych (brak gh / brak autoryzacji / offline) → sprawdź `gh auth status`; to brak pomiaru, nie zielony wynik' };
+  }
+  const scheduled = runs
+    .filter(r => r && r.event === 'schedule' && r.createdAt && r.updatedAt)
+    .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  if (!scheduled.length) {
+    return { ok: false, value: 'brak runu ze schedule', detail: `żaden z pobranych runów nie pochodzi z harmonogramu → nightly nie chodzi albo okno pobrania (sampleSize) jest za wąskie` };
+  }
+  const last = scheduled[0];
+  const minutes = (Date.parse(last.updatedAt) - Date.parse(last.createdAt)) / 60000;
+  const ageHours = (now - Date.parse(last.createdAt)) / 3600000;
+  const stamp = `${last.createdAt.slice(0, 16).replace('T', ' ')} UTC`;
+  if (ageHours > maxAgeHours) {
+    return {
+      ok: false,
+      value: `ostatni nightly ${Math.round(ageHours)} h temu`,
+      detail: `ostatni run ze schedule'a to ${stamp} (${minutes.toFixed(1)} min) — starszy niż ${maxAgeHours} h → harmonogram NIE odpalił (GitHub pomija cron przy obciążeniu, a workflow ze schedule'em usypia po 60 dniach bezczynności repo); to brak pomiaru, nie zielony wynik`,
+    };
+  }
+  return {
+    ok: minutes <= maxMinutes,
+    value: `${minutes.toFixed(1)} min`,
+    detail: minutes <= maxMinutes ? null
+      : `nightly ${stamp} trwał ${minutes.toFixed(1)} min (próg ${maxMinutes}) → \`gh run view ${last.databaseId} --json jobs\`; koszt niesie najdłuższy job, nie suma`,
+  };
+}
+
+// ---------- break-restore (syntetyczne fixtury — nie czyta projektu, nie rusza repo) ----------
+
+function runSelftest() {
+  const results = [];
+  const t = (name, cond, got) => {
+    results.push(!!cond);
+    console.log(`  ${cond ? '✅' : '❌'} ${name}${cond ? '' : ` — dostał: ${got}`}`);
+  };
+
+  console.log('[hygiene-audit] selftest (break-restore, syntetyczne fixtury)');
+
+  // --- soczewka gate-block ---
+  const CHECK_OK = [
+    '[gate-block] fence KIT: linie 27–135',
+    '[gate-block] payload: 236819 znaków, składnia OK',
+    '[gate-block] *Audit: 25/25',
+    '[gate-block] WERDYKT: pass',
+  ].join('\n');
+  const ST_OK = '[gate-block] selftest WERDYKT: PASS (15/15)';
+  const CFG = { expectedAudits: 25, minSelftestCases: 15 };
+
+  // silent: zdrowy stan nie strzela
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK, selftestOut: ST_OK, ...CFG });
+    t('gate-block silent: zdrowy check+selftest → brak findingu', r.ok === true && r.detail === null, JSON.stringify(r));
+  }
+  // fire (a1): martwa soczewka
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK.replace('25/25', '24/25'), selftestOut: ST_OK, ...CFG });
+    t('gate-block fire: żywe soczewki 24/25 → finding', r.ok === false && /24\/25/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (a2): skala zmieniona bez podniesienia progu w configu
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK.replace('25/25', '26/26'), selftestOut: ST_OK, ...CFG });
+    t('gate-block fire: skrypt 26 soczewek vs config 25 → finding', r.ok === false && /config oczekuje 25/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (a3): werdykt --check inny niż pass
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK.replace('WERDYKT: pass', 'WERDYKT: fail'), selftestOut: ST_OK, ...CFG });
+    t('gate-block fire: --check WERDYKT fail → finding', r.ok === false && /WERDYKT: fail/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (a4): brak licznika = brak pomiaru, nie zielone
+  {
+    const r = evalGateBlock({ checkOut: '[gate-block] WERDYKT: pass', selftestOut: ST_OK, ...CFG });
+    t('gate-block fire: brak linii *Audit → finding (brak pomiaru ≠ czysto)', r.ok === false && /nie wypisał licznika/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (b): selftest z failem
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK, selftestOut: '[gate-block] selftest WERDYKT: FAIL (13/15)', ...CFG });
+    t('gate-block fire: selftest 13/15 FAIL → finding', r.ok === false && /13\/15/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (c): TEN case jest powodem istnienia asercji skali — PASS przy schudniętym selfteście
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK, selftestOut: '[gate-block] selftest WERDYKT: PASS (11/11)', ...CFG });
+    t('gate-block fire: selftest PASS ale 11 case\'ów vs baseline 15 → finding (rewert --only)', r.ok === false && /break-restore schudł/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (b2): brak werdyktu selftestu
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK, selftestOut: '', ...CFG });
+    t('gate-block fire: --selftest bez werdyktu → finding', r.ok === false && /break-restore nie przebiegł/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (exit): niezerowy exit przy poprawnym stdout
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK, checkExit: 1, selftestOut: ST_OK, ...CFG });
+    t('gate-block fire: --check exit 1 → finding', r.ok === false && /exit 1/.test(r.detail), JSON.stringify(r));
+  }
+  // silent (próg opcjonalny): bez progów w configu asercje skali milczą
+  {
+    const r = evalGateBlock({ checkOut: CHECK_OK.replace('25/25', '26/26'), selftestOut: '[gate-block] selftest WERDYKT: PASS (11/11)' });
+    t('gate-block silent: bez progów w configu asercje skali nie strzelają', r.ok === true, JSON.stringify(r));
+  }
+
+  // --- soczewka ci-nightly ---
+  const NOW = Date.parse('2026-08-28T08:00:00Z');
+  const run = (created, mins, event = 'schedule', id = 1) => ({
+    event, databaseId: id, conclusion: 'failure',
+    createdAt: created,
+    updatedAt: new Date(Date.parse(created) + mins * 60000).toISOString(),
+  });
+
+  // silent: świeży, szybki nightly
+  {
+    const r = evalCiNightly({ runs: [run('2026-08-28T06:15:00Z', 5.4)], maxMinutes: 10, now: NOW });
+    t('ci-nightly silent: 5.4 min, 1.75 h temu → brak findingu', r.ok === true && r.detail === null, JSON.stringify(r));
+  }
+  // fire: wolny nightly
+  {
+    const r = evalCiNightly({ runs: [run('2026-08-28T06:15:00Z', 36, 'schedule', 42)], maxMinutes: 10, now: NOW });
+    t('ci-nightly fire: 36 min > próg 10 → finding z numerem runu', r.ok === false && /36\.0 min/.test(r.detail) && /42/.test(r.detail), JSON.stringify(r));
+  }
+  // fire: harmonogram nie odpalił — BRAK POMIARU, nie „szybko"
+  {
+    const r = evalCiNightly({ runs: [run('2026-08-25T06:15:00Z', 4)], maxMinutes: 10, maxAgeHours: 48, now: NOW });
+    t('ci-nightly fire: szybki ale 74 h stary run → finding (brak pomiaru ≠ zielone)', r.ok === false && /NIE odpalił/.test(r.detail), JSON.stringify(r));
+  }
+  // fire: workflow_dispatch NIE liczy się jako nightly (inaczej ręczny run maskuje wolny cron)
+  {
+    const r = evalCiNightly({ runs: [run('2026-08-28T07:00:00Z', 3, 'workflow_dispatch')], maxMinutes: 10, now: NOW });
+    t('ci-nightly fire: sam workflow_dispatch → finding (nie udaje nightly)', r.ok === false && r.value === 'brak runu ze schedule', JSON.stringify(r));
+  }
+  // silent: dispatch obok schedule'a — bierzemy schedule, nie najnowszy run
+  {
+    const r = evalCiNightly({
+      runs: [run('2026-08-28T07:30:00Z', 2, 'workflow_dispatch'), run('2026-08-28T06:15:00Z', 6)],
+      maxMinutes: 10, now: NOW,
+    });
+    t('ci-nightly silent: dispatch nowszy, mierzony jest schedule (6.0 min)', r.ok === true && r.value === '6.0 min', JSON.stringify(r));
+  }
+  // fire: dispatch nowszy i szybki NIE maskuje wolnego schedule'a
+  {
+    const r = evalCiNightly({
+      runs: [run('2026-08-28T07:30:00Z', 2, 'workflow_dispatch'), run('2026-08-28T06:15:00Z', 35)],
+      maxMinutes: 10, now: NOW,
+    });
+    t('ci-nightly fire: szybki dispatch nie maskuje 35-min schedule\'a', r.ok === false && /35\.0 min/.test(r.detail), JSON.stringify(r));
+  }
+  // fire: brak danych z gh = brak pomiaru
+  {
+    const r = evalCiNightly({ runs: null, maxMinutes: 10, now: NOW });
+    t('ci-nightly fire: runs=null → finding (brak pomiaru)', r.ok === false && /brak pomiaru/.test(r.value), JSON.stringify(r));
+  }
+  // fire: pusta lista runów
+  {
+    const r = evalCiNightly({ runs: [], maxMinutes: 10, now: NOW });
+    t('ci-nightly fire: zero runów → finding', r.ok === false && /brak runu ze schedule/.test(r.value), JSON.stringify(r));
+  }
+
+  const pass = results.filter(Boolean).length;
+  const all = pass === results.length;
+  console.log(`[hygiene-audit] selftest WERDYKT: ${all ? 'PASS' : 'FAIL'} (${pass}/${results.length})`);
+  return all;
+}

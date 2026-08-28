@@ -363,6 +363,52 @@ mało czasu z definicji, nie zaległość. **Nowych hipotez z tej sesji: ZERO.**
 
 ---
 
+### H14 — hygiene-audit: PROGI dwóch nowych soczewek stanu (gate-block, ci-nightly)
+
+- **Co NIE jest hipotezą:** sama mechanika obu soczewek. `evalGateBlock` i `evalCiNightly` są
+  czystymi funkcjami z lustrzanym break-restore w `hygiene-audit.mjs --selftest` (**18/18**,
+  fire i silent per gałąź, w tym kontrole negatywne: „bez progów w configu asercje skali milczą"
+  oraz „szybki `workflow_dispatch` nie maskuje wolnego `schedule`"). Wg precedensu z przebiegu
+  2026-08-27 pełny break-restore czyni check kanonem od razu — więc kod nie czeka na gate.
+- **Co JEST hipotezą — trzy liczby i jedna decyzja o kanale, bez ani jednego held-outu:**
+  1. **`ciNightly.maxMinutes = 10`** — próg wzięty z jednego pomiaru (przed fixem #659 workflow
+     ciągnął ~36 min, po fixie dispatch zmierzył 5,5 min). Nie wiadomo, jaka jest naturalna
+     WARIANCJA zdrowego nightly na runnerach macOS — jeśli zdrowy run oscyluje 4–11 min, próg
+     10 daje losowe ⚠️ i sam się zdyskredytuje.
+  2. **`ciNightly.maxAgeHours = 48`** — czy pominięty cron to normalka (wtedy 48 h szumi), czy
+     wyjątek (wtedy 48 h jest dobrym detektorem). Zmierzone 2026-08-28: cron `0 6 * * *` nie
+     odpalił do 08:06 UTC — czyli klasa jest realna, ale próba = 1.
+  3. **`claudeMd.maxBytes = 40 960` z zapasem 30 B** (antisis-prototype) — świadomie BEZ ~20%
+     zapasu, jako forcing function. Hipotezą jest to, że zapala się RZADKO i sensownie; ryzyko
+     odwrotne: ⚠️ przy każdej legalnej dopisce → alarm fatigue i check przestaje być czytany
+     (dokładnie ta klasa, która zabiła auto-archiwum: „zaplanowany automat bez sprawdzonego logu").
+  4. **Kanał `gate-block` = tryb `--hook`** (2 podprocesy node przy KAŻDYM starcie sesji, zmierzone
+     +~40 ms, cały audyt 111 ms). Tanie dziś — ale to jedyna soczewka odpalająca cudzy skrypt
+     w SessionStart, więc koszt rośnie razem z tym skryptem, nie z tym plikiem.
+- **Data zmiany:** 2026-08-28 (REKO 1 i 3 audytu workflow 2026-08-27; karta kanban
+  „Wpięcie weryfikacji REKO 1-3 w rutyny").
+- **Soczewka:** stosunek sygnał/szum per soczewka — liczony na PRZEBIEGACH audytu, nie na
+  sesjach: ile razy ⚠️ zapaliło się i ilu z tych zapaleń odpowiadał realny defekt (potwierdzony
+  fixem albo świadomym podniesieniem progu w tym samym commicie). Osobno per liczba, bo mogą
+  rozjechać się w przeciwne strony.
+- **Warunek wznowienia:** ≥ 5 przebiegów `hygiene-audit` (scheduled `hygiene-audit-antisys`, co
+  ~3 dni → ~2 tygodnie) PO 2026-08-28, każdy z zapisanym stanem tych trzech checków. Werdykt
+  per liczba: wszystkie zapalenia trafione → próg trzyma; ≥ 2 zapalenia bez defektu → poluzuj
+  TĘ liczbę (nie wszystkie) i dopisz powód.
+- **Komenda:**
+  ```bash
+  # stan trzech checków na dziś (json = pełny raport, także checki pomijane w --hook)
+  cd ~/Documents/antisis\ prototype && node ~/Documents/piotr-toolkit/plugins/workflow-toolkit/scripts/hygiene-audit.mjs --json \
+    | python3 -c "import json,sys; [print(c['id'], c['ok'], c['value']) for c in json.load(sys.stdin)['checks'] if c['id'] in ('gate-block','ci-nightly','claudemd-bytes')]"
+  # wariancja zdrowego nightly (czy próg 10 min nie jest w chmurze szumu)
+  cd ~/Documents/antisis\ prototype && gh run list --workflow=pixel-gate.yml -L 20 --json createdAt,updatedAt,event \
+    | python3 -c "import json,sys,datetime as d; r=[x for x in json.load(sys.stdin) if x['event']=='schedule']; print([round((d.datetime.fromisoformat(x['updatedAt'].replace('Z','+00:00'))-d.datetime.fromisoformat(x['createdAt'].replace('Z','+00:00'))).total_seconds()/60,1) for x in r])"
+  ```
+- **Gdzie zapisać werdykt:** karta kanban „Wpięcie weryfikacji REKO 1-3 w rutyny" (sekcja
+  `## Rezultat`) + zdjęcie tej pozycji stąd.
+
+---
+
 ### Przebieg 2026-08-27 (retro sesji gate-block `--only`, antisis-prototype) — zero ruchu
 
 Sesja czysto kodowa (tryb selektywny `--only` w `.claude/scripts/gate-block.mjs`, PR #662) — nie
