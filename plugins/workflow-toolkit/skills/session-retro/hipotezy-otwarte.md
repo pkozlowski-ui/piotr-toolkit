@@ -179,6 +179,21 @@ ale draft nigdy nie powstał (robota była już zrobiona w równoległej sesji).
 **Nowych hipotez z tej sesji: ZERO** — jedyna lekcja („karta `To confirm` = czytaj natywny kanał zanim
 zbudujesz") poszła do pamięci projektu jako obserwacja z jednego przypadku, nie do skilla jako reguła.
 
+### Przebieg 2026-08-31 (retro sesji „zawężenie dopasowania w code-audit-pr-gate", antisis-prototype) — ZERO ruchu, jedna pozycja z nowym wsadem obserwacyjnym
+
+| Hipoteza | Stan po odpaleniu Komendy | Zmiana | Co blokuje |
+|---|---|---|---|
+| H7 (`session-retro` krok 4a) | `_decision-sweep-log.md` = **1** przebieg | brak (krok 4a nie był due — poprzedni przebieg tego samego dnia) | próg ≥3 przebiegów |
+| H13 (limit BAJTÓW w `guard-claudemd-bloat.sh`) | 1 plik > 30 KB: `antisis prototype/CLAUDE.md` = **40251 B**, reszta ≤ 21 KB | brak — sesja nie edytowała żadnego CLAUDE.md | próg ≥3 realnych edycji plików > 30 KB |
+| H14 (progi soczewek hygiene-audit) | **brak logu przebiegów** — `~/.claude/*hygiene*` nie istnieje | niemierzalne | nie ma z czego policzyć ≥5 przebiegów; warunek jest dziś nieweryfikowalny |
+| H16 (PL narracja w blokach roboczych) | **+1 przypadek OCENIANY** — sesja narratorska w PL także w blokach roboczych, bez korekty od Piotra | 1 → liczba łączna nietrackowana mechanicznie | próg ≥3 ocenianych, przegląd ręczny transkryptów |
+| H15 (delegacja jako domyślny tryb) | **przypadek SKAŻONY, nie liczyć** | — | sesja miała realną mechanikę (harness, greps, inwentaryzacja wersji hooka) wykonaną BEZ delegacji, ale wyłącznie dlatego, że instrukcja sesji jawnie zakazywała `Agent`. To confound, nie sygnał o skillu — H15 mierzy odruch delegowania, a tu odruch był zablokowany z zewnątrz. |
+| H2, H3, H8–H12 | — | brak | sesja nie dotknęła tych skilli |
+
+**Wniosek procesowy:** H14 ma warunek wznowienia, którego **nie da się dziś sprawdzić** — „≥5 przebiegów `hygiene-audit`" zakłada istnienie licznika przebiegów, a taki licznik nie istnieje (audyt drukuje stan, nie loguje przebiegu). To ta sama klasa, którą ta sesja naprawiała w bramie PR-a: **warunek/soczewka odnoszący się do obiektu, którego nikt nie mierzy, wygląda identycznie jak spełniany**. Zanim H14 da się rozstrzygnąć, potrzebny jest jednolinijkowy log przebiegu (jak `_decision-sweep-log.md` dla H7) — do decyzji Piotra, nie foldowane samowolnie.
+
+**Nowych hipotez z tej sesji: ZERO.** Kandydat był jeden — soczewka `index-parity` w `hygiene-audit.mjs` nie wyklucza plików `_`-prefiksowanych, więc `_decision-sweep-log.md` (infra-log tworzony PRZEZ ten skill) jest raportowany jako pamięć bez wpisu w indeksie. Nie wpisany jako hipoteza, bo **nic nie zostało wdrożone** — to propozycja zmiany czekająca na decyzję, a rejestr trzyma zmiany już wdrożone bez pełnego gate'a. Jeśli Piotr przyjmie fix, wchodzi tu razem z golden-setem soczewki.
+
 ### Przebieg 2026-08-28 wieczór (retro sesji „runtime gates Guardian/FP", antisis-prototype) — ZERO ruchu, sesja nie dotknęła żadnego mierzonego skilla
 
 | Hipoteza | Held-out | Zmiana | Co blokuje |
