@@ -61,6 +61,14 @@ warranted.
 
 An explicit "panel" / "be thorough" / "deep" from the user is an opt-in: skip the questions and run it.
 
+**Declare the mode — every time, not just on a "no".** State which mode you're running in one line
+before you start the audit ("Quick mode — …" / "Panel mode — …"), even when the answer to all three
+questions is "yes" or the caller already asked for panel. **If the caller asked for panel and you are
+about to run Quick instead, that line is mandatory, not optional** — say so before running, not as a
+footnote after. A silent downgrade is the failure this gate exists to catch (held-out C, 2026-08-31:
+3/14 sessions dropped an explicit panel request to Quick with zero craft-pass and zero stated reason —
+found only by reading the transcript, because nothing in the output said it happened).
+
 **Isolation invariant (panel mode).** Each lens agent gets the artefact and its own lens — never the
 other lenses' findings. A reviewer that has seen the others starts summarizing the set instead of
 looking through its own lens, and the output still reads lens-specific, so the failure is easy to

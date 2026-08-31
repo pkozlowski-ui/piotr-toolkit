@@ -717,6 +717,48 @@ czystą negacją własnej rekomendacji jako „puste"/nieliczące się do progu 
   **Gdzie zapisać:** ta sama karta kanban „Cost gate — held-out" (patrz notatka 2026-08-24 wyżej) —
   dopisać `code-design-audit: 11/11 MET (held-out C)`, zostawić H4a/H4c jako otwarte na tej karcie.
 
+- **Klasyfikacja 2026-08-31 (H4a `design-tweaker`, delegowana z karty „Cost gate — held-out"):**
+  `heldout_split.sh` zaraportował skok 1→14 wywołań held-out (próg ≥3 przekroczony). Wszystkie 14
+  przeczytane wprost z transkryptów (plik+linia namierzone offline, bez zgadywania). **Wynik: 11/14
+  MET, 3/14 BROKEN, 0 „nie dotyczy"** — w przeciwieństwie do H4b, ta gałąź **nie** przechodzi czysto.
+
+  Wzorzec złamań nie jest losowy: **wszystkie 3 BROKEN to sesje, w których caller EXPLICITE zażądał
+  „Panel mode" na realnie dużej powierzchni (22/10/10 ekranów), a `design-tweaker` po cichu spadł do
+  Quick — bez rozpoznawalnego craft-passu i bez zdania uzasadniającego odstępstwo.** To jest dokładnie
+  odwrotny kierunek ryzyka, który H4 miało łapać (gate zaniżający jakość, nie tylko oszczędzający
+  koszt) — i dotąd niezmierzony w H4b. Pozostałe 11/14 poprawnie zejmowały tryb (Quick albo
+  zredukowany single-pass zamiast 7-agentowego panelu) **z jawnym jednozdaniowym uzasadnieniem
+  cytującym własny cost gate skilla** („is the surface actually big? — No, so Quick mode…" itp.).
+
+  **Próbka NIE jest niezależna od H4b** (potwierdzone w transkryptach): 8/14 pozycji to te same
+  sesje/worktree co 8/11 przypadków H4b (`design-tweaker` jest wołany wewnątrz `code-design-audit`
+  jako craft-pass), pozostałe 6 to fan-out jednej sesji-koordynatora (`sleepy-spence-466278`), którą
+  H4b liczyło jako jeden case. **Warunek wznowienia H4 zakładał trzy NIEZALEŻNE progi — w praktyce
+  H4a i H4b mierzą w dużej mierze te same 8-9 sesji z dwóch różnych bramek**, więc „trzy osobne
+  potwierdzenia" dają mniej niezależnego dowodu niż zakładano przy formułowaniu warunku wznowienia.
+
+  **Czego ten przebieg NIE dowodzi:** skorelowane zachowanie w 9/14 fan-outach jednej sesji (wspólny
+  szablon promptu, niemal identyczne frazy uzasadnień); 3 złamania wykryto czytaniem transkryptu, nie
+  self-reportem sesji („żadna sesja sama nie nazwała 'powinienem był użyć panelu'"); ocena
+  jednoosobowa bez ślepego sędziego; brak testu gałęzi „Q1/Q2/Q3=nie" dla samodzielnego wywołania
+  `design-tweaker` przez człowieka (wszystkie 14 to craft-passy wewnątrz `code-design-audit`).
+
+  **Werdykt: próg liczbowy osiągnięty (14≥3), ale H4a NIE jest potwierdzone.** 11/14 MET, 3/14 BROKEN
+  z jednym powtarzalnym wzorcem — gałąź `design-tweaker` zostaje HIPOTEZĄ z udokumentowanym złamaniem,
+  nie awansuje do kanonu jak H4b. Zapis werdyktu również na karcie kanban „Cost gate — held-out".
+
+  **Fix wdrożony 2026-08-31 (REKO Piotra):** `design-tweaker/SKILL.md` → sekcja „Cost gate" dostała
+  wymóg jednozdaniowej deklaracji wybranego trybu PRZY KAŻDYM wywołaniu, nie tylko przy „nie" na
+  jednym z pytań, z jawnym wskazaniem że milczący downgrade z żądanego panelu do Quick jest błędem
+  gate'a. **To jest NOWA zmiana treści (soczewka C) — otwiera własny held-out, licz od 2026-08-31,
+  nie od 2026-08-18.** Nie utwardzać werdyktu „fix działa" bez ≥3 ocenianych wywołań PO tej dacie —
+  ta sama pułapka co reszta doktryny („przeszło na trzech przykładach, na których go wymyślono" nie
+  jest held-outem). Komenda do sprawdzenia po nagromadzeniu ruchu:
+  `heldout_split.sh design-toolkit:design-tweaker 2026-08-31`.
+
+  H4 jako całość nadal się nie domyka: H4b potwierdzone, H4a hipoteza z otwartym złamaniem, H4c wciąż
+  `0 ocenianych`.
+
 ---
 
 ### H6 — `ux-copy`: reguła American English z klauzulą „nie mirroruj brytyjskiej pisowni z promptu"
