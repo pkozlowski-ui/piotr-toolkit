@@ -10,7 +10,7 @@
 //
 // Kontrakt: exit 0 zawsze (hook nie może blokować sesji). Sygnał niesie treść, nie kod wyjścia.
 
-import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { execSync } from 'node:child_process';
@@ -35,16 +35,26 @@ const checks = [];
 const add = (id, label, value, limit, ok, detail) =>
   checks.push({ id, label, value, limit, ok, detail: detail || null });
 
+// Log przebiegów — jedna linia na run, POZA repo (nie zaśmieca diffów, jest git-nietrwały).
+// Istnieje, bo warunek wznowienia hipotezy H14 ("≥5 przebiegów hygiene-audit") był
+// NIEWERYFIKOWALNY: audyt drukował stan i nie zostawiał śladu, że w ogóle się odpalił, więc
+// warunek odnoszący się do liczby przebiegów wyglądał identycznie jak spełniany. Zapis jest
+// best-effort i NIGDY nie może wywalić sesji — hook ma kontrakt "exit 0 zawsze".
+// Warunek unieważnienia: zbędny, gdy harness zacznie sam raportować przebiegi hooków.
+const runLogPath = join(homedir(), '.claude', 'hygiene-audit-runs.log');
+function appendRunLog(warnCount) {
+  try {
+    appendFileSync(runLogPath,
+      `${new Date().toISOString()}\t${mode}\t${root}\twarnings=${warnCount}\n`);
+  } catch { /* best-effort: brak katalogu/uprawnień nie może zatrzymać audytu */ }
+}
+
 // --- memory ---
 const memDir = join(root, cfg.memory.dir);
 const indexPath = join(memDir, cfg.memory.indexFile);
 let memFiles = [];
 if (existsSync(memDir)) {
-  memFiles = readdirSync(memDir).filter(f =>
-    f.endsWith('.md') &&
-    f !== cfg.memory.indexFile &&
-    f.toUpperCase() !== 'README.MD'
-  );
+  memFiles = readdirSync(memDir).filter(f => isMemoryEntry(f, cfg.memory.indexFile));
 }
 
 // 1) cap wpisów aktywnych
@@ -366,6 +376,7 @@ if (cfg.ciNightly && cfg.ciNightly.workflow && mode !== 'hook') {
 
 // --- output ---
 const warnings = checks.filter(c => !c.ok);
+appendRunLog(warnings.length); // jeden ślad na przebieg, przed KAŻDYM wyjściem (json/hook/human)
 
 if (mode === 'json') {
   const days = cfg.judgementAuditEveryDays;
@@ -504,6 +515,28 @@ function evalDelegationThreshold({ sessions = [], threshold = 40 }) {
 
 // ---------- break-restore (syntetyczne fixtury — nie czyta projektu, nie rusza repo) ----------
 
+// Czy plik w katalogu pamięci JEST wpisem pamięci (a nie indeksem/README/infra-logiem)?
+// Wyciągnięte z inline-filtra, żeby dało się objąć break-restore'em — soczewka mierzona
+// na syntetycznych nazwach, bez czytania dysku.
+//
+// `_`-prefiks = plik INFRASTRUKTURALNY, nie wpis pamięci. Powód konkretny: `_decision-sweep-log.md`
+// tworzy sam skill `session-retro` (jego krok 4a) jako log przebiegów, a soczewka `index-parity`
+// raportowała go jako "pamięć bez wpisu w indeksie" — czyli check żądał wpisu w MEMORY.md dla
+// pliku, który wpisem pamięci nie jest. Ta sama klasa co dopasowanie po zbyt luźnym wzorcu:
+// soczewka mierzyła NIE TEN obiekt. Katalog `_archive/` był już wykluczony przypadkiem (nie ma
+// rozszerzenia `.md`) — teraz wykluczenie `_` jest JAWNE i wspólne dla wszystkich trzech soczewek
+// karmionych `memFiles` (cap, build-logi, parytet), bo infra-log nie jest wpisem w żadnej z nich.
+//
+// Warunek unieważnienia: przestaje obowiązywać, gdy `_`-prefiks zacznie oznaczać realne wpisy
+// pamięci (wtedy potrzebna jest jawna allowlista infra-plików zamiast reguły prefiksu).
+function isMemoryEntry(f, indexFile) {
+  if (!f.endsWith('.md')) return false;
+  if (f === indexFile) return false;
+  if (f.toUpperCase() === 'README.MD') return false;
+  if (f.startsWith('_')) return false;
+  return true;
+}
+
 function runSelftest() {
   const results = [];
   const t = (name, cond, got) => {
@@ -512,6 +545,30 @@ function runSelftest() {
   };
 
   console.log('[hygiene-audit] selftest (break-restore, syntetyczne fixtury)');
+
+  // --- soczewka isMemoryEntry (co JEST wpisem pamięci) ---
+  const IDX = 'MEMORY.md';
+  const FILES = ['brand-modes-manta.md', 'MEMORY.md', 'README.md', '_decision-sweep-log.md', 'notes.txt'];
+  {
+    const kept = FILES.filter(f => isMemoryEntry(f, IDX));
+    t('isMemoryEntry silent: realny wpis zostaje', kept.includes('brand-modes-manta.md'), JSON.stringify(kept));
+    t('isMemoryEntry fire: indeks NIE jest wpisem', !kept.includes(IDX), JSON.stringify(kept));
+    t('isMemoryEntry fire: README NIE jest wpisem', !kept.includes('README.md'), JSON.stringify(kept));
+    t('isMemoryEntry fire: nie-markdown NIE jest wpisem', !kept.includes('notes.txt'), JSON.stringify(kept));
+    // TEN case jest powodem istnienia tej soczewki: infra-log skilla retro raportował się
+    // jako "pamięć bez wpisu w indeksie", czyli check mierzył NIE TEN obiekt.
+    t('isMemoryEntry fire: _-prefiks (infra-log) NIE jest wpisem', !kept.includes('_decision-sweep-log.md'), JSON.stringify(kept));
+    t('isMemoryEntry: dokładnie 1 z 5 nazw przechodzi', kept.length === 1, JSON.stringify(kept));
+  }
+  {
+    // mirror: reguła jest o PREFIKSIE, nie o tej jednej nazwie — inny infra-log też wypada,
+    // a `_` w ŚRODKU nazwy nic nie zmienia (wpisy pamięci używają kebab-case, nie podkreśleń)
+    t('isMemoryEntry mirror: dowolny inny _-plik też wypada', !isMemoryEntry('_hygiene-runs.md', IDX), 'przeszedł');
+    t('isMemoryEntry mirror: podkreślenie w ŚRODKU nazwy nie wyklucza', isMemoryEntry('foo_bar.md', IDX), 'wypadł');
+    // gate-proof: sam brak w indeksie NIE jest kryterium tej soczewki (to robi index-parity),
+    // więc nazwa wyglądająca na infra, ale bez prefiksu, dalej JEST wpisem i podlega parytetowi
+    t('isMemoryEntry gate-proof: "decision-sweep-log.md" bez prefiksu JEST wpisem', isMemoryEntry('decision-sweep-log.md', IDX), 'wypadł');
+  }
 
   // --- soczewka gate-block ---
   const CHECK_OK = [

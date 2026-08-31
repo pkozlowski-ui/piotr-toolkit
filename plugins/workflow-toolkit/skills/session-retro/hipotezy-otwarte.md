@@ -457,6 +457,14 @@ tej gotchy siedzi w komentarzu w `design-gates.yml` w repo produktowym, nie tuta
   sesjach: ile razy ⚠️ zapaliło się i ilu z tych zapaleń odpowiadał realny defekt (potwierdzony
   fixem albo świadomym podniesieniem progu w tym samym commicie). Osobno per liczba, bo mogą
   rozjechać się w przeciwne strony.
+- **UNBLOCKED 2026-08-31 — warunek był NIEWERYFIKOWALNY, teraz jest mierzalny.** „≥ 5 przebiegów"
+  zakładało licznik przebiegów, a taki nie istniał: audyt drukował stan i nie zostawiał śladu, że
+  się odpalił, więc warunek odnoszący się do liczby przebiegów wyglądał identycznie jak spełniany
+  (ta sama klasa co soczewka mierząca nie ten obiekt — patrz H17). Dodany best-effort log, jedna
+  linia na run, POZA repo: **`~/.claude/hygiene-audit-runs.log`** (format: ISO-timestamp · tryb ·
+  root · `warnings=N`). Zapis owinięty `try/catch`, bo hook ma kontrakt „exit 0 zawsze".
+  **Licznik startuje 2026-08-31 od zera** — przebiegi wcześniejsze są bezpowrotnie niepoliczalne,
+  więc próg liczymy od tej daty. Komenda: `wc -l ~/.claude/hygiene-audit-runs.log`.
 - **Warunek wznowienia:** ≥ 5 przebiegów `hygiene-audit` (scheduled `hygiene-audit-antisys`, co
   ~3 dni → ~2 tygodnie) PO 2026-08-28, każdy z zapisanym stanem tych trzech checków. Werdykt
   per liczba: wszystkie zapalenia trafione → próg trzyma; ≥ 2 zapalenia bez defektu → poluzuj
@@ -560,6 +568,43 @@ starą wersję TEGO pliku (H1/H4/H5/H6 widoczne jako otwarte) — komendy odpalo
 listy; werdykty spisane z repo.
 
 ---
+
+### H17 — `hygiene-audit.mjs`: `_`-prefiks = plik infrastrukturalny, nie wpis pamięci
+
+**Zmiana (wdrożona 2026-08-31):** inline-filtr `memFiles` wyciągnięty do czystej funkcji
+`isMemoryEntry(f, indexFile)` i rozszerzony o wykluczenie plików `_`-prefiksowanych. Powód
+konkretny: `_decision-sweep-log.md` — infra-log tworzony przez krok 4a TEGO skilla — był
+raportowany przez soczewkę `index-parity` jako „pamięć bez wpisu w indeksie", czyli check żądał
+wpisu w `MEMORY.md` dla pliku, który wpisem pamięci nie jest. Soczewka mierzyła NIE TEN obiekt.
+
+**Co JEST udowodnione:**
+- **Break-restore: 32/32** (było 23/23, +9 case'ów). Złamanie (usunięcie linii `startsWith('_')`)
+  daje **3 czerwone** case'y i werdykt `FAIL (29/32)`; przywrócenie — `PASS (32/32)`.
+- **Gate-proof w self-teście:** `decision-sweep-log.md` BEZ prefiksu nadal JEST wpisem, a
+  `foo_bar.md` (podkreślenie w środku) też. To przypina regułę do PREFIKSU, nie do tej jednej
+  nazwy pliku — soczewka „nauczona jednej nazwy" tych case'ów nie przechodzi.
+- **Golden-set na realnym korpusie (antisis prototype): dokładnie 2 z 15 soczewek zmienione,**
+  obie w zamierzonym kierunku — `index-parity` 1 → 0 (`ok` false → **true**, fałszywy pozytyw
+  zdjęty) i `memory-cap` 42 → 41 (`ok` **nadal false**, czyli realny problem capu NIE został
+  zamaskowany, tylko liczba jest uczciwa). Lista soczewek identyczna, **13 bez ruchu = zero
+  collateralu**.
+
+**Czego NIE da się dziś udowodnić — powód istnienia tej pozycji:** skrypt jest z założenia
+reużywalny między projektami (żyje w `piotr-toolkit`, korzeniem jest CWD), ale **populacja
+held-out jest PUSTA** — `find ~/Documents -name audit-invariants.json` zwraca dokładnie JEDEN
+projekt, ten sam, na którym zmianę wymyślono. Roszczenie „nie psuje pozostałych projektów" jest
+więc nietestowalne, nie potwierdzone. Dodatkowo tylko ten jeden projekt ma dziś w ogóle plik
+`_`-prefiksowany, więc realna delta poza nim = nieznana.
+
+- **Warunek wznowienia:** ≥ 2 KOLEJNE projekty z `.claude/audit-invariants.json` (poza
+  `antisis prototype`), na których da się odpalić golden-set przed/po. Wtedy: powtórz diff
+  soczewka-po-soczewce i zaakceptuj tylko, jeśli `index-parity` nie traci pokrycia na realnych
+  wpisach pamięci, a lista soczewek zostaje identyczna.
+- **Komenda:** `find ~/Documents -maxdepth 4 -name 'audit-invariants.json' -path '*/.claude/*' | grep -v worktrees | wc -l`
+  (dziś: **1** → próg niespełniony, nic nie rób).
+- **Warunek unieważnienia samej reguły:** przestaje obowiązywać, gdy `_`-prefiks zacznie
+  oznaczać realne wpisy pamięci — wtedy potrzebna jest jawna allowlista infra-plików zamiast
+  reguły prefiksu.
 
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
