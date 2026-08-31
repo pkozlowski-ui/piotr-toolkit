@@ -659,6 +659,64 @@ czystą negacją własnej rekomendacji jako „puste"/nieliczące się do progu 
   zadanie**, nie czekaj na kolejną okazję retro. Ta sesja sama jest jednym z 17 wywołań (audyt F05
   Family Portal, `d2bcecbf`→`64cb0da0`) — kwalifikuje się do klasyfikacji, gdy ktoś ją zrobi.
 
+- **Klasyfikacja 2026-08-31 wieczór (delegowana z retro F05, wykonana w osobnej sesji, worktree
+  `strange-blackwell-1959f5`) — H4b (`code-design-audit`) osiąga próg, H4a/H4c nadal nie:**
+  17 surowych wywołań przeczytane pojedynczo wprost z transkryptów (`~/.claude/projects/**/*.jsonl`,
+  plik+linia namierzone z `tool_use Skill`), nie z podsumowań.
+
+  **Wyłączone jako „nie dotyczy" (3 surowe, 1 case logiczny):** `epic-meninsky-ab3bd4` (sesja główna +
+  jej subagent) i kontynuacja na chipie (`inspiring-ardinghelli-4c9554`) — user zażądał „proper,
+  complete audit session"/„complete, fresh audit" jednego już-nazwanego flow (15 ekranów) — to
+  explicit opt-in z doktryny §0.5 („full audit... skip the checks and run it"), nie test gate'a.
+  Pierwsza próba przerwana przez usera (`TaskStop` + chip do nowej sesji: „wolałbym żebyś ten audyt
+  odpalił w nowej sesji"), druga (chip) dokończona poprawnie (15/15 ekranów, structural walkthrough,
+  terminal state `converged`, sekcja inspection-scope) — ale opt-in z definicji nie mierzy checków.
+
+  **Ocenianych: 11 przypadków logicznych** z pozostałych 14 surowych — po odjęciu duplikatu
+  sesji-forka `distracted-meitner-2a2673` (2 pliki `.jsonl`, identyczne do linii 920 — jeden
+  resume/fork, nie dwa wywołania) i po scaleniu par sesja-główna+jej-własny-subagent-na-ten-sam-cel
+  (F10: `strange-blackwell` + subagent; F11: `festive-keller` + subagent) w jeden case każda:
+
+  | Case | Zakres proszony | Ekranów | Werdykt |
+  |---|---|---|---|
+  | `distracted-meitner` — fix 7 luk + re-audit, agent-first flow | 1 flow, cel już potwierdzony przez usera (4 decyzje czytane z audytu) | 32 | MET — bez explicit recytacji checków, ale zakres trafny (nie rozjechał się na cały monorepo) |
+  | `subagents` — MAP „AI Upload School File" | 1 nazwany, nigdy-nieaudytowany shipped flow | 5 + 3 manualnie (poza zasięgiem pixel-gate) | MET — T1–T3 + craft pass, jawna linia „Scope:" w werdykcie |
+  | `sleepy-spence-466278` — koordynator epiku FP | 6 vs 12 flow, ambiwalentne | — | **MET, najczystszy przykład** — `AskUserQuestion` PRZED wywołaniem skilla, jawna rekomendacja tańszej opcji (6 flow bez baseline), user świadomie nadpisał na 12 |
+  | `blissful-lehmann` — F06+F08 | 1 sesja, 2 flow, nigdy niemierzone | 22 | MET — pełne T1–T3, regresja cross-flow ograniczona do realnie dotkniętych 12 ekranów (nie całego DS) |
+  | `optimistic-kapitsa` — F05 | 1 flow | 16 | MET — realny bug znaleziony i naprawiony (Save nie zapisywał), PR #703 zmergowany |
+  | `strange-blackwell` — F10 (+subagent) | 1 flow, mały | 4 | **MET, explicit** — „craft pass (design-tweaker, quick mode — uzasadnione małym, jednorazowym zakresem)" |
+  | `busy-snyder` — F04+F07+F09 | 1 sesja, 3 flow | — | MET — 2 realne defekty naprawione, 1 finding poprawnie routowany do Figmy (nie po cichu w kodzie) |
+  | `festive-keller` — F11 (+subagent) | 1 flow | 10 | MET — brak geometry-baseline nazwany jako dług, nie przemilczany |
+  | `sleepy-spence` subagent — F07 | 1 flow | 12 | **MET, explicit** — „deliberate cost-conscious deviation: jeden zsyntetyzowany reviewer zamiast 7-subagentowego panelu", nazwane wprost w werdykcie |
+  | `sleepy-spence` subagent — F09 | 1 flow | 14 | **MET, explicit** — ta sama redukcja panelu + terminal state uczciwie `max_iterations_reached` zamiast wymuszonego `converged` |
+  | `sleepy-spence` subagent — F05 (capture baseline) | 1 flow | 16 | MET, częściowo niepewne — transkrypt urywa się w trakcie capture'u baseline'ów bez werdyktu końcowego; brak dowodu na zły zakres, ale brak też dowodu na domknięcie |
+
+  **Wynik: 11/11 MET, 0 złamań** — ani przeszacowania (żadna sesja nie rozjechała się w pełny sweep
+  monorepo), ani niedoszacowania (żadna nie ograniczyła się do powierzchownego sprawdzenia tam, gdzie
+  wyszły realne defekty — 3 case'y znalazły i naprawiły prawdziwe bugi). **4 z 11 case'ów explicite
+  artykułują rozumowanie kosztowe z §0.5** (koordynator: pytanie o zakres przed startem; F10/F07/F09:
+  „quick mode"/redukcja panelu z podanym powodem) — to nie tylko brak porażki, to widoczny ślad
+  działania mechanizmu, nie przypadek. **Próg wznowienia dla H4b (`design-toolkit:code-design-audit`)
+  jest osiągnięty i spełniony.** H4a (`design-tweaker`) i H4c (`web-research`) nadal `0 ocenianych`
+  (patrz tabela na górze pliku) — warunek wznowienia całego H4 wymaga wszystkich trzech osobno, więc
+  **H4 jako całość NIE domyka się tym przebiegiem**, tylko jego gałąź `code-design-audit`.
+
+  **Czego ten przebieg NIE dowodzi:** nie testuje odwrotnego kierunku ryzyka — żaden z 11 przypadków
+  nie miał sytuacji „pojedyncza edycja / brak artefaktu designu" (check 1/2 na „nie"), więc gałąź
+  gate'a chroniąca przed *niedoszacowaniem* pozostaje niezmierzona w tę stronę. Nie mierzy trafności
+  triggera (T) — wszystkie 17 wywołań to jawne, świadome prośby o audyt, nie testy „czy skill w ogóle
+  powinien wystartować". Ocena jednoosobowa (ten model, bez ślepego drugiego sędziego).
+
+  **Efekt uboczny zauważony po drodze (NIE H4, osobna obserwacja procesowa):** F05, F07 i F09 zostały
+  faktycznie zaaudytowane dwa razy niezależnie — raz przez dedykowane worktree (`optimistic-kapitsa`
+  → F05, `busy-snyder` → F04/F07/F09), raz przez subagentów w sesji koordynatora `sleepy-spence-466278`.
+  Wygląda na kolizję zakresu między równolegle wystartowanymi sesjami (możliwe naruszenie własnej
+  reguły CLAUDE.md „recon przed startem karty — `git log --all` + `gh pr list`"), nie na błąd gate'a
+  H4. Warte osobnego zgłoszenia Piotrowi — nie rozwijane dalej w ramach tej klasyfikacji.
+
+  **Gdzie zapisać:** ta sama karta kanban „Cost gate — held-out" (patrz notatka 2026-08-24 wyżej) —
+  dopisać `code-design-audit: 11/11 MET (held-out C)`, zostawić H4a/H4c jako otwarte na tej karcie.
+
 ---
 
 ### H6 — `ux-copy`: reguła American English z klauzulą „nie mirroruj brytyjskiej pisowni z promptu"
