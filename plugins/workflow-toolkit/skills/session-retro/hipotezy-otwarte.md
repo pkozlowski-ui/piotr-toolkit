@@ -649,6 +649,15 @@ czystą negacją własnej rekomendacji jako „puste"/nieliczące się do progu 
   gate — held-out" (ta jeszcze nie istniała w momencie gdy H5 był gate'owany). Kto będzie odpalał
   gate H4 — sprawdź, czy dorobić werdykt do TEJ SAMEJ karty co H5 (spójność) czy świadomie założyć
   osobną „Cost gate — held-out", jak było pierwotnie planowane.
+- **Przebieg 2026-08-31 (retro sesji F05 code-design-audit, antisis-prototype):** `heldout_split.sh
+  design-toolkit:code-design-audit 2026-08-18` → **17 wywołań surowych** (≥3, próg wznowienia
+  spełniony na tej samej soczewce co poprzednio). Klasyfikacja per przypadek (czy gate 3-pytaniowy
+  z §0.5 realnie przebiegł i czy wybrany tryb był tańszy tam, gdzie trzeba) **NIE wykonana w tym
+  przebiegu** — 17 transkryptów do ręcznego przeglądu przekracza budżet retro na koniec sesji.
+  Zgodnie z lekcją procesową z H1/H3 (3× „za mało danych" bez otwarcia okna = odkładanie, nie brak
+  materiału) — **nie odkładaj czwarty raz bez klasyfikacji; deleguj ją do subagenta jako osobne
+  zadanie**, nie czekaj na kolejną okazję retro. Ta sesja sama jest jednym z 17 wywołań (audyt F05
+  Family Portal, `d2bcecbf`→`64cb0da0`) — kwalifikuje się do klasyfikacji, gdy ktoś ją zrobi.
 
 ---
 
