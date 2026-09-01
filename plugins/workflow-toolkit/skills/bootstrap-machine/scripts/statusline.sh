@@ -14,6 +14,29 @@ set -uo pipefail
 
 IN="$(cat)"
 
+# --- heartbeat wykonania (czysty shell, ZERO zaleznosci) ---------------------
+# Po co: caly kanal danych dla bram (`gate-model-switch`, `gate-spend-ceiling`) to zrzut pisany
+# nizej w tym pliku. Gdy zrzut nie powstaje, sa DWIE rozne przyczyny i z zewnatrz wygladaja
+# identycznie: (a) statusline w ogole nie jest uruchamiany przez ten interfejs, (b) jest
+# uruchamiany, ale wychodzi wczesniej — np. `jq` nie ma w PATH, ktory daje mu aplikacja
+# (Homebrew /opt/homebrew/bin bywa nieobecny w srodowisku procesu GUI). Heartbeat rozroznia te
+# dwa przypadki, bo powstaje ZANIM cokolwiek moze zawiesc: bez jq, bez pipe'ow, bez podprocesow.
+# Zmierzone 2026-09-01: zrzut skasowany o 12:51 nie powstal ponownie mimo kolejnych tur, a bez
+# tego sladu nie dalo sie orzec, czy skrypt milczy czy nie zyje. Brak dowodu wykonania byl luka
+# w diagnostyce, nie w logice.
+{
+  mkdir -p "$HOME/.claude/state" 2>/dev/null
+  printf 'ts=%s jq=%s bash=%s path=%s
+'     "$(date +%s)"     "$(command -v jq || echo BRAK)"     "${BASH_VERSION:-?}"     "$PATH" > "$HOME/.claude/state/statusline-heartbeat" 2>/dev/null
+} 2>/dev/null || true
+
+# Bez `jq` skrypt nie policzy niczego — ale MUSI to powiedziec, a nie zniknac po cichu.
+if ! command -v jq >/dev/null 2>&1; then
+  printf '%s
+' "statusline: brak jq w PATH — bramy kosztowe nie dostaja danych"
+  exit 0
+fi
+
 jqr() { printf '%s' "$IN" | jq -r "$1" 2>/dev/null; }
 
 # Pusty/niepoprawny stdin nie ma prawa wygladac na poprawny stan — lepiej jawny znacznik niz cicha pustka.
