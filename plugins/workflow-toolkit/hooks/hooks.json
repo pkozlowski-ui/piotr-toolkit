@@ -1,6 +1,17 @@
 {
-  "description": "Uniwersalna egzekucja niezawodnosci: anty-bloat guard na plikach instrukcji (PreToolUse blokuje wzrost, PostToolUse lapie zapisy przez Bash, ktorych nie da sie przewidziec z tekstu komendy) + re-injection twardych regul co ture + deterministyczny routing intent->skill (UserPromptSubmit). Deterministyczne guardy zamiast miekkich regul, ktore gasna w dlugiej sesji.",
+  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse blokuje wzrost, PostToolUse łapie zapisy przez Bash, których nie da się przewidzieć z tekstu komendy) + re-injection twardych reguł co turę + deterministyczny routing intent→skill (UserPromptSubmit) + blokada zaproszeń do wysyłki (Stop). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji.",
   "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-send-invitation.sh\"",
+            "statusMessage": "guard: zaproszenie do wysyłki"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit|Bash",
