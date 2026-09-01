@@ -19,6 +19,15 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-01 wieczór (retro sesji „status karty FP parity-content-drift", antisis-prototype) — ZERO ruchu
+
+Sesja była czysto informacyjna: przeczytała kartę kanban + powiązaną kartę, zweryfikowała stan
+przez `git log`/`gh pr view` (PR #741/#742/#744 zmergowane, gate FP zielony), zwolniła claim.
+Zero wywołań `linear-ticket-draft`, `design-tweaker`, edycji CLAUDE.md, pól `related:`/`linear:`,
+`usage-audit`, `web-research` — żadna hipoteza z rejestru nie miała czego mierzyć. Zgodnie z regułą
+z przebiegów 2026-08-25/08-28 (sesja nie dotykająca mierzonego skilla = nie liczy się jako
+odłożenie) — komendy nieodpalone. **Nowych hipotez z tej sesji: ZERO.**
+
 ### Przebieg 2026-09-01 (retro sesji „kanban Dominique / epic sales-demo", antisis-prototype) — ZERO ruchu
 
 Sesja pracowała wyłącznie na kartach Obsidian KANBAN i Linear (read-only na MAN-860/MAN-848) —
