@@ -7,6 +7,9 @@ max_turns: 12
 allowed_tools: [Read, Glob, Grep, Skill]
 ---
 
+Pracuj wedlug skilla `figma-design-toolkit:figma-design-workflow` — zaladuj go i zastosuj jego
+metodologie do ponizszego pytania.
+
 Buduje karte w Figmie i chce, zeby padding 16 px i gap 16 px byly zwiazane z tokenami spacingu,
 a nie wpisane na sztywno. Nie mam teraz mostka do Figmy — nie odpalaj zadnego `mcp__*` i niczego
 nie wykonuj.
