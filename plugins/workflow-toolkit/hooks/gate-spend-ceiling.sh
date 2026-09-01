@@ -272,6 +272,18 @@ if used is not None:
 # --- 4) prog limitu planu ----------------------------------------------------
 wins = windows(dump)
 
+# Zrzut moze byc SWIEZY i jednoczesnie pusty: Claude Code podaje `rate_limits: null`, gdy konto nie
+# ma czytelnych okien limitu (brak profile scope w tokenie OAuth, API key/Bedrock/Vertex, albo
+# `no_limits_configured` — org z nielimitowanymi kredytami). Zmierzone na tym koncie 2026-09-01:
+# wszystkie pola null przy odczycie sprzed 33 s. Bez tego warunku brama nie mowi NIC — a cicha
+# brama jest nieodroznialna od dzialajacej. To dokladnie ta klasa bledu co auto-archiwum pod TCC.
+if used is None and not wins and once_per_day("nodata"):
+    msgs.append(
+        "[sufit-wydatku] Brama jest SLEPA na tym koncie: zrzut limitu jest swiezy, ale wszystkie pola "
+        "puste (`rate_limits: null` z API). Nie znam ani zuzycia okien, ani stanu kredytow — zaden "
+        "prog sie nie odpali. Nie traktuj tej bramy jako ochrony, dopoki to sie nie zmieni; "
+        "jedyny dzialajacy sygnal jest wtedy po stronie transkryptow (liczenie tokenow), nie serwera.")
+
 # Prog STOP = krawedz planu. Blokujemy TYLKO gdy konto w ogole moze przelac w kredyty —
 # przy `is_enabled=false` wyczerpanie limitu i tak konczy sie odmowa serwera, wiec
 # wyprzedzajaca blokada bylaby czystym halasem.

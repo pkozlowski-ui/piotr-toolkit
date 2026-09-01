@@ -120,6 +120,15 @@ check "stary odczyt >= STOP, brak resets_at → fail-open"         'rc=0'   "$(r
 clear_marks; set_base 0; set_state 40 20 7200 0 true 1800
 check "stary odczyt ponizej STOP → fail-open"                    'rc=0'   "$(run)"
 
+echo "Swiezy zrzut, ale puste pola (rate_limits: null):"
+clear_marks; rm -f "$TMP/.claude/state/spend-ceiling-baseline.json"
+printf '{"ts":%s,"seven_day_pct":null,"five_hour_pct":null,"extra_usage":null}' "$(date +%s)" \
+  > "$TMP/.claude/state/rate-limits.json"
+O="$(run)"
+check "swiezy-ale-pusty → glosno, nie cisza"            'SLEPA'           "$O"
+check "…i nie blokuje"                                  'rc=0'            "$O"
+check "…i raz na dobe"                                  ''                "$(run)"
+
 echo "Tryb ack:"
 clear_marks; set_base 0; set_state 20 20 60 7.25 true
 check "ack re-baseline'uje" '7.25' "$(HOME="$TMP" bash "$HOOK" ack)"

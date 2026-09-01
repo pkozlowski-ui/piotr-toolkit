@@ -1121,3 +1121,43 @@ czystą negacją własnej rekomendacji jako „puste"/nieliczące się do progu 
     design-toolkit:ux-copy 2026-08-18
   ```
 - **Gdzie zapisać werdykt:** ta sama karta co H4/H5 („Cost gate — held-out") + zdjęcie tej pozycji stąd.
+
+---
+
+### H21 — `obsidian-feedback-sweep`: oś Dyspozycji jest poniżej klasy większościowej
+
+- **Co jest hipotezą:** nie zmiana, którą wprowadzono, tylko **zmierzony deficyt istniejącego
+  kanonu**. Przy ślepym wsadzie (tekst komentarza + lokalizacja) klasyfikacja Dyspozycji trafia
+  w 30–33%, podczas gdy „zawsze `do-now`" trafia w 47%. Oś Typu wypada dobrze (58–63% vs null 35%)
+  — problem jest wyłącznie na osi, która decyduje, czy pozycja idzie do budowy czy do człowieka.
+- **Data pomiaru:** 2026-09-01. Korpus: 18 domkniętych rejestrów Manty, 153 pozycje, split
+  chronologiczny po rejestrach (train 110 do 07-10, held-out 43 od 07-14).
+- **Stan gate'a:** **trzy warianty zmierzone na tym samym held-oucie, żaden nie przeszedł.**
+  Baseline (osąd modelu, same osie): 33% · reguły projektu podane prozą: 42–47% · deterministyczny
+  silnik nad skompilowanymi regułami: 37% (pokrycie 72%, precyzja 52%). Null: 47%. Silnik na train
+  dawał 62% → przepaść generalizacji 25 punktów, pętla naprawcza przeuczyła reguły.
+  **Werdykt: nic nie utwardzone w `SKILL.md`.** Kod i harness leżą jako eksperyment w
+  `plugins/obsidian-toolkit/skills/obsidian-feedback-sweep/experiments/policy-engine/`.
+- **Co JEST ustalone (nie hipoteza):** cztery reguły polityki, które rządzą korpusem, a nigdy nie
+  zostały spisane — (1) odpowiadamy tylko tam, gdzie rzecz dotyczy naszego designu; cudza rozmowa
+  na naszym pliku to `no-action`; (2) macierz właścicieli warstw (model danych → Matt, zakres
+  i proces → Tom & Will, prezentacja i copy → Piotr); (3) proposer = decision-maker; (4) tag
+  produktowy nie oznacza automatycznie `needs-decision`. To **dane projektu**, nie kanon skilla —
+  miejsce dla nich to config per-projekt, którego `SKILL.md` już się domaga.
+- **Soczewka:** **D (dyspozycja)** — trafność przypisania `do-now / needs-decision / answer-close /
+  no-action` wobec tego, co ostatecznie zapisano w rejestrze. Mierz WYŁĄCZNIE tę oś; Typ i Owner
+  mają inne rozkłady i mieszanie ich zaciera sygnał.
+- **Zastrzeżenie, bez którego liczba kłamie:** wszystkie warianty dostały wsad ślepy, a realny
+  sweep widzi ekran, wątek i historię. Porównania MIĘDZY wariantami są uczciwe (ten sam wsad),
+  poziom bezwzględny **nie jest oceną skilla w realnej pracy**. Gold set to też etykiety jednego
+  człowieka z jednego przebiegu — sufit korpusu nieznany.
+- **Warunek wznowienia:** ≥ 4 nowe domknięte rejestry po 2026-09-01 (rośnie held-out, którego
+  żadna runda naprawcza nie dotknęła) **albo** decyzja, żeby powtórzyć pomiar z wsadem
+  kontekstowym (screenshot ekranu + wątek), co rozstrzygnie, ile z luki to głód kontekstu.
+- **Komenda:**
+  ```bash
+  cd plugins/obsidian-toolkit/skills/obsidian-feedback-sweep/experiments/policy-engine
+  python3 extract_goldset.py "$HOME/Documents/Manta Vault/Feedback Pipeline/Done" goldset.json
+  ```
+- **Gdzie zapisać werdykt:** karta „Polityka skompilowana do reguł plus deterministyczny silnik
+  (feedback-sweep)" + zdjęcie tej pozycji stąd.
