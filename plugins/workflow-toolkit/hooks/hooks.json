@@ -1,9 +1,9 @@
 {
-  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse) + re-injection twardych reguł co turę + deterministyczny routing intent→skill (UserPromptSubmit). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji.",
+  "description": "Uniwersalna egzekucja niezawodnosci: anty-bloat guard na plikach instrukcji (PreToolUse blokuje wzrost, PostToolUse lapie zapisy przez Bash, ktorych nie da sie przewidziec z tekstu komendy) + re-injection twardych regul co ture + deterministyczny routing intent->skill (UserPromptSubmit). Deterministyczne guardy zamiast miekkich regul, ktore gasna w dlugiej sesji.",
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|MultiEdit|Bash",
         "hooks": [
           {
             "type": "command",
@@ -27,6 +27,18 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/context-watch.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/guard-claudemd-bloat.sh\"",
+            "statusMessage": "anty-bloat guard (post)"
           }
         ]
       }
