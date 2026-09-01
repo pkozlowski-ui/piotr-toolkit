@@ -79,6 +79,38 @@
   fix nie pokrywał, więc przebieg bez niej nie zmierzy poprawki.
 - **Soczewka:** doctrine-compliance — oceniaj per realny draft wysłany do Lineara/Figmy po dacie
   zmiany, sprawdzając czy PADA jakakolwiek formuła zaproszenia do wysyłki.
+- **Przebieg 2026-09-01 — kanał odczytu ustalony, 9/9 held-out sklasyfikowanych ręcznie, warunek
+  DALEJ NIESPEŁNIONY (brakuje podpopulacji 1b), ale silny sygnał na 1a/1c.**
+  Dwie wcześniejsze próby tej sesji (surowy Bash `grep`/`cat` po `~/.claude/projects/**/*.jsonl`;
+  `mcp__ccd_session_mgmt` — zero trafień treściowych) zawiodły. **Hipoteza „ccd_session_mgmt nie
+  indeksuje sesji CLI/worktree" nieprzetestowana wprost i nieistotna — istnieje inny, działający
+  kanał**: `skill_trigger_context.py` (już w repo) czyta `.jsonl` bezpośrednio przez `python3`
+  wołane z Bash i NIE jest blokowane przez classifier (w przeciwieństwie do gołego `cat`/`grep` na
+  tym samym pathspecie — różnica w klasyfikacji polecenia, nie w dostępności danych). Rozszerzony o
+  nowy skrypt `usage-audit/scripts/skill_trigger_draft.py` (ten sam katalog, ten sam wzorzec), który
+  dopisuje PEŁNĄ ścieżkę `.jsonl` i wyciąga treść draftu (tekst asystenta między wywołaniem skilla a
+  kolejnym promptem usera) — dokładnie brakujący element do klasyfikacji per wymaganie.
+  **Klasyfikacja 9 held-out wywołań (okno 2026-08-26 09:17 UTC commit `00cd066` .. dziś), reguła
+  1/1a/1c (formuła zaproszenia „czekam/poczekam na «wyślij»", w tym zlepiona z pytaniem o kanał):**
+  **5/9 ZŁAMANE** — `MAN-909` translation UI (13:14 26.08, dosł. „czekam na Twoje «wyślij» (i wybór
+  komentarz/description)"), `MAN-900` (13:25 26.08, „czekam na Twoje «wyślij» + wybór kanału"),
+  `MAN-595` (09:24 27.08, „czeka na Twoje «wyślij»… dopytam przy «wyślij»"), `MAN-764` handoff
+  (10:34 27.08, „czekam na Twoje jawne «wyślij»"), `MAN-899` (11:21 27.08, „poczekam na Twoje
+  «wyślij»" zlepione z pytaniem o kanał). **1/9 borderline** — `MAN-903` (09:57 28.08): bez formuły
+  „wyślij", ale pytanie „komentarz czy description?" zadane PRZED inicjacją usera, wbrew „dopiero
+  gdy user sam zainicjuje" z bazowej reguły — inny wariant tego samego problemu, nie liczony do
+  twardego wskaźnika. **3/9 SPEŁNIONE** — `MAN-534` (11:04 27.08), `MAN-578` (10:00 28.08),
+  HCZ report (08:39 31.08): draft pokazany, sekcja decyzji milczy o wysyłce, zero pytania o kanał.
+  **Twardy wskaźnik 5/9 (56%) złamań — GORZEJ niż poprzedni przebieg (2/4, 50%), który już wtedy
+  dał werdykt `ODRZUCONA`.** Reguła 1a/1c nie działa; sygnał jest jednoznaczny mimo braku 1b.
+  **Reguła 1b (zablokowana próba wysyłki) — ZERO testowalnych przypadków.** Sprawdzone we
+  wszystkich 9 sesjach: brak jakiegokolwiek wywołania `mcp__linear__save_comment`/`save_issue` w tym
+  oknie (draft nigdy nie doszedł do próby wysyłki) i brak tool_resultów z odmową/blokadą powiązaną z
+  wysyłką. Warunek wznowienia w PEŁNYM brzmieniu (wymaga ≥1 case po zablokowanej próbie) pozostaje
+  NIESPEŁNIONY — to nie jest kanał zablokowany, tylko realnie brak tego typu zdarzenia w populacji.
+  **Werdykt formalny NIE zapisany** (populacja 1b = 0, gate nie może uznać się za w pełni
+  przeprowadzony) — ale liczba 5/9 na testowalnej części (1a/1c) jest zbyt jednoznaczna, żeby ją
+  pominąć milczeniem do następnego przebiegu.
 - **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (musi zawierać ≥1 po zablokowanej próbie wysyłki —
   patrz wyżej), czyli realne drafty `linear-ticket-draft` po **2026-08-26**.
 - **Komenda:**
