@@ -606,6 +606,67 @@ więc nietestowalne, nie potwierdzone. Dodatkowo tylko ten jeden projekt ma dzi�
   oznaczać realne wpisy pamięci — wtedy potrzebna jest jawna allowlista infra-plików zamiast
   reguły prefiksu.
 
+### H18 — reguła „pracuj seriami": próg 15 min zamiast miękkiego „długie luki"
+
+**Co jest hipotezą:** nie sam fakt, że luka gasi cache (to jest ZMIERZONE, niżej), tylko że
+**wpisanie progu liczbowego do always-on CLAUDE.md zmieni zachowanie na tyle, żeby te ~8% cache
+write realnie spadło.** Reguła bez progu („pracuj seriami", „długie luki") istniała od dawna i
+nie zapobiegła 22,8 mln tokenów przebudów — próg może po prostu opisać to samo dokładniej,
+nie zmieniając niczego.
+
+**Data zmiany:** 2026-09-01 (`CLAUDE.global.md`, sekcja „Dobór modelu i effort").
+
+**Co JEST udowodnione** — pomiar na 86 022 unikalnych requestach z transkryptów
+`~/.claude/projects`, okno 2026-08-01 → 2026-09-01, 835 sesji głównych + 305 sidechain
+(`cache_probe.py`, definicja rebuildu: `cache_read < 50%` kontekstu z poprzedniej tury):
+
+- **TTL potwierdzony twardo, nie z dokumentacji:** główna sesja zamawia **98,5%** tokenów
+  cache jako `ephemeral_1h`, subagenty **100%** jako `ephemeral_5m`. To niezależnie domyka
+  poprawkę z commita `5be5841` (wcześniejsze „5-min TTL" w regule było błędne).
+- **Krzywa rebuildu vs luka (główna sesja)** — próg jest realny i ostry:
+  `0–1m 0,2%` · `1–5m 4,4%` · `5–15m 6,0%` · **`15–30m 20,0%`** · `30–60m 41,5%` ·
+  `60–120m 96,0%` · `>120m 100%`. Poniżej 15 min przerwa jest praktycznie darmowa;
+  powyżej 60 min rebuild jest pewny i kosztuje średnio **~250k tokenów**.
+- **Subagenty potwierdzają 5 min osobną krzywą:** `1–5m 19,2%` → **`5–15m 93,6%`**. Zapadka
+  wypada dokładnie tam, gdzie TTL — czyli metoda pomiaru mierzy to, co ma mierzyć
+  (to jest wewnętrzny gate-proof, nie druga hipoteza).
+
+**Co pomiar OBALIŁ w intuicji stojącej za regułą:** luki ≥15 min odpowiadają za **7,8%**
+całego `cache_creation` głównej sesji (22,8 mln z 293,4 mln). Rebuildy przy lukach **poniżej
+5 minut** — czyli wewnątrz serii, tam gdzie „pracuj seriami" z definicji nic nie zmienia —
+to **21,5%** (63,0 mln). Główny koszt przebudowy nie bierze się z przerw w pracy. Reguła
+celuje w mniejszą część problemu i tak musi być zapisana: jako próg higieniczny, nie jako
+dźwignia oszczędności.
+
+**Czego NIE da się dziś rozstrzygnąć — powód istnienia tej pozycji:**
+1. **Przyczyna tych 21,5% jest nieznana.** Klasyfikacja rebuildów `<5 min` daje 94% w worku
+   „prefiks się zmienił" (230 zdarzeń, 59,2 mln tok); zmiana modelu tłumaczy 5%, compact —
+   zero trafień. „Prefiks się zmienił" to **brak diagnozy, nie diagnoza**: kandydaci
+   (przeładowanie MCP/skilli, edycja `CLAUDE.md` w trakcie sesji, zmienny system-reminder,
+   eviction pod obciążeniem) nie są rozróżnione. Dopóki to nie jest rozbite, nie wolno pisać
+   reguły celującej w tę większą część.
+2. **Efekt samej zmiany reguły jest niezmierzony.** Baseline zapisany wyżej pochodzi z okna
+   PRZED zmianą; nie ma jeszcze ani jednego dnia po.
+
+- **Warunek wznowienia:** ≥ 30 dni od 2026-09-01 (okno 2026-10-01+, porównywalne objętościowo —
+  ≥ 40k requestów głównej sesji). Wtedy powtórz pomiar tą samą komendą i porównaj z baseline'em.
+- **Próg akceptacji (liczbowy, ustalony PRZED pomiarem):** udział rebuildów `≥15m` w
+  `cache_creation` głównej sesji spada z **7,8% do ≤ 5,0%**, przy niepogorszonym udziale
+  rebuildów `<5m` (baseline **21,5%** — wzrost powyżej 25% czytaj jako regres, nie sukces:
+  znaczyłby, że praca została ściśnięta w serie kosztem czegoś innego). Poniżej progu →
+  reguła zostaje jako higiena, ale **bez** miejsca w always-on; wtedy przenieś ją do runbooka
+  `bootstrap-machine`.
+- **Komenda:**
+  ```bash
+  plugins/workflow-toolkit/skills/usage-audit/scripts/cache_probe.py 2026-10-01
+  ```
+- **Warunek unieważnienia samej reguły:** przestaje być trafna, gdy Anthropic zmieni TTL cache
+  albo gdy CLI zacznie odnawiać cache w tle — pierwsze widać w linii „TTL faktycznie zamawiany"
+  (udział `1h` w głównej sesji spada poniżej 90%), drugie w zapadnięciu się krzywej `60–120m`
+  poniżej 50%. Oba czyta ta sama komenda, bez osobnego pomiaru.
+- **Gdzie zapisać werdykt:** karta `Pomiar cache promptu — licznik zamiast domyslu w regule
+  o seriach` (kanban) + zdjęcie tej pozycji stąd.
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26
