@@ -837,6 +837,41 @@ okna pomiarowego. Treść lekcji żyje na razie w warstwie 3 jako `feedback`
 *Wraca do rozważenia po 2026-10-01, razem z werdyktem H19 — wtedy budżet hooka renegocjujemy
 na podstawie zmierzonego wyniku, nie domysłu.*
 
+---
+
+### H20 — brama `PreModelSwitch`/`PostModelSwitch`: reguła kosztowa egzekwowana w momencie przełączenia modelu
+
+- **Co jest hipotezą:** że przeniesienie dwóch reguł kosztowych z prozy globalnego CLAUDE.md
+  (próg 50% limitu 7d na Fable 5; tabela routingu zadanie→model→effort) do hooka odpalanego
+  **dokładnie przy zmianie modelu** zmienia realne zachowanie — a nie tylko dokłada kolejny
+  wstrzyknięty tekst, który przepływa obok. Ta sama klasa co `context-watch.sh`, gdzie dwie
+  kolejne wersje nagging-u zmierzyły się jako NIEPOTWIERDZONE.
+- **Data zmiany:** 2026-09-01 (`workflow-toolkit` 1.36.0, commit `e5e50bf`).
+- **Stan gate'a:** `0 zaobserwowanych odpaleń na żywo`. 18/18 przypadków selftestu zielonych, ale
+  selftest mierzy kontrakt hooka na syntetycznym payloadzie, nie to, czy Claude Code faktycznie
+  woła te eventy w sesji Piotra i czy dialog `ask` realnie się pokazuje. **Do czasu pierwszego
+  odpalenia na żywo brama jest nieodróżnialna od martwej** — dokładnie ta klasa błędu, która
+  ukryła niedziałające auto-archiwum kanbana pod TCC.
+- **Dwie soczewki, mierz osobno:**
+  - **E (egzekucja):** czy `PreModelSwitch` w ogóle się odpala — czy w transkryptach po 2026-09-01
+    występuje wpis hooka przy zmianie modelu; czy `ask` pokazał dialog, gdy 7d ≥ 50%.
+  - **B (behawior):** czy adnotacja `PostModelSwitch` przekłada się na routing — udział delegacji
+    do subagentów w sesjach na Opusie po zmianie vs przed (ta sama metryka co H15).
+- **Ryzyko odwrotne:** `ask` przy każdym wejściu na Fable powyżej progu może być na tyle uciążliwe,
+  że Piotr podniesie próg albo wyłączy hook — czyli brama zniknie nie przez werdykt, tylko przez
+  zmęczenie. Werdykt musi policzyć, ile razy potwierdzenie zostało wyklikane „tak" bez namysłu.
+- **Znany słaby punkt kanału:** dane o limicie 7d nie są w payloadzie hooka — idą przez
+  `~/.claude/state/rate-limits.json`, który pisze `statusline.sh`. Zmiana statusline'a albo
+  konfiguracja bez niego = brama fail-open. Fail-open jest głośny (`PostModelSwitch` mówi
+  „nie miała danych"), ale to nadal miękkie ogniwo, nie twarde.
+- **Warunek wznowienia:** ≥ 3 realne przełączenia modelu po dacie zmiany (dowolny kierunek),
+  w tym ≥ 1 wejście na Fable.
+- **Komenda:**
+  ```bash
+  grep -rl "PostModelSwitch" ~/.claude/projects --include=*.jsonl | wc -l
+  ```
+- **Gdzie zapisać werdykt:** karta kanban „Brama na przelaczanie modelu — PreModelSwitch i PostModelSwitch" + zdjęcie tej pozycji stąd.
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26
