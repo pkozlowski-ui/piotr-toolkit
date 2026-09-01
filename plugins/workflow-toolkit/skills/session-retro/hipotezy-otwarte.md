@@ -737,13 +737,35 @@ to **21,5%** (63,0 mln). Główny koszt przebudowy nie bierze się z przerw w pr
 celuje w mniejszą część problemu i tak musi być zapisana: jako próg higieniczny, nie jako
 dźwignia oszczędności.
 
-**Czego NIE da się dziś rozstrzygnąć — powód istnienia tej pozycji:**
-1. **Przyczyna tych 21,5% jest nieznana.** Klasyfikacja rebuildów `<5 min` daje 94% w worku
-   „prefiks się zmienił" (230 zdarzeń, 59,2 mln tok); zmiana modelu tłumaczy 5%, compact —
-   zero trafień. „Prefiks się zmienił" to **brak diagnozy, nie diagnoza**: kandydaci
-   (przeładowanie MCP/skilli, edycja `CLAUDE.md` w trakcie sesji, zmienny system-reminder,
-   eviction pod obciążeniem) nie są rozróżnione. Dopóki to nie jest rozbite, nie wolno pisać
-   reguły celującej w tę większą część.
+**Czego NIE da się dziś rozstrzygnąć — powód istnienia tej pozycji** (pkt 1 domknięty 2026-09-01):
+1. ~~**Przyczyna tych 21,5% jest nieznana.**~~ **ROZBITE 2026-09-01** — `cache_probe.py`
+   dostał atrybucję przyczyn (`causes_report`) i podział na granicę tury (`boundary_report`).
+   Worek „prefiks się zmienił" spadł z 94% do **62,6%**, a reszta ma nazwane udziały
+   (główna sesja, luka <5 min, 249 zdarzeń / 63,5 mln tok):
+
+   | przyczyna | zdarzeń | tokeny | % worka |
+   |---|---|---|---|
+   | **zestaw narzędzi** (`deferred_tools_delta`, `mcp_instructions_delta`, `agent_listing_delta`, `skill_listing`) | 53 | 13,1 mln | **20,7%** |
+   | zmiana katalogu (`cwd`/`gitBranch`) | 12 | 4,4 mln | 6,9% |
+   | zmiana modelu | 16 | 3,2 mln | 5,0% |
+   | zmiana effortu | 9 | 1,9 mln | 2,9% |
+   | uprawnienia/tryb | 4 | 1,2 mln | 1,9% |
+   | nierozpoznane | 155 | 39,7 mln | 62,6% |
+
+   **Eviction po stronie dostawcy WYKLUCZONY jako główna przyczyna** — to był warunek
+   zamknięcia pozycji bez reguły, więc rozstrzygnięcie ma znaczenie. Nierozpoznane rebuildy
+   nie rozkładają się równomiernie: **na granicy tury 5,78% par kończy się przebudową, wewnątrz
+   tury 0,05% — 123× rzadziej** (2145 vs 66 218 par). Eviction nie wie nic o naszych turach
+   i uderzałby równomiernie. To jest coś naszego, dziejącego się deterministycznie na styku tur.
+
+   **Czego NIE udało się rozstrzygnąć i dlaczego — to jest twarda granica, nie niedoróbka.**
+   Naiwny test podniesienia wskazywał `hook_success` (80% nierozpoznanych rebuildów vs 3,3% tła,
+   lift 24×) i `hook_system_message` (lift 60×). To **korelacja pozorna albo nierozstrzygalna**:
+   hooki odpalają się na praktycznie każdej granicy tury, więc grupa kontrolna „granica tury bez
+   hooka" ma **n = 4**. Eksperyment naturalny też odpada — `reinject-rules.sh` wszedł 2026-07-07
+   (`e3597a9`), a najstarszy zachowany transkrypt jest z **2026-07-31**: okres sprzed hooka
+   nie istnieje w danych. Nie da się dziś oddzielić „wstrzyknięcie hooka" od „granica tury sama
+   w sobie" i **nie należy udawać, że się da**.
 2. **Efekt samej zmiany reguły jest niezmierzony.** Baseline zapisany wyżej pochodzi z okna
    PRZED zmianą; nie ma jeszcze ani jednego dnia po.
 
