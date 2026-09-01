@@ -812,6 +812,16 @@ nie zwykłego ruchu. Próg i baseline zostają zamrożone, hipoteza zostaje otwa
 „odpal probe i zastosuj próg" bez warunku na datę produkuje wynik, który wygląda jak dowód.
 Tu obronił się dopiero warunek wznowienia (≥ 300 odpowiedzi), nie sam harmonogram.*
 
+**Kandydat do pkt 6 hooka — WSTRZYMANY do werdyktu H19 (decyzja Piotra, REKO 2026-09-01).**
+Lekcja z tej samej sesji: *pozycja w „Decyzje dla Ciebie" musi być MOJĄ akcją, nie Piotra* —
+trzy pozycje pod REKO, z których dwie były akcją usera, dały pętlę „REKO → nie mogę → REKO"
+przez trzy tury. Kandydat NIE trafia teraz do `reinject-rules.sh`, bo szósty punkt zjadłby
+budżet ~6 punktów, który ta hipoteza wskazuje jako granicę, i zmieniłby mierzony kanał w środku
+okna pomiarowego. Treść lekcji żyje na razie w warstwie 3 jako `feedback`
+(`feedback-name-the-cost-in-recommendation`, commit `9c05bdb`).
+*Wraca do rozważenia po 2026-10-01, razem z werdyktem H19 — wtedy budżet hooka renegocjujemy
+na podstawie zmierzonego wyniku, nie domysłu.*
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26
