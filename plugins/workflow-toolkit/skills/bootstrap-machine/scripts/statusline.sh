@@ -3,7 +3,8 @@
 #
 # Pokazuje trzy rzeczy, ktore do tej pory byly w regulach tylko jako proza:
 #   1. prompt cache  — realny TTL, warm/cold i hit ratio ("pracuj seriami" przestaje byc domyslem)
-#   2. limity planu  — 5h i 7d ("TWARDY sufit wydatku": prog 50% na Fable 5, stop przed overage)
+#   2. limity planu  — 5h i 7d + platny overage ("TWARDY sufit wydatku": prog 50% na Fable 5,
+#                      `overage ON` gdy konto moze przelac w kredyty, `credits X!!` gdy juz przelalo)
 #   3. kontekst      — % zajetego okna (kiedy /clear, kiedy kompaktowac)
 #
 # Wejscie: JSON na stdin (schemat: https://code.claude.com/docs/en/statusline).
@@ -57,10 +58,25 @@ if [[ -n "$D7" ]]; then
   LIM="${LIM:+$LIM · }7d ${D7R}%${MARK}"
 fi
 
+# --- platny overage (usage credits) -----------------------------------------
+# `rate_limits.extra_usage` to JEDYNE miejsce, w ktorym Claude Code podaje, czy konto
+# moze przelac sie w platne credits (`is_enabled`) i ile ich juz poszlo (`used_credits`).
+# Globalny CLAUDE.md zabrania wydawac je bez wyraznego slowa Piotra — wiec musi to byc
+# widoczne w linii statusu, a nie tylko w /usage, do ktorego nikt nie zaglada w trakcie pracy.
+XU_ON="$(jqr '.rate_limits.extra_usage.is_enabled // empty')"
+XU_USED="$(jqr '.rate_limits.extra_usage.used_credits // empty')"
+if [[ "$XU_ON" == "true" ]]; then
+  LIM="${LIM:+$LIM · }overage ON"
+fi
+if [[ -n "$XU_USED" ]] && awk "BEGIN{exit !($XU_USED > 0)}" 2>/dev/null; then
+  LIM="${LIM:+$LIM · }credits $(printf '%.2f' "$XU_USED")!!"
+fi
+
 # --- zrzut limitow dla bramy przelaczania modelu -----------------------------
-# PreModelSwitch/PostModelSwitch NIE dostaja rate_limits w payloadzie, a statusline to jedyne
-# miejsce, gdzie Claude Code je podaje. Zrzucamy ostatni odczyt, zeby `gate-model-switch.sh`
-# mial na czym oprzec prog 50% na Fable 5. Zapis atomowy (mv), cicho przy bledzie —
+# PreModelSwitch/PostModelSwitch ani UserPromptSubmit NIE dostaja rate_limits w payloadzie,
+# a statusline to jedyne miejsce, gdzie Claude Code je podaje. Zrzucamy ostatni odczyt, zeby
+# `gate-model-switch.sh` mial na czym oprzec prog 50% na Fable 5, a `gate-spend-ceiling.sh`
+# — twardy sufit wydatku (extra_usage.used_credits). Zapis atomowy (mv), cicho przy bledzie —
 # status line nie ma prawa sie wywalic przez ten dopisek.
 {
   RL_DIR="$HOME/.claude/state"
@@ -70,7 +86,8 @@ fi
     printf '%s' "$IN" | jq -c --argjson ts "$(date +%s)" '{
       ts: $ts,
       seven_day_pct: (.rate_limits.seven_day.used_percentage // null),
-      five_hour_pct: (.rate_limits.five_hour.used_percentage // null)
+      five_hour_pct: (.rate_limits.five_hour.used_percentage // null),
+      extra_usage: (.rate_limits.extra_usage // null)
     }' > "$RL_TMP" 2>/dev/null && mv -f "$RL_TMP" "$RL_DIR/rate-limits.json" 2>/dev/null
     rm -f "$RL_TMP" 2>/dev/null
   fi

@@ -1,5 +1,5 @@
 {
-  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse blokuje wzrost, PostToolUse łapie zapisy przez Bash, których nie da się przewidzieć z tekstu komendy) + re-injection twardych reguł co turę + deterministyczny routing intent→skill (UserPromptSubmit) + blokada zaproszeń do wysyłki (Stop). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji + brama na przelaczanie modelu (PreModelSwitch pyta o potwierdzenie przy Fable 5 ponad progiem 50% limitu 7d, PostModelSwitch wstrzykuje wiersz tabeli routingu i realny koszt przebudowy cache).",
+  "description": "Uniwersalna egzekucja niezawodności: anty-bloat guard na plikach instrukcji (PreToolUse blokuje wzrost, PostToolUse łapie zapisy przez Bash, których nie da się przewidzieć z tekstu komendy) + re-injection twardych reguł co turę + deterministyczny routing intent→skill (UserPromptSubmit) + blokada zaproszeń do wysyłki (Stop). Deterministyczne guardy zamiast miękkich reguł, które gasną w długiej sesji + brama na przelaczanie modelu (PreModelSwitch pyta o potwierdzenie przy Fable 5 ponad progiem 50% limitu 7d, PostModelSwitch wstrzykuje wiersz tabeli routingu i realny koszt przebudowy cache) + brama twardego sufitu wydatku (UserPromptSubmit BLOKUJE prompt, gdy sesja przelala sie w platne usage credits ponad zaakceptowany baseline; ostrzega przy 90% limitu planu).",
   "hooks": {
     "Stop": [
       {
@@ -27,6 +27,11 @@
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/gate-spend-ceiling.sh\"",
+            "statusMessage": "brama: twardy sufit wydatku"
+          },
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/reinject-rules.sh\""
