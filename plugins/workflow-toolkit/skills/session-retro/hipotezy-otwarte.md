@@ -800,6 +800,18 @@ właśnie po to, żeby je rozdzielić pomiarem, a nie założyć z góry.
 - **Gdzie zapisać werdykt:** karta `Styl komunikacji peka na KANALE, nie na tresci regul` (kanban)
   + zdjęcie tej pozycji stąd. Domyka też H5, jeśli wynik wyjdzie poniżej 50%.
 
+**Przebieg 0 (2026-09-01) — POMIAR PRZEDWCZESNY, bez werdyktu.** Rutyna `h19-style-probe-pomiar`
+odpaliła się w dniu wdrożenia zmiany, 30 dni przed swoim oknem (nie planowo — zadanie ma nadal
+`nextRunAt 2026-10-01T07:00Z` i żadnego `lastRunAt`, harmonogram nietknięty). Okno `2026-10-01+`:
+**n = 0**. Okno `2026-09-01+`, czyli sam dzień wdrożenia: **n = 22** — 100% / 95% / **75%**.
+Tych 75% **nie wolno czytać jako wskazania**: n = 22 to 7% progu 300, a populacja to wyłącznie
+sesje, w których sama reguła była tematem pracy — czyli pomiar najlepszego możliwego przypadku,
+nie zwykłego ruchu. Próg i baseline zostają zamrożone, hipoteza zostaje otwarta.
+
+*Lekcja procesowa: rutyna mierząca hipotezę musi sama sprawdzić, czy jest w swoim oknie —
+„odpal probe i zastosuj próg" bez warunku na datę produkuje wynik, który wygląda jak dowód.
+Tu obronił się dopiero warunek wznowienia (≥ 300 odpowiedzi), nie sam harmonogram.*
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26
