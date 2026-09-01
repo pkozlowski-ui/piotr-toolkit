@@ -12,6 +12,15 @@
 #    tokenów 2026-08-17 obalił: śr. kontekst/request 246k→256k, sesje >400 req 15+→59 mimo
 #    2 tyg. działania hooka. Nagging co turę wzorowany na `reinject-rules.sh` (ten kanał
 #    w tym repo realnie działa).
+#    v3 (audyt 2026-09-01): v2 też NIE POTWIERDZONA — sesje >400 req nadal płaskie (59→60)
+#    mimo nagging co turę od 2 tyg. Diagnoza: tekst wstrzyknięty w kontekst zależy od tego, czy
+#    model go PRZECZYTA i wykona w zajętej sesji — to nie jest deterministyczne. Dodano kanał
+#    POZA pętlą modelu: natywne powiadomienie macOS (`osascript`) przy każdej nowej eskalacji
+#    75k-progu, niezależne od zachowania Claude. Świadomie NIE wdrożono pełnego blokowania
+#    UserPromptSubmit (exit 2) — zbadane i odrzucone: zablokowałoby też headless scheduled
+#    routines (np. ten sam token-usage-audit, który tę hipotezę wygenerował) bez nikogo, kto
+#    mógłby odblokować, czyli cichy fail całej automatyzacji zamiast wolniejszej sesji. Notyfikacja
+#    jest no-op poza macOS z GUI (subprocess rzuca, łapiemy) — bezpieczna w chmurze/headless.
 # 3) nowy model Claude w sesji → każe zaproponować onboarding research (karta kanban).
 # Geneza: audyt tokenów 2026-08-04 — 60% zużycia limitu = cache-read maratońskich sesji
 # (450–800 req przy 350–517k kontekstu). Progi = HIPOTEZA (125k miękki / 200k twardy /
@@ -103,6 +112,19 @@ if ctx >= TH:
     if lvl > prev:
         try:
             open(sf, "w").write(str(lvl))
+        except Exception:
+            pass
+        # v3: deterministyczny sygnał poza kontekstem modelu — nie zależy od tego, czy Claude
+        # przeczyta/wykona wstrzyknięty tekst. No-op (cicho) poza macOS z aktywnym GUI.
+        try:
+            import subprocess
+            subprocess.run(
+                ["osascript", "-e",
+                 f'display notification "Kontekst ~{ctx // 1000}k tokenow, prog 200k, poziom {lvl}. '
+                 'Rozwaz domkniecie sesji lub /clear." with title "Claude Code — context-watch" '
+                 'sound name "Ping"'],
+                timeout=3, capture_output=True,
+            )
         except Exception:
             pass
     msgs.append(
