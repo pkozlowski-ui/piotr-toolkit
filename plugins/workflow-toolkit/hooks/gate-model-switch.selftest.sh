@@ -56,6 +56,8 @@ check "Fable bez danych limitu → glosne UWAGA" 'UWAGA'                      "$
 set_limit 62 60
 F2="$(run "$(payload PostModelSwitch claude-fable-5 command 250000)")"
 check "Fable z danymi → raport stanu limitu" 'Limit 7d'                     "$F2"
+check "resume → cisza (nic sie nie zmienilo)" ''                            "$(run "$(payload PostModelSwitch claude-opus-5 resume 250000)")"
+check "auto (fallback API) → nadal adnotuje" 'Wiersz tabeli routingu'       "$(run "$(payload PostModelSwitch claude-sonnet-5 auto 250000)")"
 
 echo "Odpornosc:"
 check "smiec na stdin → cisza"               ''                             "$(HOME="$TMP" bash "$HOOK" <<<'nie-json')"

@@ -94,6 +94,14 @@ if event == "PreModelSwitch":
     sys.exit(0)
 
 # --- PostModelSwitch: adnotacja --------------------------------------------
+# `resume` = model odtworzony przy wznowieniu sesji. Nikt niczego nie wybieral, nic sie nie
+# zmienilo — wstrzykiwanie wiersza tabeli routingu przy kazdym `--continue` to czysty szum
+# w kontekscie, ktory ta doktryna sama kaze oszczedzac. Reszta zrodel zostaje: `auto` (fallback
+# API) jest wlasnie tym przypadkiem, o ktorym chcesz wiedziec, bo zjechales na inny model
+# i zaplaciles przebudowe cache, nie klikajac niczego.
+if source == "resume":
+    sys.exit(0)
+
 ROUTING = {
     "haiku": "Haiku = mechanika (sweepy/audyty, batch-edycje, grep po repo, szeroki read-only), effort low. Osadu tu nie rob.",
     "sonnet": "Sonnet = rutyna z jasnym kanonem (budowa ekranu, klon+strip, znany fix), effort medium.",
