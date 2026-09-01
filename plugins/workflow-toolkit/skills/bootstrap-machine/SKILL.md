@@ -108,3 +108,19 @@ Po wszystkim: **restart sesji** (skille i pamięć ładują się na starcie). Za
   ```
   Hook jest warunkowy od obecności `.claude/audit-invariants.json` → każdy projekt z configiem
   dostaje linter za darmo, żaden bez configu nie płaci. Szczegóły: skill `project-audit`.
+
+- **Status line kosztowy** — odtwórz symlink i wpis w ustawieniach (skrypt żyje w tym repo, więc
+  przeżywa migrację; `~/.claude/statusline.sh` to tylko dowiązanie, tak samo jak `CLAUDE.md`):
+  ```bash
+  TOOLKIT=~/Documents/piotr-toolkit
+  [ -L ~/.claude/statusline.sh ] || \
+    ln -s "$TOOLKIT/plugins/workflow-toolkit/skills/bootstrap-machine/scripts/statusline.sh" ~/.claude/statusline.sh
+  grep -q '"statusLine"' ~/.claude/settings.json 2>/dev/null || \
+    jq '.statusLine = {"type":"command","command":"~/.claude/statusline.sh","padding":0}' \
+      ~/.claude/settings.json > /tmp/s.json && mv /tmp/s.json ~/.claude/settings.json
+  ```
+  Pokazuje to, co globalny `CLAUDE.md` ma dotąd wyłącznie jako prozę: stan prompt cache
+  (`cache warm/1h hit 91%` vs `cache COLD`), zużycie limitów 5h i 7d (`!` po przekroczeniu progu
+  50%, na którym Fable 5 schodzi z planu Max) oraz `ctx %`. Pole `prompt_cache` wymaga Claude Code
+  ≥ 2.1.251 i pojawia się dopiero po pierwszej odpowiedzi API — do tego czasu ta część linii jest
+  po prostu nieobecna. **Pasek wchodzi dopiero w nowej sesji** — `settings.json` czytany na starcie.
