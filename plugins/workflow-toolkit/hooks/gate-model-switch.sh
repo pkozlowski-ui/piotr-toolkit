@@ -20,6 +20,13 @@
 # statusline — dlatego `statusline.sh` (ten sam repo) zrzuca ostatni odczyt do
 # ~/.claude/state/rate-limits.json, a brama go czyta. Sprzezenie jest jawne i wewnatrz jednego repo.
 #
+# UWAGA (zmierzone 2026-09-01, `~/.claude.json`): to konto to `seatTier: team_tier_1`,
+# `organizationRole: user`, `hasExtraUsageEnabled: true` (org-level). Prog 50% pochodzi z opisu
+# planu **Max** i na miejscu w teamie moze nie obowiazywac — dlatego PostModelSwitch raportuje
+# teraz per-modelowe okno z serwera (`model_scoped`), zeby bylo na czym oprzec prog. Do czasu
+# pierwszego realnego odczytu prog zostaje jaki byl: zmiana stalej bez pomiaru bylaby dokladnie
+# tym, czego zakazuje regula validation-gate.
+#
 # Fail-open, ale NIE po cichu: brak/przeterminowany odczyt limitu przepuszcza przelaczenie,
 # natomiast PostModelSwitch mowi o tym glosno. Zaplanowany check bez sprawdzonego zrodla jest
 # nieodroznialny od dzialajacego — ta klasa bledu kosztowala juz auto-archiwum kanbana (TCC).
@@ -58,6 +65,7 @@ STALE_S = float(os.environ.get("GMS_STALE_MIN", "30") or 30) * 60
 # --- odczyt limitu tygodniowego (pisany przez statusline.sh) -----------------
 STATE = os.path.expanduser("~/.claude/state/rate-limits.json")
 weekly = None          # float % albo None = nie wiemy
+model_win = None       # (etykieta, %) — per-modelowe okno PODANE PRZEZ SERWER, gdy istnieje
 weekly_why = "brak pliku stanu (statusline nie pisal jeszcze w tej instalacji)"
 try:
     with open(STATE, "r") as f:
@@ -70,6 +78,22 @@ try:
         weekly_why = "odczyt przeterminowany (%d min temu)" % int(age // 60)
     else:
         weekly = float(val)
+except Exception:
+    pass
+
+# `model_scoped` = per-modelowe okna tygodniowe z serwera (filtrowane lista modeli
+# overage-included). To jest POMIAR tego, co stala 50% z doktryny tylko przyblizala.
+# Swiadomie NIE bramkujemy jeszcze na tej wartosci: nie mamy ani jednego realnego odczytu
+# z tego konta, wiec nie znamy progu, przy ktorym bucket przechodzi w kredyty. Na razie
+# RAPORTUJEMY (PostModelSwitch) — prog utwardzimy dopiero, gdy bedzie na czym go oprzec.
+try:
+    for w in (st.get("model_scoped") or []):
+        name = (w.get("display_name") or "")
+        if name and name.lower() in to_model:
+            u = w.get("utilization")
+            if u is not None:
+                model_win = (name, float(u))
+            break
 except Exception:
     pass
 
@@ -132,6 +156,13 @@ if is_fable:
         )
     else:
         lines.append("Limit 7d na moment przelaczenia: %.0f%% (prog Fable: %.0f%%)." % (weekly, CAP))
+
+if model_win:
+    lines.append(
+        "Serwer podaje WLASNE okno tygodniowe dla tego modelu: %s na %.0f%%. To pomiar, w odroznieniu "
+        "od progu %.0f%% w doktrynie (ten pochodzi z opisu planu Max, a to konto ma seat `team_tier_1` "
+        "— reguly moga sie roznic). Brama nadal bramkuje na 7d; zglos ten odczyt, zeby dalo sie "
+        "przestroic prog na pomiarze zamiast na zalozeniu." % (model_win[0], model_win[1], CAP))
 
 out({"hookSpecificOutput": {
     "hookEventName": "PostModelSwitch",

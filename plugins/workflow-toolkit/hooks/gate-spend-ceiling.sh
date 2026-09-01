@@ -32,8 +32,13 @@
 #   2. Pierwszy run bez baseline'u → NIE blokuje, zapisuje baseline i mowi glosno raz.
 #      Brama, ktora przy instalacji blokuje sesje z powodu zastanego stanu, zostanie wylaczona.
 #   3. `is_enabled=true` bez nowego wydatku → raz na dobe: sufit po stronie konta NIE jest uzbrojony.
-#   4. 5h/7d >= progu (domyslnie 90%) → ostrzezenie co ture: domykaj, NIE wlaczaj kredytow.
-#   5. Brak/przeterminowany odczyt → fail-open, ale raz na dobe glosno. Zaplanowany check bez
+#   4. 5h/7d w [90%, 99%) → ostrzezenie co ture: domykaj, NIE wlaczaj kredytow.
+#   5. 5h/7d >= 99% przy wlaczonym extra usage → BLOKADA. To krawedz planu: kolejna tura jest
+#      juz platna. Blokada PRZED wydatkiem jest jedyna, ktora cokolwiek oszczedza — pkt 1 lapie
+#      dopiero po fakcie. Progi: WFT_PLAN_WARN_PCT / WFT_PLAN_STOP_PCT.
+#   6. Brak odczytu → fail-open, ale raz na dobe glosno. Odczyt PRZETERMINOWANY, ktorego ostatnia
+#      wartosc byla >= 99% a `resets_at` jeszcze nie minal → BLOKADA: procent zuzycia okna nie
+#      spada przed resetem, wiec wiemy, ze okno nadal jest gorace. Zaplanowany check bez
 #      sprawdzonego zrodla jest nieodroznialny od dzialajacego (kosztowalo juz auto-archiwum kanbana).
 #
 # Ack po swiadomym wydatku (re-baseline, zeby brama przestala blokowac):
@@ -49,6 +54,7 @@ export GSC_INPUT
 export GSC_MODE="${1:-hook}"
 export GSC_STALE_MIN="${WFT_RATELIMIT_STALE_MIN:-30}"
 export GSC_WARN_PCT="${WFT_PLAN_WARN_PCT:-90}"
+export GSC_STOP_PCT="${WFT_PLAN_STOP_PCT:-99}"
 export GSC_ALLOW="${WFT_ALLOW_OVERAGE:-}"
 export GSC_SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
@@ -61,6 +67,7 @@ BASE = os.path.join(STATE, "spend-ceiling-baseline.json")
 MODE = os.environ.get("GSC_MODE", "hook")
 STALE_S = float(os.environ.get("GSC_STALE_MIN", "30") or 30) * 60
 WARN = float(os.environ.get("GSC_WARN_PCT", "90") or 90)
+STOP = float(os.environ.get("GSC_STOP_PCT", "99") or 99)
 ALLOW = os.environ.get("GSC_ALLOW", "").strip() not in ("", "0", "false", "no")
 SELF = os.environ.get("GSC_SELF") or "gate-spend-ceiling.sh"
 
@@ -112,6 +119,39 @@ def once_per_day(tag):
         pass
     return True
 
+def parse_ts(v):
+    """ISO 8601 → epoch. Tolerancyjnie: z 'Z', z offsetem, z ulamkiem sekundy albo juz jako liczba."""
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
+    t = str(v).strip().replace("Z", "+00:00")
+    try:
+        return datetime.datetime.fromisoformat(t).timestamp()
+    except Exception:
+        pass
+    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S.%f"):
+        try:
+            return datetime.datetime.strptime(str(v).strip().rstrip("Z"), fmt)\
+                .replace(tzinfo=datetime.timezone.utc).timestamp()
+        except Exception:
+            continue
+    return None
+
+
+def windows(dump):
+    """[(etykieta, procent, epoch_resetu|None)] dla okien, ktore serwer podal."""
+    out = []
+    for label, kp, kr in (("5h", "five_hour_pct", "five_hour_resets_at"),
+                          ("7d", "seven_day_pct", "seven_day_resets_at")):
+        try:
+            v = float(dump.get(kp))
+        except Exception:
+            continue
+        out.append((label, v, parse_ts(dump.get(kr))))
+    return out
+
+
 def credits_of(dump):
     xu = (dump or {}).get("extra_usage")
     if not isinstance(xu, dict):
@@ -150,7 +190,33 @@ if dump:
     except Exception:
         fresh = False
 
+def block(text):
+    """Jedyna sciezka blokady. WFT_ALLOW_OVERAGE degraduje ja do glosnego ostrzezenia."""
+    notify(text[:180])
+    if ALLOW:
+        msgs.append(text + " WFT_ALLOW_OVERAGE=1 — przepuszczone swiadomie.")
+        return False
+    sys.stderr.write(text + "\n")
+    return True
+
+
 if not fresh:
+    # Przeterminowany odczyt NIE jest automatycznie fail-open. Procent zuzycia okna nie spada
+    # sam — spada dopiero przy resecie. Jesli ostatni znany odczyt byl na progu STOP, a `resets_at`
+    # tego okna jeszcze nie minal, to WIEMY, ze okno nadal jest gorace: przepuszczenie promptu
+    # byloby wydaniem platnych kredytow z pelna wiedza, ze tak sie stanie. Blokujemy.
+    if dump:
+        hot = [(n, v, r) for n, v, r in windows(dump)
+               if v >= STOP and r is not None and time.time() < r]
+        if hot:
+            n, v, r = hot[0]
+            left = int((r - time.time()) // 60)
+            if block("[sufit-wydatku] STOP. Ostatni znany odczyt: okno %s na %.0f%% (prog %.0f%%), "
+                     "a jego reset dopiero za ~%d min. Odczyt jest przeterminowany, ale procent "
+                     "zuzycia nie spada przed resetem — wiec okno NADAL jest gorace i kolejna tura "
+                     "poleci w platne kredyty. Zaczekaj na reset albo `WFT_ALLOW_OVERAGE=1`."
+                     % (n, v, STOP, left)):
+                sys.exit(2)
     # Fail-open, ale nie po cichu — inaczej martwy check wyglada jak dzialajacy.
     if once_per_day("stale"):
         why = "brak pliku %s" % DUMP if not dump else "odczyt przeterminowany"
@@ -191,11 +257,7 @@ if used is not None:
                     "swiadomy — `bash %s ack` " % SELF +
                     "(re-baseline), albo (3) jednorazowo `WFT_ALLOW_OVERAGE=1` dla tej sesji. "
                     "Twardy sufit po stronie konta uzbroisz wylaczajac extra usage w billingu claude.ai.")
-            notify("Platny overage +%.2f — sesja zablokowana" % delta)
-            if ALLOW:
-                msgs.append(head + " WFT_ALLOW_OVERAGE=1 — przepuszczone swiadomie. " + tail)
-            else:
-                sys.stderr.write(head + " " + tail + "\n")
+            if block(head + " " + tail):
                 sys.exit(2)
 
     # --- 3) sufit po stronie konta nieuzbrojony ------------------------------
@@ -208,15 +270,25 @@ if used is not None:
             "Powiedz to Piotrowi wprost, jesli jeszcze nie wie.")
 
 # --- 4) prog limitu planu ----------------------------------------------------
-def pct(k):
-    v = dump.get(k)
-    try:
-        return float(v)
-    except Exception:
-        return None
+wins = windows(dump)
 
-h5, d7 = pct("five_hour_pct"), pct("seven_day_pct")
-hot = [(n, v) for n, v in (("5h", h5), ("7d", d7)) if v is not None and v >= WARN]
+# Prog STOP = krawedz planu. Blokujemy TYLKO gdy konto w ogole moze przelac w kredyty —
+# przy `is_enabled=false` wyczerpanie limitu i tak konczy sie odmowa serwera, wiec
+# wyprzedzajaca blokada bylaby czystym halasem.
+if enabled is not False:
+    over = [(n, v, r) for n, v, r in wins if v >= STOP]
+    if over:
+        n, v, r = over[0]
+        when = ""
+        if r is not None:
+            when = " Reset za ~%d min." % int(max(0, r - time.time()) // 60)
+        if block("[sufit-wydatku] STOP. Okno %s na %.0f%% (prog %.0f%%) — to krawedz planu, "
+                 "a konto ma wlaczone extra usage, wiec kolejna tura poleci juz w PLATNE kredyty. "
+                 "Regula: STOP i czekamy na odnowienie.%s Swiadomy wyjatek: `WFT_ALLOW_OVERAGE=1`."
+                 % (n, v, STOP, when)):
+            sys.exit(2)
+
+hot = [(n, v) for n, v, _ in wins if v >= WARN and v < STOP]
 if hot:
     where = ", ".join("%s %.0f%%" % (n, v) for n, v in hot)
     msgs.append(

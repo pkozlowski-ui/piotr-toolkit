@@ -10,12 +10,16 @@ FAIL=0
 
 # $1 = 7d pct, $2 = 5h pct, $3 = wiek zrzutu w s, $4 = used_credits ("null" = brak extra_usage),
 # $5 = is_enabled
+# $6 (opcjonalny) = za ile sekund od teraz resetuja sie okna; brak = bez resets_at
 set_state() {
   if [[ "$4" == "null" ]]; then XU=null
   else XU="{\"is_enabled\":$5,\"monthly_limit\":100,\"used_credits\":$4,\"utilization\":0.1,\"currency\":\"USD\"}"
   fi
-  printf '{"ts":%s,"seven_day_pct":%s,"five_hour_pct":%s,"extra_usage":%s}' \
-    "$(( $(date +%s) - $3 ))" "$1" "$2" "$XU" > "$TMP/.claude/state/rate-limits.json"
+  if [[ -n "${6:-}" ]]; then
+    R="\"$(python3 -c "import datetime,sys;print((datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(seconds=int(sys.argv[1]))).strftime('%Y-%m-%dT%H:%M:%SZ'))" "$6")\""
+  else R=null; fi
+  printf '{"ts":%s,"seven_day_pct":%s,"five_hour_pct":%s,"seven_day_resets_at":%s,"five_hour_resets_at":%s,"extra_usage":%s}' \
+    "$(( $(date +%s) - $3 ))" "$1" "$2" "$R" "$R" "$XU" > "$TMP/.claude/state/rate-limits.json"
 }
 no_state() { rm -f "$TMP/.claude/state/rate-limits.json"; }
 set_base() { printf '{"acked_credits":%s,"month":"%s","acked_at":0}' "$1" "$(date +%Y-%m)" \
@@ -88,6 +92,33 @@ clear_marks; set_state 20 95 60 0 false
 check "5h ponad progiem → ostrzezenie"                  '5h 95%'          "$(run)"
 clear_marks; set_state 20 20 60 0 false
 check "ponizej progu → cisza"                           ''                "$(run)"
+
+echo "Prog STOP (krawedz planu):"
+clear_marks; set_base 0; set_state 99.4 20 60 0 true 1800
+O="$(run)"
+check "7d na krawedzi + extra usage ON → BLOKADA"       'rc=2'            "$O"
+check "blokada nazywa okno i prog"                      'Okno 7d na 99%' "$O"
+check "blokada podaje czas do resetu"                   'Reset za ~29 min' "$O"
+clear_marks
+check "ta sama sytuacja z WFT_ALLOW_OVERAGE=1 → przejscie" 'rc=0'          "$(ALLOW=1 run)"
+clear_marks; set_base 0; set_state 99.4 20 60 0 false 1800
+check "krawedz planu, ale extra usage OFF → brak blokady" 'rc=0'          "$(run)"
+clear_marks; set_base 0; set_state 95 20 60 0 true 1800
+O="$(run)"
+check "miedzy WARN a STOP → tylko ostrzezenie"          'rc=0'            "$O"
+check "…i to ostrzezenie o progu"                       'Blisko sufitu planu' "$O"
+
+echo "Przeterminowany odczyt, ale okno wciaz gorace:"
+clear_marks; set_base 0; set_state 99.5 20 7200 0 true 1800
+O="$(run)"
+check "stary odczyt >= STOP, reset jeszcze przed nami → BLOKADA" 'rc=2'   "$O"
+check "blokada tlumaczy, czemu nie fail-open"           'nie spada przed resetem' "$O"
+clear_marks; set_base 0; set_state 99.5 20 7200 0 true -60
+check "stary odczyt >= STOP, ale reset juz minal → fail-open"    'rc=0'   "$(run)"
+clear_marks; set_base 0; set_state 99.5 20 7200 0 true
+check "stary odczyt >= STOP, brak resets_at → fail-open"         'rc=0'   "$(run)"
+clear_marks; set_base 0; set_state 40 20 7200 0 true 1800
+check "stary odczyt ponizej STOP → fail-open"                    'rc=0'   "$(run)"
 
 echo "Tryb ack:"
 clear_marks; set_base 0; set_state 20 20 60 7.25 true

@@ -8,9 +8,10 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/.claude/state"
 FAIL=0
 
-set_limit() { # $1 = 7d pct lub "none", $2 = wiek w sekundach
+set_limit() { # $1 = 7d pct lub "none", $2 = wiek w sekundach, $3 (opc.) = model_scoped JSON
   if [[ "$1" == "none" ]]; then rm -f "$TMP/.claude/state/rate-limits.json"; return; fi
-  printf '{"ts":%s,"seven_day_pct":%s,"five_hour_pct":10}' "$(( $(date +%s) - $2 ))" "$1" \
+  printf '{"ts":%s,"seven_day_pct":%s,"five_hour_pct":10,"model_scoped":%s}' \
+    "$(( $(date +%s) - $2 ))" "$1" "${3:-null}" \
     > "$TMP/.claude/state/rate-limits.json"
 }
 
@@ -58,6 +59,17 @@ F2="$(run "$(payload PostModelSwitch claude-fable-5 command 250000)")"
 check "Fable z danymi → raport stanu limitu" 'Limit 7d'                     "$F2"
 check "resume → cisza (nic sie nie zmienilo)" ''                            "$(run "$(payload PostModelSwitch claude-opus-5 resume 250000)")"
 check "auto (fallback API) → nadal adnotuje" 'Wiersz tabeli routingu'       "$(run "$(payload PostModelSwitch claude-sonnet-5 auto 250000)")"
+
+echo "Per-modelowe okno z serwera (model_scoped):"
+set_limit 30 60 '[{"display_name":"Fable","utilization":41,"resets_at":null}]'
+M="$(run "$(payload PostModelSwitch claude-fable-5 command 250000)")"
+check "raportuje pomiar serwera"            'Fable na 41%'                 "$M"
+check "nazywa go pomiarem vs doktryna"      'To pomiar'                    "$M"
+check "przypomina o seat team_tier_1"       'team_tier_1'                  "$M"
+set_limit 30 60 '[{"display_name":"Fable","utilization":41,"resets_at":null}]'
+check "inny model → bez cudzego okna"       ''                             "$(run "$(payload PostModelSwitch claude-haiku-4-5-20251001 command 0)" | grep -o 'Fable na' || true)"
+set_limit 30 60
+check "brak model_scoped → adnotacja bez pomiaru" ''                       "$(run "$(payload PostModelSwitch claude-fable-5 command 0)" | grep -o 'Serwer podaje' || true)"
 
 echo "Odpornosc:"
 check "smiec na stdin → cisza"               ''                             "$(HOME="$TMP" bash "$HOOK" <<<'nie-json')"

@@ -48,8 +48,10 @@ fi
 
 # --- limity planu -----------------------------------------------------------
 LIM=""
-H5="$(jqr '.rate_limits.five_hour.used_percentage // empty')"
-D7="$(jqr '.rate_limits.seven_day.used_percentage // empty')"
+# Schemat w binarce (2.1.252) nazywa to pole `utilization`, a przykladowe skrypty statusline
+# i realny payload — `used_percentage`. Nie zgadujemy, ktory jest prawdziwy: czytamy oba.
+H5="$(jqr '.rate_limits.five_hour | (.used_percentage // .utilization) // empty')"
+D7="$(jqr '.rate_limits.seven_day | (.used_percentage // .utilization) // empty')"
 [[ -n "$H5" ]] && LIM="5h $(printf '%.0f' "$H5")%"
 if [[ -n "$D7" ]]; then
   D7R="$(printf '%.0f' "$D7")"
@@ -75,8 +77,12 @@ fi
 # --- zrzut limitow dla bramy przelaczania modelu -----------------------------
 # PreModelSwitch/PostModelSwitch ani UserPromptSubmit NIE dostaja rate_limits w payloadzie,
 # a statusline to jedyne miejsce, gdzie Claude Code je podaje. Zrzucamy ostatni odczyt, zeby
-# `gate-model-switch.sh` mial na czym oprzec prog 50% na Fable 5, a `gate-spend-ceiling.sh`
-# — twardy sufit wydatku (extra_usage.used_credits). Zapis atomowy (mv), cicho przy bledzie —
+# `gate-model-switch.sh` mial na czym oprzec prog na Fable 5, a `gate-spend-ceiling.sh`
+# — twardy sufit wydatku (extra_usage.used_credits).
+# `resets_at` zrzucamy, bo bez niego przeterminowany odczyt jest bezuzyteczny: z sama data
+# odczytu nie wiadomo, czy okno juz sie zresetowalo, czy nadal jest gorace. `model_scoped` to
+# per-modelowe okna tygodniowe podawane PRZEZ SERWER (filtrowane lista modeli overage-included)
+# — lepsze niz stala 50% z doktryny, bo mierzone zamiast zalozone. Zapis atomowy (mv), cicho przy bledzie —
 # status line nie ma prawa sie wywalic przez ten dopisek.
 {
   RL_DIR="$HOME/.claude/state"
@@ -85,8 +91,11 @@ fi
   if [[ -n "${RL_TMP:-}" ]]; then
     printf '%s' "$IN" | jq -c --argjson ts "$(date +%s)" '{
       ts: $ts,
-      seven_day_pct: (.rate_limits.seven_day.used_percentage // null),
-      five_hour_pct: (.rate_limits.five_hour.used_percentage // null),
+      seven_day_pct: (.rate_limits.seven_day | (.used_percentage // .utilization) // null),
+      five_hour_pct: (.rate_limits.five_hour | (.used_percentage // .utilization) // null),
+      seven_day_resets_at: (.rate_limits.seven_day.resets_at // null),
+      five_hour_resets_at: (.rate_limits.five_hour.resets_at // null),
+      model_scoped: (.rate_limits.model_scoped // null),
       extra_usage: (.rate_limits.extra_usage // null)
     }' > "$RL_TMP" 2>/dev/null && mv -f "$RL_TMP" "$RL_DIR/rate-limits.json" 2>/dev/null
     rm -f "$RL_TMP" 2>/dev/null
