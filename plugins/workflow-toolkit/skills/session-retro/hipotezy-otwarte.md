@@ -667,6 +667,55 @@ dźwignia oszczędności.
 - **Gdzie zapisać werdykt:** karta `Pomiar cache promptu — licznik zamiast domyslu w regule
   o seriach` (kanban) + zdjęcie tej pozycji stąd.
 
+### H19 — reguły FORMY odpowiedzi trzymają się KANAŁU, nie treści (warunek unieważnienia → `reinject`)
+
+**Co jest hipotezą:** że o egzekucji reguły formy decyduje **kanał dostarczenia**, a nie jej
+brzmienie — i że przeniesienie warunku unieważnienia z always-on `CLAUDE.global.md` do hooka
+`reinject-rules.sh` (pkt 5) podniesie jego przestrzeganie z 23% do poziomu pozostałych reguł
+tej rodziny (~86%).
+
+**Data zmiany:** 2026-09-01 (`reinject-rules.sh` pkt 5 dodany; treść usunięta z
+`CLAUDE.global.md`, został jeden wskaźnik — 256 → 253 linie).
+
+**Co JEST udowodnione** — `style_probe.py`, mianownik zawężony do odpowiedzi zamykających turę
+**z realną pracą** (mutacja pliku albo `git commit`), 08.2026, n = 1250:
+
+| soczewka | kanał | egzekucja |
+|---|---|---|
+| sekcja „Decyzje dla Ciebie" | hook + CLAUDE.md | **86%** |
+| nazwana rekomendacja (REKO) | hook + CLAUDE.md | **82%** |
+| warunek unieważnienia przy REKO | **tylko CLAUDE.md** | **23%** |
+
+Ta sama rodzina reguł, ta sama populacja odpowiedzi, ten sam autor — różni je kanał. To jest
+najmocniejsza przesłanka, jaką mamy, że doktryna „dopisz regułę do CLAUDE.md" wyczerpała się
+jako metoda: `reinject` wstrzykuje HARD RULES **co turę**, wielkimi literami, i to on dowozi te 86%.
+
+**Czego to NIE dowodzi — powód istnienia tej pozycji.** To **korelacja, nie eksperyment**:
+warunek unieważnienia jest także **trudniejszy** od pozostałych dwóch (wymaga wymyślenia
+obserwowalnego X; sekcja decyzji to w praktyce szablon). Część luki 86 → 23 to trudność zadania,
+nie kanał, i dziś nie da się tych dwóch wyjaśnień rozdzielić. Zmiana jest tania i odwracalna
+właśnie po to, żeby je rozdzielić pomiarem, a nie założyć z góry.
+
+- **Warunek wznowienia:** ≥ 30 dni od 2026-09-01 (okno 2026-10-01+) i ≥ 300 odpowiedzi
+  zamykających pracę w tym oknie (baseline miał 1250/mies., więc próg jest luźny).
+- **Próg akceptacji (ustalony PRZED pomiarem):** warunek unieważnienia **z 23% do ≥ 60%**,
+  przy sekcji decyzji **nie niżej niż 86%**. Spadek sekcji decyzji czytaj jako regres, nie
+  szum: znaczyłby, że `reinject` się przeładował i cała lista przestała się wyróżniać.
+  Wynik **< 50%** → kanał nie jest wyjaśnieniem, wyjaśnieniem jest trudność reguły; wtedy nie
+  dokładaj trzeciej warstwy, tylko rozstrzygnij H5 (zdjąć regułę albo uprościć jej wymóg).
+  Wynik **50–60%** → poprawa realna, ale niedomknięta: dopiero wtedy rozważ Stop-hook
+  `guard-response-contract.sh` (deterministyczny check na wyjściu).
+- **Komenda:**
+  ```bash
+  plugins/workflow-toolkit/skills/usage-audit/scripts/style_probe.py 2026-10-01
+  ```
+- **Warunek unieważnienia samej reguły:** przestaje obowiązywać, gdy `reinject-rules.sh` przekroczy
+  ~6 punktów — wtedy hook sam staje się ścianą tekstu i traci przewagę nad CLAUDE.md, którą tu
+  mierzymy (budżet zapisany w komentarzu skryptu). Widać to po spadku soczewki „sekcja decyzji"
+  poniżej 86% przy rosnącej liście punktów.
+- **Gdzie zapisać werdykt:** karta `Styl komunikacji peka na KANALE, nie na tresci regul` (kanban)
+  + zdjęcie tej pozycji stąd. Domyka też H5, jeśli wynik wyjdzie poniżej 50%.
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26

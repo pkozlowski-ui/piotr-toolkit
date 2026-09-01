@@ -74,7 +74,10 @@ if [ "$tool" = "Bash" ]; then
   # Interesuje nas tylko komenda, ktora WSPOMINA plik instrukcji I wyglada na zapis.
   # Samo czytanie (grep/cat/sed -n) ma przechodzic — inaczej guard blokuje wlasna diagnostyke.
   printf '%s' "$cmd" | grep -qE 'CLAUDE\.md|AGENTS\.md|agent\.md' || exit 0
-  printf '%s' "$cmd" | grep -qE '>>?[[:space:]]*[^|&;]*(CLAUDE|AGENTS|agent)\.md|sed[[:space:]]+-i|tee[[:space:]]|open\(.*[wa]|\.write\(|writelines|truncate|dd[[:space:]]+of=' || exit 0
+  # Blokuj tylko jednoznaczne DOPISYWANIE (`>>`, `tee -a`). Nadpisania (`>`, `sed -i`,
+  # python write) maja NIEZNANA delte — moga byc konsolidacja, czyli dokladnie tym, czego
+  # ten guard chce. Blokowanie ich blokowaloby wlasne lekarstwo; wynik lapie warstwa Post.
+  printf '%s' "$cmd" | grep -qE '>>[[:space:]]*[^|&;]*(CLAUDE|AGENTS|agent)\.md|tee[[:space:]]+(-[a-zA-Z]*a[a-zA-Z]*)' || exit 0
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     c=$(count "$f")
