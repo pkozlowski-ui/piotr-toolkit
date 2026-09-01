@@ -484,6 +484,16 @@ tej gotchy siedzi w komentarzu w `design-gates.yml` w repo produktowym, nie tuta
 - **Komenda:** `find ~/Documents -maxdepth 4 \( -name CLAUDE.md -o -name AGENTS.md \) -exec wc -c {} +`
   (rozkład rozmiarów = czy 40 KB to dobry próg) + test hooka na payloadzie Write z 41 KB treści.
 - **Gdzie zapisać werdykt:** karta kanban audytu workflow 2026-08-27 + zdjęcie tej pozycji stąd.
+- **Pomiar rozkładu 2026-09-01 (wsad do progu, hipoteza NADAL otwarta):** `find ~/Documents -maxdepth 4
+  \( -name CLAUDE.md -o -name AGENTS.md \)` → **9 plików instrukcji, tylko JEDEN nad 30 KB**
+  (`antisis prototype/CLAUDE.md` = 40 251 B / 238 linii); drugi w kolejności to `claude-memory/
+  CLAUDE.global.md` (22 758 B) i `daily work/CLAUDE.md` (21 264 B), reszta ≤ 7,8 KB. **Konsekwencja
+  dla progu:** proponowane 40 960 B zostawia jedynemu dużemu plikowi **709 B luzu** — czyli utwardzenie
+  go dziś oznacza blok na pierwszej edycji tego repo, nie siatkę bezpieczeństwa. Jeśli próg wchodzi,
+  realistyczny punkt to ~45 KB (headroom ~5 KB) albo warstwa Post jako ⚠️ zamiast twardego bloku.
+- **Warunek wznowienia — NIESPEŁNIONY na 2026-09-01:** wymagane ≥3 realne edycje plików > 30 KB;
+  rozkład pokazuje, że taki plik jest **jeden**, więc próg „≥3 edycje" jest osiągalny tylko przez
+  powtarzalne edycje tego samego repo. Do rozstrzygnięcia razem z decyzją Piotra, nie samo z siebie.
 
 ---
 
