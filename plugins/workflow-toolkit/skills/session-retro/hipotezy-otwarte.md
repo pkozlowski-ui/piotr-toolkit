@@ -19,6 +19,17 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-01 (retro sesji „kanban Dominique / epic sales-demo", antisis-prototype) — ZERO ruchu
+
+Sesja pracowała wyłącznie na kartach Obsidian KANBAN i Linear (read-only na MAN-860/MAN-848) —
+nie odpaliła `linear-ticket-draft`, `design-tweaker`, `hygiene-audit`, ani nie edytowała żadnego
+CLAUDE.md. Zgodnie z regułą z przebiegów 2026-08-28/08-28-wieczór (sesja nie dotykająca mierzonego
+skilla = nie liczy się jako odłożenie) — komendy nieodpalone, brak ruchu na H2/H3/H7/H13/H14.
+**Nowych hipotez z tej sesji: ZERO.** Jedyna lekcja sesji (błędne przyjęcie, że sub-taski epika są
+otwarte, bez sprawdzenia ich frontmattera) poszła do `.claude/memory/` projektu jako punkt reguły
+(pamięć `kanban-workflow-discipline`), nie tutaj — ma obiektywny mechanizm sprawdzenia (czytaj
+`status:` karty), nie wymaga held-out gate'u.
+
 ### H2 — `design-tweaker` description: trigger na pytania meta/routingowe o WŁASNE granice
 
 - **Co jest hipotezą:** dopisana fraza „who executes this / which skill owns X" w `description`,

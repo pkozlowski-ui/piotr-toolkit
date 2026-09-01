@@ -78,11 +78,24 @@ if [ "$tool" = "Bash" ]; then
   # python write) maja NIEZNANA delte — moga byc konsolidacja, czyli dokladnie tym, czego
   # ten guard chce. Blokowanie ich blokowaloby wlasne lekarstwo; wynik lapie warstwa Post.
   printf '%s' "$cmd" | grep -qE '>>[[:space:]]*[^|&;]*(CLAUDE|AGENTS|agent)\.md|tee[[:space:]]+(-[a-zA-Z]*a[a-zA-Z]*)' || exit 0
+  # Sprawdzaj WYLACZNIE plik, do ktorego ta komenda dopisuje — nie cala liste candidates.
+  # Bez tego kazde `>> jakikolwiek/CLAUDE.md` jest blokowane, gdy nad limitem jest INNY plik
+  # z listy (np. globalny ~/.claude/CLAUDE.md). Zmierzone 2026-09-01: cel 100 linii, blok
+  # z komunikatem wskazujacym globalny plik — guard blokowal edycje, ktorej nie dotyczyl.
+  # Nie da sie wylowic celu (zapis przez zmienna, tee bez jawnej sciezki) → nie blokujemy;
+  # przekroczenie zlapie warstwa Post na realnym stanie pliku.
   while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    case "$f" in /*) : ;; *) f="$PWD/${f#./}" ;; esac
     [ -f "$f" ] || continue
     c=$(count "$f")
     [ "$c" -ge "$LIMIT" ] && block "$f" "$c"
-  done < <(candidates)
+  done < <(
+    printf '%s\n' "$cmd" \
+      | grep -oE '(>>[[:space:]]*|tee[[:space:]]+(-[a-zA-Z]+[[:space:]]+)*)[^[:space:]"'"'"'`;|&()]*(CLAUDE|AGENTS|agent)\.md' \
+      | sed -E 's/^(>>|tee)[[:space:]]*//; s/^-[a-zA-Z]+[[:space:]]+//' \
+      | sed "s|^~|$HOME|" | sort -u
+  )
   exit 0
 fi
 
