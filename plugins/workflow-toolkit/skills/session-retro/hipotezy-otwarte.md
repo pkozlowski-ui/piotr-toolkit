@@ -465,15 +465,25 @@ tej gotchy siedzi w komentarzu w `design-gates.yml` w repo produktowym, nie tuta
   root · `warnings=N`). Zapis owinięty `try/catch`, bo hook ma kontrakt „exit 0 zawsze".
   **Licznik startuje 2026-08-31 od zera** — przebiegi wcześniejsze są bezpowrotnie niepoliczalne,
   więc próg liczymy od tej daty. Komenda: `wc -l ~/.claude/hygiene-audit-runs.log`.
-- **Warunek wznowienia:** ≥ 5 przebiegów `hygiene-audit` (scheduled `hygiene-audit-antisys`, co
-  ~3 dni → ~2 tygodnie) PO 2026-08-28, każdy z zapisanym stanem tych trzech checków. Werdykt
-  per liczba: wszystkie zapalenia trafione → próg trzyma; ≥ 2 zapalenia bez defektu → poluzuj
-  TĘ liczbę (nie wszystkie) i dopisz powód. Przy licznikach CLAUDE.md (punkty 3 i 5) „trafione"
-  znaczy: zapalenie skończyło się zwinięciem treści ALBO świadomym podniesieniem progu W TYM SAMYM
-  commicie — podniesienie w oddzielnym commicie „bo się nie mieści" liczy się jako NIEtrafione,
-  bo dokładnie to zamienia licznik w dekorację (i tak powstał zapas 3,7×, który tu zaciskamy).
+- **Warunek wznowienia (zawężony 2026-09-01 — REKO Piotra, przebieg 2026-09-01 pokazał że surowe
+  „≥5 wpisów w logu" jest gameable: 41 wpisów w 1 dzień, 34 to `hook` czyli auto-retrigger
+  SessionStart, nie świadome audyty):** ≥ 5 wpisów w `hygiene-audit-runs.log` z trybem **`json` lub
+  `human`** (WYŁĄCZAJĄC `hook`), każdy z zapisanym stanem tych trzech checków. Werdykt per liczba:
+  wszystkie zapalenia trafione → próg trzyma; ≥ 2 zapalenia bez defektu → poluzuj TĘ liczbę (nie
+  wszystkie) i dopisz powód. Przy licznikach CLAUDE.md (punkty 3 i 5) „trafione" znaczy: zapalenie
+  skończyło się zwinięciem treści ALBO świadomym podniesieniem progu W TYM SAMYM commicie —
+  podniesienie w oddzielnym commicie „bo się nie mieści" liczy się jako NIEtrafione, bo dokładnie to
+  zamienia licznik w dekorację (i tak powstał zapas 3,7×, który tu zaciskamy).
+  ⚠️ **Znana luka, nierozwiązana:** `json`/`human` też nie gwarantuje „scheduled `hygiene-audit-antisys`
+  co ~3 dni" — subagent sweepu hipotez sam odpala `--json` żeby SPRAWDZIĆ ten warunek, więc wpisy
+  potrafią rosnąć jako efekt uboczny mierzenia, nie niezależnego przebiegu (ta sama klasa błędu co
+  oryginalny problem H14). Realny fix wymaga pola `source` w logu (cron vs ad-hoc-check vs manual)
+  zapisywanego przez `hygiene-audit.mjs`, nie tylko `mode` — nieutwardzone, do decyzji Piotra przy
+  następnym przebiegu jeśli próg `json`/`human` zacznie fałszywie zapalać.
 - **Komenda:**
   ```bash
+  # liczba ocenianych przebiegów po zawężeniu (wyklucza hook)
+  awk -F'\t' '$2!="hook"' ~/.claude/hygiene-audit-runs.log | wc -l
   # stan trzech checków na dziś (json = pełny raport, także checki pomijane w --hook)
   cd ~/Documents/antisis\ prototype && node ~/Documents/piotr-toolkit/plugins/workflow-toolkit/scripts/hygiene-audit.mjs --json \
     | python3 -c "import json,sys; [print(c['id'], c['ok'], c['value']) for c in json.load(sys.stdin)['checks'] if c['id'] in ('gate-block','ci-nightly','claudemd-bytes')]"
