@@ -19,6 +19,46 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-01, trzeci tego dnia (retro sesji „F12 Phase 4 mini-funnel + Houston content fix", antisis-prototype) — ZERO ruchu na H2/H3/H7–H14, jeden confound na H15
+
+Sesja: zbudowała i zmergowała F12 Family profile MVP Phase 4 (mini-funnel, PR #756 + fix
+kolizji nazw), potem REKO Piotra na przebudowę FP12M/D.10 School selection względem aktualnego
+rosteru Houston (Figma + kod, PR #759), plus ten retro (PR #760, memory-only). Zero wywołań
+`linear-ticket-draft`, `design-tweaker`, `web-research`, `obsidian-feedback-sweep`,
+`hygiene-audit`, edycji CLAUDE.md, nowych pól `related:`/`linear:` na karcie kanban — H2, H3,
+H7–H14 bez ruchu (ta sama klasa co przebiegi 08-28/08-31: sesja nie dotknęła mierzonego skilla).
+
+**H15 (delegacja jako domyślny tryb) — confound, nie liczyć wprost:** sesja DELEGOWAŁA jeden
+duży reuse-audit (Explore agent, na starcie, przed budową) zgodnie z regułą, ale WIĘKSZOŚĆ
+mechanicznej roboty potem (Figma `figma_execute` do przebudowy School selection, `curl`/`grep`
+inwentaryzacyjne, wielokrotne `gh pr checks` polling) zrobiła sesja główna bezpośrednio, nie
+subagentem — częściowo dlatego, że praca była interaktywna/iteracyjna (screenshot→fix→re-screenshot
+w pętli, niewygodna do oddania jednym promptem agentowi), częściowo bo build+audyt+PR-flow jest
+jedną spójną narracją, nie osobnymi mechanicznymi krokami. Nie wpisuję tego jako nowy sygnał H15
+(brak dostępu do pełnej definicji gate'a/Komendy w tej sesji, więc klasyfikacja byłaby zgadywaniem)
+— zostawiam do przebiegu, który ma kontekst H15 w całości.
+
+**Nowych hipotez z tej sesji: ZERO.** Lekcje operacyjne (jednostka `maxMismatch` w
+`eval/manifest.*.json`, scoped `--files=` audit nie łapiący `component-name-collision`, fallback
+`javascript_tool`+`MouseEvent` na zawodzący `computer{left_click}`) poszły do `.claude/memory/`
+projektu (`code-design-audit-gate.md`, `browser-verification-gotchas.md`) — mają obiektywny
+mechanizm sprawdzenia (czytaj `budgetPct` w wyniku diff / grep po repo / obserwowany fallback),
+nie wymagają held-out gate'u tego rejestru.
+
+### Przebieg 2026-09-01, drugi tego dnia (retro sesji „FP 7 przeterminowanych baseline'ów + REKO na wszystko", antisis-prototype) — ZERO ruchu
+
+Sesja: przeczytała kartę kanban, zweryfikowała w izolowanym worktree (`origin/main`, PR #752) że
+problem już rozwiązany side-effectem tej PR-ki, zamknęła kartę `Done`→`Archive`, zaktualizowała
+pamięć projektu (`fp-baseline-staleness-2026-09` → RESOLVED → zarchiwizowana do `_archive/`),
+zrebase'owała `feat/fp-lighthouse-mvp-iteration-panel` na `origin/main`, i przesunęła kartę „Task
+for Kasel KIPP NYC" `To-do`→`To confirm` (blocked na priorytetyzację Piotra). Zero wywołań
+`linear-ticket-draft`, `design-tweaker`, `code-design-audit`, `ux-copy`, `web-research`,
+`hygiene-audit`, `obsidian-feedback-sweep`, edycji CLAUDE.md, przełączenia modelu, nowych pól
+`related:`/`linear:`. H15 (delegacja): kolejny pomiar dopiero 2026-09-15 (pomiar 1 już zrobiony
+2026-09-01 przez inną sesję tego dnia) — nie due. H22 (external-blocked sweep, 4a2): dopiero
+wdrożony dziś przez inną sesję, cadence ~30 dni od PIERWSZEGO ręcznego sweepu (dziś) — nie due.
+**Nowych hipotez z tej sesji: ZERO.**
+
 ### Przebieg 2026-09-01 wieczór (retro sesji „status karty FP parity-content-drift", antisis-prototype) — ZERO ruchu
 
 Sesja była czysto informacyjna: przeczytała kartę kanban + powiązaną kartę, zweryfikowała stan
