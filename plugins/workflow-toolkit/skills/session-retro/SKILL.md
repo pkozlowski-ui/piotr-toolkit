@@ -89,6 +89,27 @@ zamiast przeglądu wszystkich kandydatów. To hipoteza (brak jeszcze obiektywneg
 faktycznie łapie porzucone decyzje) — dopisana do `hipotezy-otwarte.md`, gate przy pierwszej realnej
 okazji do potwierdzenia/obalenia.
 
+### 4a2 — Sweep rejestru „external-blocked" (miesięczny, warunkowy, HIPOTEZA H22)
+
+Domyka lukę znalezioną 2026-09-01 (audyt karty kanban „Waiting on weryfikacja", Manta): doktryna
+`memory-discipline` mówi „review at retro" dla rejestru external-blocked (np. Obsidian `Waiting
+On.md`), ale żaden krok retro faktycznie tego nie robił — 4 z 13 wierszy okazały się rozwiązane
+(ticket Linear Done/Live tygodnie wcześniej), a rejestr stał nietknięty 5 tygodni.
+
+Uruchom TYLKO gdy: (a) od ostatniego przebiegu minęło ~30 dni (log jak w kroku 4a, osobna linia)
+ORAZ (b) projekt/sesja ma dostęp do rejestru external-blocked (ścieżka we `.claude/memory/` lub
+CLAUDE.md projektu) i do Linear MCP. Brak (b) → nic nie rób, nie zgaduj ścieżki.
+
+Jeśli due: dla każdego wiersza rejestru z linkiem do ticketu (`MAN-XXX` itp.) sprawdź jego status
+przez `get_issue` — `Done/Live` (albo `statusType: completed`) **nie oznacza automatycznie
+rozwiązania**, bo pytanie z rejestru bywa osobne od tego, co zamknęło ticket (zmierzone: MAN-483,
+MAN-489 pozostały realnie otwarte mimo że ich tickety są Done). Dociągnij też ostatnie komentarze
+(`list_comments`) i sprawdź, czy pytanie z wiersza dostało odpowiedź PO dacie wiersza. Usuń/zaktualizuj
+wiersz tylko gdy dowód jest jednoznaczny; niejasne przypadki zostają, nie zgaduj.
+
+**Ryzyko odwrotne:** sweep zamienia się w rytualne „wszystko aktualne" bez realnej weryfikacji — pilnuj,
+żeby faktycznie sprawdzać Linear, nie tylko datę wiersza.
+
 ### 4b — Przejrzyj rejestr otwartych hipotez (OBOWIĄZKOWY, każde retro)
 Otwórz `hipotezy-otwarte.md` **w repo źródłowym toolkitu** (`piotr-toolkit/plugins/workflow-toolkit/skills/session-retro/`), NIE w katalogu, z którego skill się załadował — ten jest kopią w `~/.claude/plugins/cache/<marketplace>/<plugin>/<wersja>/` i bywa STARSZY od repo (zmierzone 2026-08-25: `cp cache → repo` wywalił 93 linie werdyktów z poprzedniego przebiegu, w tym zamknięty branch wariantu A; złapane tylko dlatego, że `git diff --stat` pokazał `28 insertions, 93 deletions`). Cache jest read-only z definicji — nadpisuje go każda aktualizacja pluginu, więc zapis tam ginie cicho. Po każdej edycji pliku skilla sprawdź `git diff --stat` w repo: liczba usunięć większa od dodań przy „dopisuję jedną linię" znaczy, że piszesz starą wersję na nowszą.
 

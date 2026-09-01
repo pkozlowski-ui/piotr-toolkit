@@ -1146,6 +1146,41 @@ czystą negacją własnej rekomendacji jako „puste"/nieliczące się do progu 
 
 ---
 
+### H22 — `session-retro` krok 4a2: miesięczny sweep rejestru „external-blocked" (np. `Waiting On.md`)
+
+- **Co jest hipotezą:** nowy krok (4a2, cadence jak 4a — ~30 dni) który odpytuje Linear dla każdego
+  wiersza rejestru external-blocked z linkiem do ticketu i usuwa/aktualizuje wiersze, których
+  „czekanie" już się rozwiązało. Ósmy skill z rodziny H7–H10 (decyzja/wpis zapisany bez późniejszej
+  weryfikacji trafności) — tu wariant to rejestr-pointer, nie pojedynczy wpis pamięci.
+- **Skąd:** audyt karty kanban „Waiting on weryfikacja" (Manta, 2026-09-01) — ręczne sprawdzenie
+  9 z 13 wierszy `Waiting On.md` przez `mcp__linear__get_issue`/`list_comments` znalazło **4 wiersze
+  stale** (MAN-311, MAN-436, MAN-391-w-ramach-MAN-589, MAN-428 — tickety Done/Live tygodnie/miesiąc
+  wcześniej, rejestr nieaktualizowany), ale też **2 wiersze wciąż realnie otwarte mimo Done/Live
+  ticketu** (MAN-483, MAN-489 — pytanie z rejestru jest osobne od tego, co zamknęło ticket). Root
+  cause: `memory-discipline` deklaruje „review at retro", ale `session-retro` nigdy nie miał kroku,
+  który to robi — czysto deklaratywna reguła bez egzekucji (ta sama klasa co martwy LaunchAgent
+  auto-archiwum kanbana).
+- **Data zmiany:** 2026-09-01 (`workflow-toolkit`, `SKILL.md` session-retro krok 4a2, REKO Piotra na
+  karcie „Waiting on weryfikacja").
+- **Stan gate'a:** `0 przebiegów` — mechanizm dopiero wdrożony; ten pierwszy sweep był RĘCZNY (ta
+  sesja), nie przez krok 4a2 (który jeszcze nie istniał).
+- **Soczewka:** per przebieg — czy sweep faktycznie złapał ≥1 wiersz do usunięcia/aktualizacji (nie
+  tylko potwierdził wszystko jako aktualne — rytualne), ORAZ czy nie usunął błędnie wiersza, który
+  ticket-Done ale pytanie-otwarte (dowód: MAN-483/MAN-489 powyżej — to jest realna pułapka fałszywego
+  pozytywu, nie hipotetyczna).
+- **Ryzyko odwrotne, którego trzeba pilnować:** sweep staje się rytuałem „ticket Done → usuń wiersz"
+  bez sprawdzenia komentarzy — to skasowałoby MAN-483/MAN-489-podobne przypadki, które są realnie
+  żywe. Krok w SKILL.md już to nazywa wprost, ale held-out musi to zmierzyć, nie tylko tekst obiecać.
+- **Warunek wznowienia:** ≥ 3 przebiegi sweepu (log w `.claude/memory/_decision-sweep-log.md` albo
+  osobna linia), z czego przynajmniej jeden faktycznie usunął/zaktualizował wiersz.
+- **Komenda:** brak automatycznego skryptu — sprawdź `git log` na pliku rejestru external-blocked
+  (per projekt, np. `Waiting On.md` w Manta Vault) po 2026-09-01, czy któryś przebieg retro (nie
+  ręczna sesja jak ta) dopisał zmianę.
+- **Gdzie zapisać werdykt:** karta kanban „Decision-sweep — held-out" (wspólna z H7–H10) + zdjęcie
+  tej pozycji stąd.
+
+---
+
 ### H21 — `obsidian-feedback-sweep`: oś Dyspozycji jest poniżej klasy większościowej
 
 - **Co jest hipotezą:** nie zmiana, którą wprowadzono, tylko **zmierzony deficyt istniejącego
