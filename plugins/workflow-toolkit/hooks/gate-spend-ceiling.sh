@@ -274,8 +274,9 @@ wins = windows(dump)
 
 # Zrzut moze byc SWIEZY i jednoczesnie pusty: Claude Code podaje `rate_limits: null`, gdy konto nie
 # ma czytelnych okien limitu (brak profile scope w tokenie OAuth, API key/Bedrock/Vertex, albo
-# `no_limits_configured` — org z nielimitowanymi kredytami). Zmierzone na tym koncie 2026-09-01:
-# wszystkie pola null przy odczycie sprzed 33 s. Bez tego warunku brama nie mowi NIC — a cicha
+# `no_limits_configured` — org z nielimitowanymi kredytami). UWAGA: wczesniejsza wersja tego
+# komentarza powolywala sie na „pomiar" (same null sprzed 33 s), ktory w rzeczywistosci byl
+# wyjsciem testu syntetycznego — sprostowane. Warunek zostaje, bo cicha
 # brama jest nieodroznialna od dzialajacej. To dokladnie ta klasa bledu co auto-archiwum pod TCC.
 if used is None and not wins and once_per_day("nodata"):
     msgs.append(

@@ -91,7 +91,12 @@ fi
   # NIE nadpisuj dobrego odczytu pustym. `rate_limits` bywa null w pojedynczych renderach
   # (pole `rate_limits_available` mowi, czy to stan trwaly czy chwilowy), a zrzut jest jedynym
   # zrodlem dla bram — jeden pusty render kasowal cala wiedze i zostawial brame slepa.
-  # Zmierzone 2026-09-01: `/usage` pokazywal 5h 73% / 7d 81%, a zrzut sprzed 33 s mial same null.
+  # SPROSTOWANIE 2026-09-01: pierwotne uzasadnienie tej galezi bylo bledne — „zrzut sprzed 33 s
+  # z samymi null" byl wyjsciem MOJEGO wlasnego testu renderu, nie odczytem z sesji Piotra.
+  # Galaz zostaje, bo jest poprawna niezaleznie (pusty render nie ma prawa kasowac stanu, na
+  # ktorym stoja bramy), ale NIE jest poparta pomiarem realnego payloadu. Stan faktyczny:
+  # po skasowaniu zrzutu o 12:51 nie powstal ponownie mimo kolejnych tur — czyli w tym
+  # srodowisku statusline prawdopodobnie NIE JEST uruchamiany wcale. Niepotwierdzone.
   RL_HAS_DATA="$(jqr 'if (.rate_limits.five_hour or .rate_limits.seven_day or .rate_limits.extra_usage) then "1" else "" end')"
   if [[ -z "$RL_HAS_DATA" && -s "$RL_DIR/rate-limits.json" ]]; then
     # Zapamietaj tylko fakt pustego renderu — bez ruszania ostatniego dobrego odczytu.
