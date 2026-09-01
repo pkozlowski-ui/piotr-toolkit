@@ -846,8 +846,8 @@ na podstawie zmierzonego wyniku, nie domysłu.*
   **dokładnie przy zmianie modelu** zmienia realne zachowanie — a nie tylko dokłada kolejny
   wstrzyknięty tekst, który przepływa obok. Ta sama klasa co `context-watch.sh`, gdzie dwie
   kolejne wersje nagging-u zmierzyły się jako NIEPOTWIERDZONE.
-- **Data zmiany:** 2026-09-01 (`workflow-toolkit` 1.36.0, commit `e5e50bf`).
-- **Stan gate'a:** `0 zaobserwowanych odpaleń na żywo`. 18/18 przypadków selftestu zielonych, ale
+- **Data zmiany:** 2026-09-01 (`workflow-toolkit` 1.36.0, commit `e5e50bf`; 1.36.1 wycisza `source: resume`).
+- **Stan gate'a:** `0 zaobserwowanych odpaleń na żywo`. 20/20 przypadków selftestu zielonych (odpalone także na kopii z cache pluginu, nie tylko na repo), ale
   selftest mierzy kontrakt hooka na syntetycznym payloadzie, nie to, czy Claude Code faktycznie
   woła te eventy w sesji Piotra i czy dialog `ask` realnie się pokazuje. **Do czasu pierwszego
   odpalenia na żywo brama jest nieodróżnialna od martwej** — dokładnie ta klasa błędu, która
@@ -868,8 +868,11 @@ na podstawie zmierzonego wyniku, nie domysłu.*
   w tym ≥ 1 wejście na Fable.
 - **Komenda:**
   ```bash
-  grep -rl "PostModelSwitch" ~/.claude/projects --include=*.jsonl | wc -l
+  grep -rlF '"hookName":"PostModelSwitch"' ~/.claude/projects | wc -l
   ```
+  **Nie licz golego `grep -rl "PostModelSwitch"`** — retro 2026-09-01 dalo `20` plikow, z czego
+  wszystkie to transkrypty sesji, ktora te bramе pisala (moje wlasne grepy po binarce i kod hooka).
+  Szukany dowod to wpis `hook_additional_context` wstrzykniety przez hooka, nie samo slowo.
 - **Gdzie zapisać werdykt:** karta kanban „Brama na przelaczanie modelu — PreModelSwitch i PostModelSwitch" + zdjęcie tej pozycji stąd.
 
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
