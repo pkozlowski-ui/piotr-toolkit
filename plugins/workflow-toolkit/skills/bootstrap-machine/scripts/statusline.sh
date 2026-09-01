@@ -7,6 +7,22 @@
 #                      `overage ON` gdy konto moze przelac w kredyty, `credits X!!` gdy juz przelalo)
 #   3. kontekst      — % zajetego okna (kiedy /clear, kiedy kompaktowac)
 #
+# ROLA ZRZUTU — ZMIENIONA 2026-09-01 (workflow-toolkit 1.39.0). Do 1.38.4 zrzut pisany nizej
+# (`~/.claude/state/rate-limits.json`) byl JEDYNYM zrodlem danych dla obu bram kosztowych.
+# Zmierzone: ten skrypt NIE JEST uruchamiany w interfejsie desktopowym w ogole — heartbeat
+# ponizej (czysty shell, zero zaleznosci, pierwsza rzecz w skrypcie) skasowany o 12:57:44 byl
+# nieobecny o 12:59:49. Zrzut nigdy nie powstawal, wiec obie bramy byly slepe od pierwszego dnia,
+# wygladajac na dzialajace. Bramy maja teraz zrodlo glowne w transkryptach sesji
+# (`hooks/lib/usage-ledger.py`), ktore pisze sam Claude Code.
+#
+# Skryptu NIE usuwamy (decyzja Piotra 2026-09-01, karta „Przebuduj bramy kosztowe na transkrypty"):
+# w terminalowym CLI statusline chodzi normalnie i jest JEDYNYM miejscem z prawdziwym procentem
+# okien 5h/7d oraz stanem `extra_usage` prosto z serwera. Bramy traktuja go jako kanal
+# OPCJONALNY i TWARDSZY: gdy zrzut jest swiezy, ma pierwszenstwo przed proxy z tokenow, a
+# `gate-spend-ceiling.sh` zapisuje wtedy pare (waga z transkryptow, realne %) do
+# ~/.claude/state/usage-calibration.jsonl — material na oparcie progow na pomiarze zamiast
+# na zalozeniu z publicznych stawek cache.
+#
 # Wejscie: JSON na stdin (schemat: https://code.claude.com/docs/en/statusline).
 # `prompt_cache` wymaga Claude Code >= 2.1.251 i pojawia sie dopiero po pierwszej odpowiedzi API.
 # Kazde pole czytane z fallbackiem — brak pola ma zniknac z linii, nie wywalic skryptu.

@@ -28,6 +28,34 @@ set_base() { printf '{"acked_credits":%s,"month":"%s","acked_at":0}' "$1" "$(dat
 # inaczej test blokady mierzy sciezke „pierwszy run" zamiast przyrostu.
 clear_marks() { find "$TMP/.claude/state" -maxdepth 1 -name "spend-ceiling-*" ! -name "*.json" -delete 2>/dev/null; }
 
+# --- syntetyczne transkrypty (zrodlo GLOWNE bramy) --------------------------
+# $1 = docelowa waga dnia w mln, $2 = model (dom. claude-opus-5), $3 = ile dni wstecz (dom. 0),
+# $4 = tryb zapisu: "w" nadpisuje plik, "a" dopisuje (test inkrementalnosci), $5 = nazwa sesji.
+# Wage skladamy z samego `output_tokens` (waga 5x), zeby liczba w tescie byla oczywista:
+# out = waga_mln * 200 000. Timestampy stawiamy w POLUDNIE lokalne i konwertujemy do UTC —
+# inaczej test przy zmianie strefy wpadalby raz w dzien wczorajszy, raz w dzisiejszy.
+mk_transcript() {
+  python3 - "$TMP" "$1" "${2:-claude-opus-5}" "${3:-0}" "${4:-w}" "${5:-sess}" <<'PYX'
+import datetime, json, os, sys
+tmp, w, model, back, mode, name = sys.argv[1:7]
+d = datetime.date.today() - datetime.timedelta(days=int(back))
+local_noon = datetime.datetime(d.year, d.month, d.day, 12, 0, 0).astimezone()
+ts = local_noon.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+out_tok = int(round(float(w) * 200_000))
+rec = {"type": "assistant", "timestamp": ts,
+       "message": {"model": model,
+                   "usage": {"input_tokens": 0, "output_tokens": out_tok,
+                             "cache_read_input_tokens": 0, "cache_creation_input_tokens": 0}}}
+p = os.path.join(tmp, ".claude", "projects", "proj")
+os.makedirs(p, exist_ok=True)
+with open(os.path.join(p, name + ".jsonl"), mode) as f:
+    f.write(json.dumps(rec) + "\n")
+PYX
+}
+# Kasuje ledger — inaczej offsety bajtowe z poprzedniego przypadku zafalszuja nastepny.
+reset_ledger() { rm -f "$TMP/.claude/state/usage-ledger.json"; }
+no_transcripts() { rm -rf "$TMP/.claude/projects"; reset_ledger; }
+
 PAYLOAD='{"hook_event_name":"UserPromptSubmit","session_id":"selftest","prompt":"x"}'
 # Powiadomienia macOS w tescie sa niepozadane — podmieniamy osascript na no-op.
 mkdir -p "$TMP/bin"; printf '#!/bin/sh\nexit 0\n' > "$TMP/bin/osascript"; chmod +x "$TMP/bin/osascript"
@@ -135,6 +163,82 @@ check "ack re-baseline'uje" '7.25' "$(HOME="$TMP" bash "$HOOK" ack)"
 check "ack zapisal baseline" '7.25' "$(cat "$TMP/.claude/state/spend-ceiling-baseline.json")"
 clear_marks
 check "po ack brak blokady" 'rc=0' "$(run)"
+
+echo "Zrodlo glowne — transkrypty:"
+clear_marks; no_state; no_transcripts
+mk_transcript 100
+check "dzien ponizej WARN → cisza"                    ''  "$(run)"
+check "…i brama nie mowi, ze jest slepa"              ''  "$(run)"
+
+clear_marks; no_transcripts; mk_transcript 300
+O="$(run)"
+check "dzien w [WARN, STOP) → ostrzezenie"            'Dzisiejsze zuzycie z transkryptow: 300' "$O"
+check "ostrzezenie nazywa oba progi"                  'ostrzezenie od 268'  "$O"
+check "…i nie blokuje"                                'rc=0'                "$O"
+clear_marks
+check "ostrzezenie powtarza sie kazda ture"           'Dzisiejsze zuzycie'  "$(run)"
+
+clear_marks; no_transcripts; mk_transcript 400
+O="$(run)"
+check "dzien ponad STOP → BLOKADA (rc=2)"             'rc=2'                "$O"
+check "blokada podaje liczbe i prog"                  'prog blokady 350'    "$O"
+check "blokada podaje sciezke podgladu"               'usage'               "$O"
+clear_marks
+check "blokada z WFT_ALLOW_OVERAGE=1 → przepuszcza"   'rc=0'                "$(ALLOW=1 run)"
+clear_marks
+check "…ale nadal mowi STOP"                          'STOP'                "$(ALLOW=1 run)"
+
+clear_marks; reset_ledger
+check "prog przestrajalny przez env"                  'rc=2' "$(WFT_DAY_STOP=50 run)"
+clear_marks; reset_ledger
+check "podniesiony prog → brak blokady"               'rc=0' "$(WFT_DAY_STOP=9000 WFT_DAY_WARN=8000 run)"
+
+echo "Okno dnia i inkrementalnosc:"
+clear_marks; no_transcripts; mk_transcript 400 claude-opus-5 3
+check "zuzycie sprzed 3 dni NIE wchodzi do dnia"      ''                    "$(run)"
+clear_marks; no_transcripts; mk_transcript 200
+run >/dev/null
+mk_transcript 200 claude-opus-5 0 a
+O="$(run)"
+check "dopisana linia podbija licznik (offset dziala)" 'transkryptow: 400'  "$O"
+clear_marks; no_transcripts; mk_transcript 400
+run >/dev/null
+mk_transcript 7 claude-opus-5 0 w      # plik podmieniony na krotszy — klasyczne obciecie
+O="$(run)"
+check "obciecie pliku nie dubluje dnia"               'rc=0'                "$O"
+check "…licznik spadl do nowej wartosci"              'dzis 7'  "$(HOME="$TMP" bash "$HOOK" usage)"
+# Podmiana na plik TEJ SAMEJ dlugosci: po rozmiarze nie do odroznienia od braku zmian,
+# dlatego ledger trzyma i-node. Bez tego dzien policzylby sie dwa razy.
+clear_marks; no_transcripts; mk_transcript 400
+run >/dev/null
+rm -f "$TMP/.claude/projects/proj/sess.jsonl"; mk_transcript 100 claude-opus-5 0 w
+check "podmiana pliku tej samej dlugosci → licznik nie dubluje" 'dzis 100' "$(HOME="$TMP" bash "$HOOK" usage)"
+
+echo "Wspolistnienie zrodel:"
+clear_manual_marks() { :; }
+clear_marks; no_transcripts; mk_transcript 400; set_base 0; set_state 20 20 60 0 false
+check "transkrypty blokuja mimo spokojnego zrzutu"    'rc=2'                "$(run)"
+clear_marks; no_transcripts; mk_transcript 100; set_base 3.50; set_state 20 20 60 4.10 true
+check "zrzut blokuje mimo spokojnych transkryptow"    'rc=2'                "$(run)"
+clear_marks; no_transcripts; mk_transcript 100; no_state
+check "transkrypty dzialaja → brama NIE mowi ze jest slepa" '' "$(run)"
+
+echo "Kalibracja:"
+clear_marks; no_transcripts; mk_transcript 100; set_base 0; set_state 42 20 60 0 false
+rm -f "$TMP/.claude/state/usage-calibration.jsonl"
+run >/dev/null
+check "para (waga, realne %) zapisana"  '"7d": 42' "$(cat "$TMP/.claude/state/usage-calibration.jsonl" 2>/dev/null)"
+check "…z waga dnia z transkryptow"     '"day_w": 100' "$(cat "$TMP/.claude/state/usage-calibration.jsonl" 2>/dev/null)"
+N1=$(wc -l < "$TMP/.claude/state/usage-calibration.jsonl" | tr -d ' ')
+clear_marks; run >/dev/null
+check "…i nie puchnie co ture (raz na godzine)" "^$N1\$" "$(wc -l < "$TMP/.claude/state/usage-calibration.jsonl" | tr -d ' ')"
+
+echo "Tryb usage (podglad):"
+no_transcripts; mk_transcript 123
+O="$(HOME="$TMP" bash "$HOOK" usage)"
+check "usage podaje dzien"    'dzis 123' "$O"
+check "usage podaje progi"    'warn 268 / stop 350' "$O"
+check "usage rozbija na modele" 'opus' "$O"
 
 echo
 if [[ "$FAIL" == "0" ]]; then echo "SELFTEST: zielony"; else echo "SELFTEST: CZERWONY"; fi
