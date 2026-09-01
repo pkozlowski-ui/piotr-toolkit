@@ -111,6 +111,27 @@
   **Werdykt formalny NIE zapisany** (populacja 1b = 0, gate nie może uznać się za w pełni
   przeprowadzony) — ale liczba 5/9 na testowalnej części (1a/1c) jest zbyt jednoznaczna, żeby ją
   pominąć milczeniem do następnego przebiegu.
+- **REKO Piotra 2026-09-01: eskalacja do hooka zamiast trzeciej wersji tekstu w SKILL.md
+  (ten sam ruch co precedens H15/`context-watch.sh` v1→v2→v3 — tekst w kontekście nie jest
+  deterministyczny).** Wdrożony `plugins/workflow-toolkit/hooks/guard-send-invitation.sh`
+  (`Stop` hook, `hooks.json`, commit `5fd7213`) — regex na 3 warianty zmierzone w danych powyżej
+  („czekam/czeka/poczekam na «wyślij»", „powiedz/potwierdź «wyślij»", zamykające „wysłać?"),
+  blokuje (exit 2) `last_assistant_message` PRZED dotarciem do usera, fail-open na błąd
+  parsowania. Reguła jest globalna (CLAUDE.md „Wysyłka na zewnątrz"), więc hook łapie każdy
+  skill, nie tylko `linear-ticket-draft`. **Break-restore na wszystkich 9 held-out draftach z
+  klasyfikacji wyżej: 5/5 znanych złamań → fire, 3/3 czystych → silent, borderline (`MAN-903`,
+  brak dosłownego „wyślij") świadomie POZA zasięgiem tego węższego hooka — mechanizm jest kanonem
+  od razu (precedens 2026-08-25/08-28: pełny break-restore nie czeka na held-out).**
+  **Hipotezą NIE jest sama mechanika (zweryfikowana), tylko efekt w realnych sesjach idących
+  naprzód** — czy model realnie przepisuje odpowiedź po bloku, czy próbuje obejść wzorzec
+  (synonimy, inny szyk zdania) zamiast usunąć zaproszenie. **Nowe okno held-out startuje
+  2026-09-01** (data wdrożenia hooka) — mierz DWIE rzeczy osobno: (a) czy w transkryptach
+  pojawiają się realne odpalenia bloku (dowód że hook w ogóle się aktywuje — sprawdzalne po
+  `stderr`/kontynuacji w `.jsonl`), (b) czy FINALNA (po ew. bloku) odpowiedź nadal niesie
+  zaproszenie do wysyłki w innej formie niż złapane 3 wzorce (dowód realnego obejścia, nie
+  tylko luki w regexie). Warunek wznowienia bez zmian co do liczby (≥3 oceniane, w tym ≥1 po
+  zablokowanej próbie wysyłki), ale teraz drugi model deterministyczny jest w grze — jeśli
+  utrzyma się do zera złamań, to on jest kanonem, nie akapit w SKILL.md.
 - **Warunek wznowienia:** ≥ 3 przypadki OCENIANE (musi zawierać ≥1 po zablokowanej próbie wysyłki —
   patrz wyżej), czyli realne drafty `linear-ticket-draft` po **2026-08-26**.
 - **Komenda:**
