@@ -88,6 +88,21 @@ fi
   RL_DIR="$HOME/.claude/state"
   mkdir -p "$RL_DIR" 2>/dev/null
   RL_TMP="$(mktemp "$RL_DIR/.rate-limits.XXXXXX" 2>/dev/null)"
+  # NIE nadpisuj dobrego odczytu pustym. `rate_limits` bywa null w pojedynczych renderach
+  # (pole `rate_limits_available` mowi, czy to stan trwaly czy chwilowy), a zrzut jest jedynym
+  # zrodlem dla bram — jeden pusty render kasowal cala wiedze i zostawial brame slepa.
+  # Zmierzone 2026-09-01: `/usage` pokazywal 5h 73% / 7d 81%, a zrzut sprzed 33 s mial same null.
+  RL_HAS_DATA="$(jqr 'if (.rate_limits.five_hour or .rate_limits.seven_day or .rate_limits.extra_usage) then "1" else "" end')"
+  if [[ -z "$RL_HAS_DATA" && -s "$RL_DIR/rate-limits.json" ]]; then
+    # Zapamietaj tylko fakt pustego renderu — bez ruszania ostatniego dobrego odczytu.
+    jq -c --argjson ts "$(date +%s)" \
+       --argjson av "$(jqr 'if .rate_limits_available == false then "false" else "true" end')" \
+       '.last_empty_ts = $ts | .rate_limits_available = $av' \
+       "$RL_DIR/rate-limits.json" > "$RL_TMP" 2>/dev/null \
+      && mv -f "$RL_TMP" "$RL_DIR/rate-limits.json" 2>/dev/null
+    rm -f "$RL_TMP" 2>/dev/null
+    RL_TMP=""
+  fi
   if [[ -n "${RL_TMP:-}" ]]; then
     printf '%s' "$IN" | jq -c --argjson ts "$(date +%s)" '{
       ts: $ts,
@@ -96,7 +111,9 @@ fi
       seven_day_resets_at: (.rate_limits.seven_day.resets_at // null),
       five_hour_resets_at: (.rate_limits.five_hour.resets_at // null),
       model_scoped: (.rate_limits.model_scoped // null),
-      extra_usage: (.rate_limits.extra_usage // null)
+      extra_usage: (.rate_limits.extra_usage // null),
+      rate_limits_available: (.rate_limits_available // null),
+      subscription_type: (.subscription_type // null)
     }' > "$RL_TMP" 2>/dev/null && mv -f "$RL_TMP" "$RL_DIR/rate-limits.json" 2>/dev/null
     rm -f "$RL_TMP" 2>/dev/null
   fi
