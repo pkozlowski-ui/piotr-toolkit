@@ -1,6 +1,7 @@
 # cookbook — entries already reviewed by inspiration-sweep. One per line: id<TAB>firstSeen<TAB>title
 # Delete a line (or: snapshot.mjs forget cookbook <id>) to have the next sweep look at it again.
 capabilities-classification-guide	2026-08-13	Classification
+capabilities-content-moderation-guide	2026-09-01	Content policy enforcement with Claude
 capabilities-contextual-embeddings-guide	2026-08-13	Enhancing RAG with contextual retrieval
 capabilities-knowledge-graph-guide	2026-08-13	Knowledge graph construction
 capabilities-retrieval-augmented-generation-guide	2026-08-13	Retrieval augmented generation
