@@ -599,9 +599,24 @@ tej gotchy siedzi w komentarzu w `design-gates.yml` w repo produktowym, nie tuta
   wzrostu udziału subagentów powyżej baseline'u 11,9% → zmiana treści skilli nie działa; nie pisz
   trzeciej wersji tego samego nudge'u — eskaluj do hooka/gate'a (ten sam ruch co REKO na
   `model-delegation-threshold`, tylko wymuszony zamiast opisany) albo do decyzji Piotra o wycofaniu.
-- **Komenda:** ręczny audyt tokenów wg istniejącego procesu (poza `usage-audit` — ten skill mierzy
-  wywołania skilli, nie rozkład modeli w oknie); porównaj udział subagentów z baseline'em 11,9%
-  z audytu 2026-08-27.
+- **Komenda (od 2026-09-01 mechaniczna — koniec z ręcznym czytaniem transkryptów):**
+  ```bash
+  node plugins/workflow-toolkit/scripts/subagent-share.mjs --days 14        # globalnie
+  node plugins/workflow-toolkit/scripts/subagent-share.mjs --days 14 --project .   # tylko ten projekt
+  ```
+  Skrypt liczy udział requestów subagentów (`type:"assistant"` z `usage`) w oknie z
+  `~/.claude/projects`, z rozbiciem na rodzinę modelu, `effort` i `agentType` — czyli to samo, co
+  `/tasks` pokazuje per subagent w UI od 2.1.243, ale porównywalne między oknami i wpisywalne do
+  gate'a. `--json` daje `verdict` (`above-target` / `above-baseline` / `at-or-below-baseline`).
+- **⚠️ Zmiana metody = nowy baseline, nie dowód wzrostu.** Baseline 11,9% pochodzi z RĘCZNEGO audytu
+  tokenów 2026-08-27, liczonego inaczej niż ten skrypt — porównywanie 11,9% z liczbą skryptu miesza
+  dwie metody i samo w sobie nie potwierdza H15. Pierwszy pomiar skryptem **jest baseline'em tej
+  metody**; werdykt H15 zapada z DWÓCH kolejnych pomiarów tym samym skryptem.
+- **Pomiar 1 tą metodą (2026-09-01):** okno 4 dni (od daty zmiany 2026-08-28), globalnie —
+  **24,2%** subagentów (main 17 975 / sub 5 740 req; sonnet 4 746, haiku 994; agentType:
+  general-purpose 117, claude 9, Explore 8). Okno 14 dni: **21,6%**. Sam `piotr-toolkit`, 14 dni:
+  **13%** (123 req, wszystko haiku). Zero spawnów `fork`. Pomiar 2: **2026-09-15**, tą samą komendą,
+  `--days 14`.
 - **Gdzie zapisać werdykt:** karta kanban „Fable inspects my workflow" (sekcja `## Rezultat`) +
   zdjęcie tej pozycji stąd.
 

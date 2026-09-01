@@ -32,6 +32,8 @@ Use the Agent tool with **`subagent_type: 'Explore'`** (broad read/verify) or **
 
 **Always pass `model: 'opus'` explicitly.** Without it, the Agent tool inherits whatever model the main session is running — so on a Sonnet session, a "second opinion" is just the same level of judgment talking to itself, which defeats the point of an adversarial check. The escalation is a single point call (one advisor invocation), not the whole session moving to a costlier model, so it doesn't conflict with the hard spend ceiling in the global model-selection rule — cheap relative to catching a real mistake before an irreversible action (cookbook `managed-agents-cma-consult-an-advisor`: ~$0.07 consult vs ~$0.21 for the equivalent session cost).
 
+**Never use `subagent_type: 'fork'` for an advisor — it breaks this skill twice over (rozstrzygnięte 2026-09-01).** Forking is on by default since Claude Code 2.1.232 and looks like a free win (inherits the full conversation and the warm prompt cache), but: (1) inheriting the conversation inherits the tunnel vision — the whole premise here is a reader with no exposure to how the plan was built, and a fork is the same context arguing with itself; (2) a fork **always** inherits the parent model, and the Agent tool's `model` parameter is *ignored* for forks — so the mandatory `model: 'opus'` escalation in this step silently does nothing on a Sonnet session. Cheap cache is not the scarce resource in a second opinion; independence is. Fork's real niche is the opposite case — offloading long, context-heavy work of your own that needs the parent's model and history — not review.
+
 **Never** use `general-purpose` (or any full-tools agent) with a prompt that says "don't modify files." The instruction is not a guardrail — a capability that's present eventually gets used. (Real case 2026-07-02: a `general-purpose` advisor told "verdict only" instead executed half a memory consolidation, archiving files and rewriting the index; untangling it cost more than the review saved.)
 
 ### 3 — Adversarial framing
@@ -49,6 +51,7 @@ The advisor's verdict is **input, not a verdict on you.** Weigh it, correct cour
 ## Rules
 
 - **Consult before an irreversible decision — not optional.** If the action about to be taken matches the trigger test in "When to use" (irreversible/destructive, architectural, an early hard-to-reverse step in a multi-step plan, or declaring "done" on shared state), spawn the advisor *before* acting, every time — treat the trigger test as a gate on the action, not a suggestion to skim past.
+- **No forks.** `subagent_type: 'fork'` is an anti-pattern here — it inherits both the context (killing independence) and the parent model (silently voiding the `model: 'opus'` rule). See step 2.
 - **Read-only, always.** `Explore` / `Plan` only. If you catch yourself reaching for `general-purpose` to "also let it fix things," that's a separate, explicit step — not a review.
 - **Model escalation is not optional either.** Always pass `model: 'opus'` on the advisor call — see step 2. Skipping it silently degrades the review to same-level agreement.
 - **Trigger-gated.** Match the ceremony to the stakes. Cheap-to-undo → don't spawn.

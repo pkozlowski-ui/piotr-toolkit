@@ -57,6 +57,25 @@ if [[ -n "$D7" ]]; then
   LIM="${LIM:+$LIM · }7d ${D7R}%${MARK}"
 fi
 
+# --- zrzut limitow dla bramy przelaczania modelu -----------------------------
+# PreModelSwitch/PostModelSwitch NIE dostaja rate_limits w payloadzie, a statusline to jedyne
+# miejsce, gdzie Claude Code je podaje. Zrzucamy ostatni odczyt, zeby `gate-model-switch.sh`
+# mial na czym oprzec prog 50% na Fable 5. Zapis atomowy (mv), cicho przy bledzie —
+# status line nie ma prawa sie wywalic przez ten dopisek.
+{
+  RL_DIR="$HOME/.claude/state"
+  mkdir -p "$RL_DIR" 2>/dev/null
+  RL_TMP="$(mktemp "$RL_DIR/.rate-limits.XXXXXX" 2>/dev/null)"
+  if [[ -n "${RL_TMP:-}" ]]; then
+    printf '%s' "$IN" | jq -c --argjson ts "$(date +%s)" '{
+      ts: $ts,
+      seven_day_pct: (.rate_limits.seven_day.used_percentage // null),
+      five_hour_pct: (.rate_limits.five_hour.used_percentage // null)
+    }' > "$RL_TMP" 2>/dev/null && mv -f "$RL_TMP" "$RL_DIR/rate-limits.json" 2>/dev/null
+    rm -f "$RL_TMP" 2>/dev/null
+  fi
+} 2>/dev/null || true
+
 # --- zlozenie ---------------------------------------------------------------
 L1="$MODEL"
 [[ -n "$EFFORT" ]] && L1="$L1/$EFFORT"

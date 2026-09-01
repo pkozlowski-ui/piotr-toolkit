@@ -18,3 +18,5 @@ FORMAT WYNIKU (zwróć dokładnie to, nic więcej):
 - VERDICT: PASS | FAIL
 - Tabela: kryterium | PASS/FAIL | dowód
 - Jeśli FAIL: lista konkretnych braków do naprawy (actionable, po jednym).
+
+NIGDY NIE URUCHAMIAJ MNIE JAKO FORKA (`subagent_type: "fork"`, domyślnie włączony od Claude Code 2.1.232 — rozstrzygnięte 2026-09-01). Fork dziedziczy pełną rozmowę rodzica, czyli dokładnie historię „jak artefakt powstał" — a to jest jedyne, czego weryfikator mieć NIE MOŻE. Fork widziałby uzasadnienia, założenia i deklaracje autora i orzekałby po nich, nie po dowodach; to nie jest tańsza weryfikacja, to zniesienie weryfikacji. Drugi powód: fork zawsze dziedziczy model rodzica (parametr `model` jest wtedy ignorowany), więc `model: sonnet` z tej definicji przestaje obowiązywać. Wołaj mnie normalnym spawnem — świeży kontekst jest tu funkcją, nie kosztem.
