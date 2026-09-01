@@ -1,0 +1,123 @@
+{
+  "version": "1.0",
+  "note": "Pola sa OBIEKTYWNYMI atrybutami komentarza, nie werdyktem. Ekstraktor nie zna osi klasyfikacji ani regul — ma tylko opisac tekst. Kazde pole dopuszcza wartosc \"unclear\" i to jest poprawna odpowiedz, nie porazka.",
+  "fields": [
+    {
+      "name": "addressed_to_us",
+      "question": "Czy ten komentarz jest CZESCIA ROZMOWY DWOCH INNYCH OSOB, ktora tylko toczy sie na naszym pliku? Domyslnie komentarz reviewera pod naszym designem JEST do nas, nawet bez @-tagu. 'overheard' zarezerwuj dla wymiany, w ktorej ktos odpowiada komus innemu i rzecz dotyczy ich wlasnej dzialki (roadmapa, zakres, planowanie), a nie tego, co zaprojektowalismy.",
+      "values": {
+        "yes": "komentarz odnosi sie do designu/ekranu — czyli do nas, z @-tagiem albo bez",
+        "overheard": "wymiana miedzy innymi osobami o ICH sprawach (roadmapa, planowanie, priorytety zespolu), przypieta do naszego pliku",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "speech_act",
+      "question": "Jakim aktem mowy jest ten komentarz w swojej GLOWNEJ czesci? Gdy laczy kilka, wybierz ten, wokol ktorego zbudowana jest wypowiedz.",
+      "values": {
+        "interrogative": "pyta o informacje (znak zapytania albo forma pytajna: what/should/is there/curious about/dlaczego)",
+        "directive": "poleca zmiane wprost (remove X, move Y, should be Z, we need)",
+        "proposal": "proponuje albo rozwaza zmiane niezobowiazujaco (might be nice, consider, I think we could, my gut is)",
+        "assertion": "stwierdza fakt albo stan rzeczy bez proszenia o zmiane",
+        "praise": "wyraza uznanie albo zgode (I like, nice, agree, looks great)",
+        "reference": "podrzuca zewnetrzny przyklad albo link jako wzorzec do nasladowania",
+        "unclear": "nie da sie rozstrzygnac z tekstu"
+      }
+    },
+    {
+      "name": "asks_change",
+      "question": "Czy komentarz prosi o JAKAKOLWIEK zmiane w artefakcie (ekranie, tekscie, przeplywie, modelu danych)?",
+      "values": {
+        "yes": "tak, wprost albo przez mocna sugestie",
+        "no": "nie, to pytanie/komentarz/pochwala bez prosby o zmiane",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "change_layer",
+      "question": "Gdyby ta uwaga zostala wdrozona, CO by sie zmienilo? Wybierz najglebsza warstwe, ktorej REALNIE dotyka. KALIBRACJA: dodanie etykiety, wskaznika, kolumny, sekcji albo przestawienie czegos na ISTNIEJACYM ekranie to 'presentation', a NIE 'scope' — nawet jesli pokazywana rzecz jest biznesowo wazna. 'scope' rezerwuj dla sytuacji, w ktorej produkt miałby robic cos, czego dzis nie robi wcale (nowa zdolnosc, nowy ekran, wyciecie ficzera).",
+      "values": {
+        "presentation": "uklad, kolejnosc, widocznosc, komponent, stan wizualny — to samo co dzis, inaczej pokazane",
+        "copy": "slowa: etykieta, nazwa statusu, terminologia, tekst pomocniczy",
+        "scope": "co produkt w ogole robi: nowa funkcja, nowy ekran, nowa zdolnosc, wyciecie ficzera",
+        "data_model": "jakie dane istnieja i gdzie sa przypiete (np. dokument na aplikacji vs na uczniu), nowe pole/encja",
+        "process": "kto co robi i kiedy: krok w przeplywie, reguly biznesowe, kto zatwierdza, kiedy leci powiadomienie",
+        "none": "nic by sie nie zmienilo — czysty komentarz albo pytanie",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "names_defect",
+      "question": "Czy komentarz wskazuje FAKTYCZNY BLAD w istniejacym materiale — cos, co jest obiektywnie niepoprawne, wewnetrznie sprzeczne albo rozjezdza sie miedzy dwoma miejscami? UWAGA: 'to jest mylace', 'powinno byc inaczej', 'wolalbym', 'brakuje mi tu X' to NIE defekt — to preferencja albo prosba o nowa rzecz.",
+      "values": {
+        "yes": "tak — zla dana, sprzeczne etykiety, ten sam koncept nazwany dwoma slowami, rozjazd miedzy ekranami, cos co po prostu nie dziala",
+        "no": "nie — preferencja, prosba o zmiane, nowy pomysl, ocena 'mylace' bez wskazania sprzecznosci",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "ask_determinate",
+      "question": "Czy DESIGNER moze te zmiane wykonac SAM, nie pytajac nikogo o zdanie? KALIBRACJA — to NIE jest pytanie o to, czy komentarz opisuje zmiane co do piksela. Zwykly osad projektowy (ktory komponent, dokladne slowo, gdzie to postawic) mieszcze sie w 'yes'. 'no' rezerwuj dla sytuacji, w ktorej brakuje DECYZJI PRODUKTOWEJ albo POLITYKI: trzeba wybrac miedzy wariantami, ktorych komentarz nie rozstrzyga, ustalic definicje pojecia, albo zdecydowac, czy produkt w ogole ma cos robic.",
+      "values": {
+        "yes": "designer wie, co zrobic — reszta to zwykly osad projektowy",
+        "no": "najpierw musi zapasc decyzja produktowa albo trzeba wybrac wariant, ktorego komentarz nie wskazuje",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "invokes_other_party",
+      "question": "Czy komentarz odsyla do innej osoby, zespolu albo wspolnego ustalenia — wymienia kogos z imienia w roli decydenta, prosi o rozmowe/warsztat/sync, albo mowi 'ustalmy' / 'discuss with'?",
+      "values": {
+        "yes": "tak",
+        "no": "nie",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "answer_source",
+      "question": "Gdyby na ten komentarz trzeba bylo ODPOWIEDZIEC (a nie zbudowac), skad wzielaby sie odpowiedz?",
+      "values": {
+        "design": "z tego, co juz zaprojektowane albo zdecydowane — da sie odpowiedzc wprost, patrzac na plik",
+        "product_decision": "z decyzji produktowej/biznesowej, ktora jeszcze nie zapadla",
+        "none": "komentarz nie domaga sie odpowiedzi",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "phase_deferral",
+      "question": "Czy komentarz zawiera WPROST znacznik czasowy odkladajacy rzecz na pozniej — 'later', 'not now', 'phase 2', 'post-MVP', 'kiedys', 'w nastepnym cyklu'? Sama duzo rozmiarowa zmiana albo trudnosc to NIE jest odroczenie.",
+      "values": {
+        "yes": "tak",
+        "no": "nie",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "positive_valence",
+      "question": "Czy komentarz wyraza pozytywna ocene tego, co widzi (pochwala, zgoda, entuzjazm)?",
+      "values": {
+        "yes": "tak",
+        "no": "nie",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "reusable_lesson",
+      "question": "Czy z komentarza da sie wyciagnac DLACZEGO cos zadzialalo i JAK to powtorzyc gdzie indziej — czy to samo 'ok, fajne' bez tresci?",
+      "values": {
+        "yes": "tak, jest konkretny powod albo wzorzec do reuzycia",
+        "no": "nie, sama aprobata bez tresci",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    },
+    {
+      "name": "references_external_example",
+      "question": "Czy komentarz wskazuje zewnetrzny przyklad, produkt albo link jako wzorzec ('zrobmy jak w X')?",
+      "values": {
+        "yes": "tak",
+        "no": "nie",
+        "unclear": "nie da sie rozstrzygnac"
+      }
+    }
+  ]
+}

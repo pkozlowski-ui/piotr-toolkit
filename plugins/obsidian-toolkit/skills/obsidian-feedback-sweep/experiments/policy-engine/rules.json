@@ -1,0 +1,296 @@
+{
+  "version": "1.0",
+  "compiled_from": "policy.md",
+  "_note": "SKOMPILOWANE — nie edytuj recznie. Zmiana polityki idzie przez policy.md, potem rekompilacja.",
+  "axes": {
+    "type": [
+      {
+        "id": "A1",
+        "why": "defekt bije wszystko: 'to jest zle' != 'chcialbym inaczej'",
+        "when": {
+          "field": "names_defect",
+          "in": [
+            "yes"
+          ]
+        },
+        "then": "bug"
+      },
+      {
+        "id": "A2",
+        "why": "podrzucony zewnetrzny wzorzec",
+        "when": {
+          "field": "references_external_example",
+          "in": [
+            "yes"
+          ]
+        },
+        "then": "inspiration",
+        "on_unknown": "false"
+      },
+      {
+        "id": "A3",
+        "why": "pochwala bez prosby o zmiane",
+        "when": [
+          {
+            "field": "positive_valence",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "asks_change",
+            "in": [
+              "no"
+            ]
+          }
+        ],
+        "then": "note"
+      },
+      {
+        "id": "A4",
+        "why": "pytanie jest typem tylko gdy nie niesie polecenia",
+        "when": [
+          {
+            "field": "speech_act",
+            "in": [
+              "interrogative"
+            ]
+          },
+          {
+            "field": "asks_change",
+            "in": [
+              "no"
+            ]
+          }
+        ],
+        "then": "question"
+      },
+      {
+        "id": "A5",
+        "why": "scope/model danych/proces = produkt, niezaleznie od drobnosci sformulowania",
+        "when": {
+          "field": "change_layer",
+          "in": [
+            "scope",
+            "data_model",
+            "process"
+          ]
+        },
+        "then": "product"
+      },
+      {
+        "id": "A6",
+        "why": "uklad i slowa = design",
+        "when": {
+          "field": "change_layer",
+          "in": [
+            "presentation",
+            "copy"
+          ]
+        },
+        "then": "design"
+      }
+    ],
+    "disposition": [
+      {
+        "id": "B1",
+        "why": "nie do nas — rozmowa innych osob na naszym pliku; logujemy, nie odpowiadamy (standing rule, rejestry 07-22 i 07-30)",
+        "when": {
+          "field": "addressed_to_us",
+          "in": [
+            "overheard"
+          ]
+        },
+        "then": "no-action",
+        "on_unknown": "false"
+      },
+      {
+        "id": "B3",
+        "why": "odsyla do innej osoby albo do wspolnego ustalenia",
+        "when": {
+          "field": "invokes_other_party",
+          "in": [
+            "yes"
+          ]
+        },
+        "then": "needs-decision"
+      },
+      {
+        "id": "B4",
+        "why": "proposer = decision-maker: autor jest wlascicielem tej warstwy, wiec jego zdanie JEST decyzja, nie prosba o nia (rejestr 08-14, 06-24 N1)",
+        "when": [
+          {
+            "derived": "author_owns_layer",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "asks_change",
+            "in": [
+              "yes"
+            ]
+          }
+        ],
+        "then": "do-now"
+      },
+      {
+        "id": "B5a",
+        "why": "warstwa nalezy do NAS — nie ma kogo pytac, wiec nawet nie w pelni okreslona prosba jest nasza robota, nie routingiem (mined rule 5: produkt low-risk != needs-decision)",
+        "when": [
+          {
+            "derived": "layer_owned_by_us",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "asks_change",
+            "in": [
+              "yes"
+            ]
+          }
+        ],
+        "then": "do-now"
+      },
+      {
+        "id": "B5",
+        "why": "prosba nieokreslona — trzeba najpierw wybrac wariant albo ustalic definicje",
+        "when": [
+          {
+            "field": "asks_change",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "ask_determinate",
+            "in": [
+              "no"
+            ]
+          }
+        ],
+        "then": "needs-decision"
+      },
+      {
+        "id": "B6",
+        "why": "prosba okreslona — jedna wykonalna zmiana; warstwa NIE decyduje (produkt low-risk tez jest do-now, rejestry 06-16/06-24/07-30)",
+        "when": [
+          {
+            "field": "asks_change",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "ask_determinate",
+            "in": [
+              "yes"
+            ]
+          }
+        ],
+        "then": "do-now"
+      },
+      {
+        "id": "B7",
+        "why": "pozytyw z lekcja do reuzycia",
+        "when": [
+          {
+            "field": "asks_change",
+            "in": [
+              "no"
+            ]
+          },
+          {
+            "field": "positive_valence",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "reusable_lesson",
+            "in": [
+              "yes"
+            ]
+          }
+        ],
+        "then": "delight"
+      },
+      {
+        "id": "B8",
+        "why": "pozytyw bez tresci",
+        "when": [
+          {
+            "field": "asks_change",
+            "in": [
+              "no"
+            ]
+          },
+          {
+            "field": "positive_valence",
+            "in": [
+              "yes"
+            ]
+          },
+          {
+            "field": "reusable_lesson",
+            "in": [
+              "no"
+            ]
+          }
+        ],
+        "then": "no-action"
+      },
+      {
+        "id": "B9",
+        "why": "pytanie z odpowiedzia po naszej stronie",
+        "when": [
+          {
+            "field": "asks_change",
+            "in": [
+              "no"
+            ]
+          },
+          {
+            "field": "answer_source",
+            "in": [
+              "design"
+            ]
+          }
+        ],
+        "then": "answer-close"
+      },
+      {
+        "id": "B10",
+        "why": "pytanie o decyzje, ktora jeszcze nie zapadla",
+        "when": [
+          {
+            "field": "asks_change",
+            "in": [
+              "no"
+            ]
+          },
+          {
+            "field": "answer_source",
+            "in": [
+              "product_decision"
+            ]
+          }
+        ],
+        "then": "needs-decision"
+      },
+      {
+        "id": "B2",
+        "why": "odroczenie rozstrzyga TYLKO wtedy, gdy nic wykonalnego nie zostalo poproszone — inaczej 'przy okazji pomyslmy pozniej o X' kasowalo cala prosbe (5 bledow na train)",
+        "when": {
+          "field": "phase_deferral",
+          "in": [
+            "yes"
+          ]
+        },
+        "then": "defer",
+        "on_unknown": "false"
+      }
+    ]
+  }
+}

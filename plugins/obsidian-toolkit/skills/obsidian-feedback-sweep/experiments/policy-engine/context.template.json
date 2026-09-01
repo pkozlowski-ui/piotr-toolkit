@@ -1,0 +1,16 @@
+{
+  "_note": "SZABLON kontekstu projektu. Skopiuj do prywatnego repo/vaultu projektu jako context.<projekt>.json i wypelnij. NIE commituj wypelnionej wersji do publicznego toolkitu — zawiera nazwiska i uklad decyzyjny klienta.",
+  "scope": "<projekt>",
+  "us": ["<imie i nazwisko wlasciciela kanalu>"],
+  "owner_matrix": {
+    "data_model":   {"owner": "<kto>", "why": "<dlaczego ta osoba>"},
+    "scope":        {"owner": "<kto>", "why": ""},
+    "process":      {"owner": "<kto>", "why": ""},
+    "presentation": {"owner": "<kto>", "why": ""},
+    "copy":         {"owner": "<kto>", "why": ""}
+  },
+  "domain_owners": {
+    "_note": "Osoba z PUSTA lista = znany recenzent bez wladzy decyzyjnej. To informacja, nie brak danych: dzieki niej silnik zwraca FALSE zamiast 'nie wiem'. Recenzenta spoza tej mapy silnik traktuje jako niewiadoma i BLOKUJE werdykt.",
+    "<osoba>": ["scope", "process"]
+  }
+}
