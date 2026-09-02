@@ -19,6 +19,35 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-02, drugi tego dnia (retro sesji „warstwa Virtual Assistanta w sales-demo", antisis-prototype) — ZERO ruchu, jeden confound na H15
+
+Sesja: zbudowała i zmergowała trzy PR-y w `antisis-sales-demo` — warstwę Virtual Assistanta
+Georginy (#765: home, Enrollment portfolio, Data Scientist z raportem Manty), sekcję R&E u Alicii
+(#768) i portfolio executive Dr. Callahana (#769). Zero wywołań `linear-ticket-draft`,
+`design-tweaker`, `code-design-audit`, `ux-copy`, `web-research`, `obsidian-feedback-sweep`,
+`usage-audit`, `hygiene-audit`, zero edycji CLAUDE.md, zero nowych pól `related:`/`linear:` na
+karcie — H2, H3, H7–H12, H14, H16, H18, H19 bez materiału (ta sama klasa co przebiegi 08-28..09-02:
+sesja nie dotknęła mierzonego skilla).
+
+Odpalone komendy tam, gdzie istnieją: **H13** (`find … CLAUDE.md -exec wc -c`) → jeden plik nad
+progiem 40 KB (`antisis prototype` 40 465 B, pozostałe 1,6–21 KB) — n=1, za mało na gate, warunek
+wznowienia niespełniony. **H17** (`find … audit-invariants.json`) → 1 plik, bez zmiany.
+
+**H15 (delegacja jako domyślny tryb) — confound, NIE liczyć jako sygnał:** ta sesja nie delegowała
+niczego, ale nie z wyboru — jej system prompt zawierał twarde „Do not call the AgentTool unless the
+user requested it", więc delegacja była zablokowana narzędziowo, nie odrzucona przez model. Wpis
+istnieje po to, żeby przy zliczaniu H15 nie policzyć tej sesji jako „reguła nie zadziałała".
+
+**Nowych hipotez z tej sesji: ZERO.** Jedyna lekcja (ukryty Browser pane zamraża renderer: brak
+layoutu → `innerText` = `""`, `rAF` w ogóle nie leci, animowany UI wygląda na zacięty; weryfikuj
+`get_page_text` + SSR-`curl` + settled-state zamiast czekania) ma obiektywny check — objawy są
+mierzalne i powtarzalne w każdej sesji z tym panelem — więc poszła jako **konsolidacja istniejącego
+wpisu** `.claude/memory/browser-verification-gotchas.md` (zastąpiła sekcję z 2026-08-13, która
+opisywała ten sam objaw jako „race paint/composite, brak powtarzalnego triggera" — trigger jest
+nazwany: widoczność panelu). Netto rozmiar wpisu bez zmian (soczewka `memory-entry-size` zielona),
+bo stara sekcja została wchłonięta, nie dołożona.
+
+
 ### Przebieg 2026-09-02 (retro sesji "FP Home visual polish w sales-demo", antisis-prototype) — ZERO ruchu
 
 Sesja: poprawiła wizualnie ekran Family Portal home w `antisis-sales-demo` (avatary dzieci, greeting
