@@ -8,7 +8,9 @@ Zadanie: zbuduj animację dla **$ARGUMENTS**.
 1. Załaduj Skill `motion-toolkit:animate` — to jest kanon dla tej roboty; jego sekwencja decyzji
    (czy w ogóle animować → cel → narzędzie → właściwości → krzywa/czas lub sprężyna → przerwanie
    i wyjście → reduced-motion) jest obowiązkowa, nie orientacyjna. Receptury komponentowe siedzą
-   w `RECIPES.md` — sprawdź je, zanim napiszesz cokolwiek od zera.
+   w `RECIPES.md`, obok `SKILL.md` w katalogu pluginu
+   (`${CLAUDE_PLUGIN_ROOT}/skills/animate/RECIPES.md`) — przeczytaj je stamtąd, nie szukaj
+   w repozytorium projektu. Sprawdź recepturę, zanim napiszesz cokolwiek od zera.
 2. Rozpoznaj kontekst PRZED implementacją: jakiego stacku używa ten projekt (CSS / Tailwind /
    Motion / WAAPI), jakie ma już tokeny ruchu (`--ease-*`, `--duration-*`) i czy istnieje podobna
    animacja, z którą nowa ma być spójna. Nie wprowadzaj nowej biblioteki bez pytania.
