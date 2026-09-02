@@ -19,6 +19,32 @@
 
 ## Otwarte
 
+### H20 — motion-toolkit: adopcja komend i wartość tury drugiej (otwarte 2026-09-02)
+
+Plugin `motion-toolkit` 1.0.6 dostarczony i zweryfikowany behawioralnie: `animate` (Sonnet,
+end-to-end), `review-motion`, `motion-ideas`, `motion-name` — pass. **`motion-audit` NIETESTOWANY**
+— jednoplikowy projekt testowy nie daje sygnału dla audytu całego codebase'u.
+
+Dwie rzeczy czekają na materiał z realnego użycia:
+
+1. **Czy komendy w ogóle się odpalają** w sesjach frontendowych — czy Piotr sięga po
+   `/motion-toolkit:*`, czy praca z animacją idzie obok nich (ta sama klasa co missed-triggery
+   z audytu 2026-07-10).
+2. **Czy tura druga ma sens** — soczewka „Motion" w `design-tweaker`, wymiar motion
+   w `code-design-audit`/`ui-polish-loop`, sekcja motion spec w `figma-handoff-prep`. Świadomie
+   NIE zrobiona: routing utwardzamy dopiero, gdy widać, że warstwa jest używana i gdzie się gubi.
+
+**Warunek wznowienia:** ≥3 sesje z realną pracą nad animacją w kodzie (nie testy tego pluginu).
+
+**Komenda:**
+```bash
+grep -rl 'motion-toolkit:' ~/.claude/projects/*/[0-9a-f]*.jsonl 2>/dev/null | wc -l
+```
+
+**Ryzyko przeciwne:** plugin leży martwy, bo motion w kodzie to rzadka klasa zadań w tej pracy
+(przewaga Figmy) — wtedy werdykt brzmi „zostaw jako referencję, nie rozbudowuj", i to też jest
+wynik do zapisania, nie porażka.
+
 ### Przebieg 2026-09-02, drugi tego dnia (retro sesji „warstwa Virtual Assistanta w sales-demo", antisis-prototype) — ZERO ruchu, jeden confound na H15
 
 Sesja: zbudowała i zmergowała trzy PR-y w `antisis-sales-demo` — warstwę Virtual Assistanta

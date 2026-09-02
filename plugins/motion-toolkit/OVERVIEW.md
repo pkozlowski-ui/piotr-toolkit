@@ -54,3 +54,18 @@ Trwałe odblokowanie — w `~/.claude/settings.json`:
 ```
 
 Dotyczy to wszystkich pluginów z plikami referencyjnymi, nie tylko tego.
+
+## Stan weryfikacji (2026-09-02, wersja 1.0.6)
+
+Testy behawioralne na spreparowanym diffie z celowymi naruszeniami, w świeżych procesach:
+
+| Komenda | Wynik |
+|---|---|
+| `animate` | ✅ Sonnet, end-to-end — receptura zastosowana, 3 blokery usunięte, zakres uszanowany |
+| `review-motion` | ✅ znaleziska z cytatami do linii `STANDARDS.md`, werdykt Block |
+| `motion-ideas` | ✅ z sekcją odrzuconych i handoffem do `animate` |
+| `motion-name` | ✅ format glosariusza |
+| `motion-audit` | ⚠️ nietestowany — jednoplikowy projekt nie daje sygnału dla audytu codebase'u |
+
+Adopcja komend i sens tury drugiej wiszą jako **H20** w
+`workflow-toolkit/skills/session-retro/hipotezy-otwarte.md`.
