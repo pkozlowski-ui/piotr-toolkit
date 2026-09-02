@@ -21,12 +21,10 @@ Jeśli nie podano czego animować, zapytaj o to jednym zdaniem i czekaj — nie 
 
 ---
 
-Pliki referencyjne tego skilla NIE leżą w repozytorium projektu — leżą w katalogu
-zainstalowanego pluginu. Zlokalizuj je jedną komendą i przeczytaj ZANIM ocenisz cokolwiek:
-```bash
-D=$(ls -d ~/.claude/plugins/cache/*/motion-toolkit/*/skills/animate 2>/dev/null | sort -V | tail -1)
-ls "${D:-plugins/motion-toolkit/skills/animate}"
-```
-Jeśli odczyt tego katalogu zostanie odrzucony (leży poza katalogiem projektu) — **powiedz
-to wprost i zatrzymaj się**, zamiast oceniać na wyczucie. Trwałe odblokowanie: wpis
-`permissions.additionalDirectories` w `~/.claude/settings.json` — patrz OVERVIEW.md.
+Pliki referencyjne tego skilla (`STANDARDS.md`, `RECIPES.md`, `AUDIT.md`, `PLAN-TEMPLATE.md`)
+leżą **w katalogu samego skilla, obok jego `SKILL.md`** — NIE w repozytorium projektu.
+Ścieżkę tego katalogu znasz z załadowanego skilla; przeczytaj je stamtąd narzędziem **Read**
+(nie szukaj ich Bashem — w zakresie jest odczyt plików, nie wywołanie shella).
+Jeśli odczyt zostanie odrzucony — **powiedz to wprost i zatrzymaj się**, zamiast oceniać
+na wyczucie. Trwałe odblokowanie: `permissions.additionalDirectories` w
+`~/.claude/settings.json` (katalog cache pluginów) — patrz OVERVIEW.md.
