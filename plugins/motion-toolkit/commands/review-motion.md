@@ -23,5 +23,9 @@ gdy oba puste, `git show HEAD`).
 Pliki referencyjne tego skilla NIE leżą w repozytorium projektu — leżą w katalogu
 zainstalowanego pluginu. Zlokalizuj je jedną komendą i przeczytaj ZANIM ocenisz cokolwiek:
 ```bash
-ls ~/.claude/plugins/cache/*/motion-toolkit/*/skills/review-animations/ 2>/dev/null || ls plugins/motion-toolkit/skills/review-animations/
+D=$(ls -d ~/.claude/plugins/cache/*/motion-toolkit/*/skills/review-animations 2>/dev/null | sort -V | tail -1)
+ls "${D:-plugins/motion-toolkit/skills/review-animations}"
 ```
+Jeśli odczyt tego katalogu zostanie odrzucony (leży poza katalogiem projektu) — **powiedz
+to wprost i zatrzymaj się**, zamiast oceniać na wyczucie. Trwałe odblokowanie: wpis
+`permissions.additionalDirectories` w `~/.claude/settings.json` — patrz OVERVIEW.md.

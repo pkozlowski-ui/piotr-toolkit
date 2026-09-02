@@ -35,3 +35,22 @@ egzekwują (audyt użycia 2026-07-10).
    gdzie ta wiedza staje się deliverable dla devów.
 3. Branch w `route-skills.sh` na intent „animacja/motion" — dopiero gdy będzie dev-set i held-out,
    nie z lepszego regexa.
+
+## Wymóg konfiguracji (zmierzone 2026-09-02)
+
+Skille mają pliki referencyjne obok `SKILL.md` (`STANDARDS.md`, `RECIPES.md`, `AUDIT.md`).
+Leżą one w katalogu pluginu, czyli **poza katalogiem projektu** — a odczyt poza cwd jest domyślnie
+poza zakresem. Smoke test na diffie z celowymi naruszeniami pokazał, co się wtedy dzieje:
+
+- **bez katalogu pluginu w zakresie** — 3 znaleziska, wartości zmyślone z pamięci, przeoczone
+  `scale(0)`, przekroczony budżet 300 ms i brak `prefers-reduced-motion`;
+- **z katalogiem w zakresie** — 6 znalezisk, każde z cytatem do linii `STANDARDS.md`, poprawny
+  werdykt Block. Ten sam model (Haiku), ten sam diff.
+
+Trwałe odblokowanie — w `~/.claude/settings.json`:
+
+```json
+"permissions": { "additionalDirectories": ["/Users/piotrkozlowski/.claude/plugins/cache"] }
+```
+
+Dotyczy to wszystkich pluginów z plikami referencyjnymi, nie tylko tego.
