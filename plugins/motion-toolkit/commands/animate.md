@@ -8,9 +8,7 @@ Zadanie: zbuduj animację dla **$ARGUMENTS**.
 1. Załaduj Skill `motion-toolkit:animate` — to jest kanon dla tej roboty; jego sekwencja decyzji
    (czy w ogóle animować → cel → narzędzie → właściwości → krzywa/czas lub sprężyna → przerwanie
    i wyjście → reduced-motion) jest obowiązkowa, nie orientacyjna. Receptury komponentowe siedzą
-   w `RECIPES.md`, obok `SKILL.md` w katalogu pluginu
-   (`${CLAUDE_PLUGIN_ROOT}/skills/animate/RECIPES.md`) — przeczytaj je stamtąd, nie szukaj
-   w repozytorium projektu. Sprawdź recepturę, zanim napiszesz cokolwiek od zera.
+   w `RECIPES.md` — sprawdź recepturę, zanim napiszesz cokolwiek od zera.
 2. Rozpoznaj kontekst PRZED implementacją: jakiego stacku używa ten projekt (CSS / Tailwind /
    Motion / WAAPI), jakie ma już tokeny ruchu (`--ease-*`, `--duration-*`) i czy istnieje podobna
    animacja, z którą nowa ma być spójna. Nie wprowadzaj nowej biblioteki bez pytania.
@@ -20,3 +18,11 @@ Zadanie: zbuduj animację dla **$ARGUMENTS**.
    `transform-origin` jest właściwy (podbij czas ×3 na czas sprawdzenia).
 
 Jeśli nie podano czego animować, zapytaj o to jednym zdaniem i czekaj — nie zgaduj.
+
+---
+
+Pliki referencyjne tego skilla NIE leżą w repozytorium projektu — leżą w katalogu
+zainstalowanego pluginu. Zlokalizuj je jedną komendą i przeczytaj ZANIM ocenisz cokolwiek:
+```bash
+ls ~/.claude/plugins/cache/*/motion-toolkit/*/skills/animate/ 2>/dev/null || ls plugins/motion-toolkit/skills/animate/
+```
