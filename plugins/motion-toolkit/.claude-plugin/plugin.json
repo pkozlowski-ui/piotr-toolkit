@@ -1,6 +1,6 @@
 {
   "name": "motion-toolkit",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Motion craft dla UI w kodzie: budowa animacji (animate + 14 receptur), strict review ruchu wobec twardych standardów (easing, budżety czasu, GPU-only, interruptibility, reduced-motion), audyt motion całego codebase'u z planami do wykonania przez tańsze modele, wyszukiwanie miejsc wartych animacji (z obowiązkową listą odrzuconych), glosariusz nazw efektów i zasady fluid interfaces Apple. Skille źródłowe vendorowane z emilkowalski/skills (MIT) — patrz UPSTREAM.md. Warstwa własna: kontekstowe komendy /motion-toolkit:*.",
   "author": {
     "name": "pkozlowski-ui",

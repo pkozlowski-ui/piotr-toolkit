@@ -21,13 +21,11 @@ gdy oba puste, `git show HEAD`).
 ---
 
 Pliki referencyjne tego skilla (`STANDARDS.md`, `RECIPES.md`, `AUDIT.md`, `PLAN-TEMPLATE.md`)
-leżą **w katalogu samego skilla, obok jego `SKILL.md`** — NIE w repozytorium projektu.
-Zainstalowany plugin trzyma je pod:
-`<katalog domowy>/.claude/plugins/cache/*/motion-toolkit/<najwyższa wersja>/skills/review-animations/`
-Znajdź je narzędziem **Glob** (wzorzec `**/motion-toolkit/*/skills/review-animations/*.md` z `path`
-ustawionym na katalog cache pluginów), a potem przeczytaj **Read**. Nie używaj Basha —
-w zakresie jest odczyt plików, nie wywołanie shella. W repo toolkitu ta sama treść leży
-pod `plugins/motion-toolkit/skills/review-animations/`.
-Jeśli odczyt zostanie odrzucony — **powiedz to wprost i zatrzymaj się**, zamiast oceniać
-na wyczucie. Trwałe odblokowanie: `permissions.additionalDirectories` w
-`~/.claude/settings.json` (katalog cache pluginów) — patrz OVERVIEW.md.
+leżą **w katalogu zainstalowanego pluginu**, NIE w repozytorium projektu:
+`~/.claude/plugins/cache/*/motion-toolkit/*/skills/review-animations/` (weź najwyższą wersję).
+W repo toolkitu ta sama treść leży pod `plugins/motion-toolkit/skills/review-animations/`.
+Zlokalizuj je i przeczytaj **dowolnym narzędziem, które masz w tej sesji** — Read wprost,
+Glob, albo `ls`/`cat` w Bashu. Żadne z nich nie jest zakazane; liczy się, żeby treść
+referencji faktycznie trafiła do kontekstu ZANIM ocenisz lub zbudujesz cokolwiek.
+Jeśli wszystkie drogi zawiodą — **powiedz to wprost i zatrzymaj się**, zamiast pracować
+na wyczucie.
