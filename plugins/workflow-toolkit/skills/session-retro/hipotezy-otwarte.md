@@ -946,6 +946,50 @@ na podstawie zmierzonego wyniku, nie domysłu.*
   Szukany dowod to wpis `hook_additional_context` wstrzykniety przez hooka, nie samo slowo.
 - **Gdzie zapisać werdykt:** karta kanban „Brama na przelaczanie modelu — PreModelSwitch i PostModelSwitch" + zdjęcie tej pozycji stąd.
 
+### H23 — `hygiene-audit`: rozmiar wpisu pamięci jako RATCHET z ledgerem, nie płaski próg doktrynalny
+
+- **Co jest hipotezą:** że soczewka `memory-entry-size` z **ledgerem świadomego długu** (próg
+  25 600 B tylko dla wpisów POZA ledgerem + zero-zapasowy ratchet na pozycjach ledgerowych) realnie
+  zatrzymuje puchnięcie wpisów pamięci — a nie tylko dokłada czwarty licznik obok trzech, które
+  CLAUDE.md już ma. Kluczowe: hipotezą jest sam **wybór mechanizmu**, bo płaski próg 10 KB z doktryny
+  „jeden fakt = jeden plik" został ODRZUCONY pomiarem (2026-09-02: **15 z 38** aktywnych wpisów
+  antisis-prototype przekracza 10 KB → check strzelałby 15× w pierwszym przebiegu i zostałby
+  odruchowo zignorowany). Ledger jest zakładem, że dług NAZWANY z rozmiarem maleje, a dług
+  bezimienny rośnie.
+- **Data zmiany:** 2026-09-02 (`workflow-toolkit`, `hygiene-audit.mjs` + progi w
+  `antisis prototype/.claude/audit-invariants.json`).
+- **Powód powstania:** re-score 2026-09 zmierzył **regres**: `memory-cap` (liczy PLIKI) świecił
+  ✅ przy poprawie 42→40 wpisów dokładnie w oknie, w którym treść rosła W plikach —
+  `git-session-collisions` 56→62,7 KB, `family-portal-design-register` 51→57,6 KB, nowy
+  `worktree-tooling-gotchas` 38,6 KB. Ta sama klasa wady co linie-vs-bajty w CLAUDE.md, i check,
+  który miał to łapać, był w planie audytu 2026-08-27 jako soczewka (b) — nie wszedł.
+- **Stan gate'a:** selftest **42/42** (10 nowych case'ów: 4 gałęzie fire × mirror + 5 silent,
+  w tym gate-proof „+1 bajt ponad ledger strzela"). Sondy na **żywym** stanie projektu
+  potwierdzone dla (a) moloch poza ledgerem, (b) przyrost ponad zapis, (c) ledger na nieistniejący
+  wpis; stan przywrócony. **To dowodzi, że check STRZELA — nie że dług maleje.** Ta druga rzecz
+  jest hipotezą i wymaga okna czasu.
+- **Ryzyko odwrotne (mierz je, nie tylko sukces):** ledger może się zamienić w **amnestię** —
+  wpis rośnie, ktoś podnosi liczbę w ledgerze „w tym samym commicie" i formalnie jest zielono.
+  Werdykt musi policzyć, ile pozycji ledgera **znikło przez sweep** vs ile zostało **podniesionych**.
+  Jeśli podniesień jest więcej niż zdjęć — mechanizm licencjonuje dług, a nie go zbiera, i hipoteza
+  jest ODRZUCONA niezależnie od tego, że soczewka „działa".
+- **Druga soczewka (istotna):** gałąź (d) — „schudł >20% → ZACIŚNIJ ledger". Bez niej sweep zostawia
+  próg na starej wysokości i cicho pozwala wrócić. Sprawdź, czy po realnym sweepie ktokolwiek ten
+  ledger faktycznie zacisnął, czy tylko zignorował ⚠️.
+- **Warunek wznowienia:** ≥ 3 przebiegi `hygiene-audit` z **niepustym** findingiem tej soczewki
+  ALBO ≥ 1 pełny cykl (sweep → zaciśnięcie ledgera) po dacie zmiany. Same zielone przebiegi nie są
+  materiałem — zielone przy 6 pozycjach ledgera znaczy „nic nie urosło", nie „dług maleje".
+- **Komenda:**
+  ```bash
+  cd "$HOME/Documents/antisis prototype" && node "$HOME/Documents/piotr-toolkit/plugins/workflow-toolkit/scripts/hygiene-audit.mjs" --json \
+    | python3 -c "import json,sys; d=json.load(sys.stdin); print([c for c in d['checks'] if c['id']=='memory-entry-size'])"
+  # oraz TREND ledgera (to jest realny werdykt, nie stan checku):
+  git -C "$HOME/Documents/antisis prototype" log -p --follow .claude/audit-invariants.json \
+    | grep -E '^[+-] *"[a-z0-9-]+\.md": [0-9]+' | head -40
+  ```
+- **Gdzie zapisać werdykt:** notatka `Research/Workflow maturity re-score — <YYYY-MM>.md` (kolejny
+  przebieg cyklu) + zdjęcie tej pozycji stąd.
+
 ## Zamknięte (zostawiaj krótki ślad, żeby nikt nie proponował tego drugi raz)
 
 ### H1 — `linear-ticket-draft` R3: rozmieszczenie linków wg ICH LICZBY — ZAMKNIĘTA 2026-08-26

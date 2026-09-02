@@ -62,6 +62,22 @@ add('memory-cap', 'wpisy memory', memFiles.length, cfg.memory.cap,
   memFiles.length <= cfg.memory.cap,
   memFiles.length > cfg.memory.cap ? `${memFiles.length - cfg.memory.cap} ponad cap → wymuś sweep konsolidacji` : null);
 
+// 1b) rozmiar POJEDYNCZEGO wpisu (cap liczy PLIKI, więc jest zielony gdy treść rośnie W nich).
+//     Ratchet z ledgerem — uzasadnienie i gałęzie: patrz evalMemoryEntrySize na końcu pliku.
+if (cfg.memory.maxEntryBytes != null && existsSync(memDir)) {
+  const entrySizes = memFiles.map(name => ({
+    name,
+    bytes: Buffer.byteLength(readFileSync(join(memDir, name), 'utf8'), 'utf8'),
+  }));
+  const mes = evalMemoryEntrySize({
+    entries: entrySizes,
+    maxBytes: cfg.memory.maxEntryBytes,
+    ledger: cfg.memory.oversizeLedger || {},
+    shrinkPct: cfg.memory.ledgerShrinkPct ?? 20,
+  });
+  add('memory-entry-size', 'rozmiar wpisu pamięci (ratchet + ledger)', mes.value, 0, mes.ok, mes.detail);
+}
+
 // 2) build-logi kandydujące do archiwum (allowlist = świadome KEEP mylone przez prefiks, np. reference)
 const blRe = new RegExp(cfg.memory.buildLogPattern);
 const blAllow = new Set((cfg.memory.buildLogAllowlist || []).map(n => n.endsWith('.md') ? n : `${n}.md`));
@@ -513,6 +529,67 @@ function evalDelegationThreshold({ sessions = [], threshold = 40 }) {
   };
 }
 
+/**
+ * REKO 1 re-score'u 2026-09-02 — rozmiar POJEDYNCZEGO wpisu pamięci.
+ *
+ * Powód istnienia: `memory-cap` (check 1) liczy WPISY, więc trzyma się zielony, gdy liczba
+ * plików stoi, a treść rośnie W NICH. Zmierzone w oknie 08-27 → 09-02 (antisis prototype):
+ * cap 42 → 40 (poprawa!), a równolegle `git-session-collisions` 56 → 62,7 KB,
+ * `family-portal-design-register` 51 → 57,6 KB i nowy 38,6 KB `worktree-tooling-gotchas`.
+ * Licznik wpisów tego nie widzi — to ta sama klasa wady co linie-vs-bajty w CLAUDE.md.
+ *
+ * Dlaczego NIE płaski próg 10 KB z doktryny „jeden fakt = jeden plik": zmierzone
+ * 2026-09-02 — 15 z 38 aktywnych wpisów przekracza 10 KB, więc taki check strzelałby
+ * 15× w PIERWSZYM przebiegu i zostałby odruchowo zignorowany (martwy licznik świeci ✅
+ * i wygląda jak pomiar; tu świeciłby ⚠️ i wyglądał jak szum — ta sama bezużyteczność).
+ * Dlatego mechanizm jest RATCHETEM z ledgerem, wzorowanym na `dsHardcodeBudget`:
+ *   (a) wpis POZA ledgerem > maxBytes            → finding (nowy moloch nie wchodzi cicho)
+ *   (b) wpis Z ledgera > zapisanego rozmiaru     → finding (TO jest gałąź, która złapałaby
+ *                                                  regres z 08-27 → 09-02; zero zapasu)
+ *   (c) ledger wskazuje na nieistniejący wpis    → finding (pozycja zapłacona/zarchiwizowana,
+ *                                                  a dalej licencjonuje dług — zdejmij ją)
+ *   (d) wpis z ledgera schudł >shrinkPct pod zapis → finding (po sweepie ZACIŚNIJ ledger,
+ *                                                  inaczej cicho re-licencjonuje powrót)
+ * Ledger = świadomy dług z powodem, nie amnestia: pozycję zdejmujesz sweepem, nie edycją progu.
+ * Warunek unieważnienia całej soczewki: gdy wpisy pamięci przestaną być ładowane treścią
+ * przy recallu (wtedy rozmiar wpisu nie kosztuje nic poza indeksem, który mierzy `memory-cap`).
+ */
+function evalMemoryEntrySize({ entries = [], maxBytes = null, ledger = {}, shrinkPct = 20 }) {
+  if (maxBytes == null) return { ok: true, value: 'brak progu', detail: null, skipped: true };
+  const kb = b => (b / 1024).toFixed(1);
+  const byName = new Map(entries.map(e => [e.name, e.bytes]));
+  const findings = [];
+
+  // (a) nowy moloch poza ledgerem
+  for (const { name, bytes } of entries) {
+    if (name in ledger) continue;
+    if (bytes > maxBytes) findings.push(`${name} ${kb(bytes)} KB > próg ${kb(maxBytes)} KB (poza ledgerem) → rozbij na fakty albo wpisz do ledgera z powodem`);
+  }
+  // (b) ledgerowy wpis urósł ponad zapis — ratchet bez zapasu
+  for (const [name, recorded] of Object.entries(ledger)) {
+    const bytes = byName.get(name);
+    if (bytes == null) continue;
+    if (bytes > recorded) findings.push(`${name} urósł ${kb(recorded)} → ${kb(bytes)} KB (+${bytes - recorded} B ponad ledger) → dług miał maleć, nie rosnąć`);
+  }
+  // (c) ledger wskazuje na nieistniejący wpis
+  for (const name of Object.keys(ledger)) {
+    if (!byName.has(name)) findings.push(`${name} nie istnieje (zarchiwizowany/scalony?) → zdejmij pozycję z ledgera, bo licencjonuje dług, którego nie ma`);
+  }
+  // (d) schudł istotnie — ledger do zaciśnięcia, inaczej re-licencjonuje powrót
+  for (const [name, recorded] of Object.entries(ledger)) {
+    const bytes = byName.get(name);
+    if (bytes == null || bytes > recorded) continue;
+    if (bytes <= recorded * (1 - shrinkPct / 100)) findings.push(`${name} schudł ${kb(recorded)} → ${kb(bytes)} KB → ZACIŚNIJ ledger do ${kb(bytes)} KB w tym samym commicie, inaczej próg cicho pozwala wrócić`);
+  }
+
+  const over = entries.filter(e => e.bytes > maxBytes).length;
+  return {
+    ok: findings.length === 0,
+    value: `${findings.length} findingów (${over} wpisów >${kb(maxBytes)} KB, ${Object.keys(ledger).length} w ledgerze)`,
+    detail: findings.length ? findings.join(' | ') : null,
+  };
+}
+
 // ---------- break-restore (syntetyczne fixtury — nie czyta projektu, nie rusza repo) ----------
 
 // Czy plik w katalogu pamięci JEST wpisem pamięci (a nie indeksem/README/infra-logiem)?
@@ -713,6 +790,61 @@ function runSelftest() {
   {
     const r = evalDelegationThreshold({ sessions: [], threshold: 40 });
     t('deleg-threshold silent: puste okno → brak findingu', r.ok === true, JSON.stringify(r));
+  }
+
+  // --- soczewka memory-entry-size (ratchet + ledger) ---
+  const MES_CAP = 25600; // 25 KB
+  const SMALL = [{ name: 'a.md', bytes: 4000 }, { name: 'b.md', bytes: 12000 }];
+  // silent: wszystko pod progiem, ledger pusty
+  {
+    const r = evalMemoryEntrySize({ entries: SMALL, maxBytes: MES_CAP, ledger: {} });
+    t('mem-entry silent: wszystkie wpisy pod progiem → brak findingu', r.ok === true && r.detail === null, JSON.stringify(r));
+  }
+  // fire (a): nowy moloch POZA ledgerem
+  {
+    const r = evalMemoryEntrySize({ entries: [...SMALL, { name: 'nowy-moloch.md', bytes: 40000 }], maxBytes: MES_CAP, ledger: {} });
+    t('mem-entry fire (a): wpis 39 KB poza ledgerem → finding', r.ok === false && /nowy-moloch\.md .*poza ledgerem/.test(r.detail), JSON.stringify(r));
+  }
+  // silent: ten sam moloch, ale świadomie w ledgerze i NIE urósł
+  {
+    const r = evalMemoryEntrySize({ entries: [...SMALL, { name: 'znany.md', bytes: 40000 }], maxBytes: MES_CAP, ledger: { 'znany.md': 40000 } });
+    t('mem-entry silent: dług w ledgerze na zapisanym rozmiarze → brak findingu', r.ok === true && r.detail === null, JSON.stringify(r));
+  }
+  // fire (b): TEN case jest powodem istnienia soczewki — kształt realnego regresu 08-27 → 09-02
+  //           (git-session-collisions 56 → 62,7 KB przy cap wpisów 42 → 40, czyli check 1 zielony)
+  {
+    const r = evalMemoryEntrySize({ entries: [{ name: 'git-session-collisions.md', bytes: 64228 }], maxBytes: MES_CAP, ledger: { 'git-session-collisions.md': 57344 } });
+    t('mem-entry fire (b): wpis z ledgera urósł ponad zapis → finding (zero zapasu)', r.ok === false && /urósł .* ponad ledger/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (b) gate-proof: przyrost o 1 bajt też strzela — ratchet nie ma tolerancji
+  {
+    const r = evalMemoryEntrySize({ entries: [{ name: 'x.md', bytes: 40001 }], maxBytes: MES_CAP, ledger: { 'x.md': 40000 } });
+    t('mem-entry fire (b) gate-proof: +1 bajt ponad ledger → finding', r.ok === false, JSON.stringify(r));
+  }
+  // fire (c): ledger licencjonuje dług, którego już nie ma
+  {
+    const r = evalMemoryEntrySize({ entries: SMALL, maxBytes: MES_CAP, ledger: { 'zarchiwizowany.md': 30000 } });
+    t('mem-entry fire (c): ledger wskazuje na nieistniejący wpis → finding', r.ok === false && /nie istnieje/.test(r.detail), JSON.stringify(r));
+  }
+  // fire (d): po sweepie ledger musi być zaciśnięty, inaczej re-licencjonuje powrót
+  {
+    const r = evalMemoryEntrySize({ entries: [{ name: 'po-sweepie.md', bytes: 14000 }], maxBytes: MES_CAP, ledger: { 'po-sweepie.md': 40000 }, shrinkPct: 20 });
+    t('mem-entry fire (d): wpis schudł 39→13,7 KB → finding "ZACIŚNIJ ledger"', r.ok === false && /ZACIŚNIJ ledger/.test(r.detail), JSON.stringify(r));
+  }
+  // silent: schudł nieistotnie (w granicy shrinkPct) — zwykły churn nie nagabuje
+  {
+    const r = evalMemoryEntrySize({ entries: [{ name: 'churn.md', bytes: 38000 }], maxBytes: MES_CAP, ledger: { 'churn.md': 40000 }, shrinkPct: 20 });
+    t('mem-entry silent: −5% (w granicy shrinkPct) → brak findingu', r.ok === true, JSON.stringify(r));
+  }
+  // silent: brak progu w configu = soczewka nieaktywna, nie „zielona"
+  {
+    const r = evalMemoryEntrySize({ entries: [{ name: 'huge.md', bytes: 999999 }], maxBytes: null });
+    t('mem-entry silent: brak maxEntryBytes → skipped, nie fałszywe zielone', r.ok === true && r.skipped === true, JSON.stringify(r));
+  }
+  // silent: puste wejście
+  {
+    const r = evalMemoryEntrySize({ entries: [], maxBytes: MES_CAP, ledger: {} });
+    t('mem-entry silent: zero wpisów → brak findingu', r.ok === true, JSON.stringify(r));
   }
 
   const pass = results.filter(Boolean).length;
