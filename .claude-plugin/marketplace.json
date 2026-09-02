@@ -23,6 +23,11 @@
       "name": "obsidian-toolkit",
       "description": "Obsidian vault workflow skills: make the vault the natural home for durable, human-facing documentation. feedback-sweep (Figma/FigJam review comments → classified, routed, answered register), kanban (Bases task board: digest, cards, triage), capture (promote artifacts to vault), setup (connect vault via Local REST API + MCP). Vault-agnostic; per-project config.",
       "source": "./plugins/obsidian-toolkit"
+    },
+    {
+      "name": "motion-toolkit",
+      "description": "Motion craft dla UI w kodzie: budowa animacji z właściwą krzywą/czasem/przerywalnością (+14 receptur), strict review ruchu wobec twardych standardów, audyt motion całego projektu z planami dla tańszych modeli, wyszukiwanie miejsc wartych animacji z listą odrzuconych, glosariusz nazw efektów i zasady fluid interfaces Apple. Kontekstowe komendy /motion-toolkit:*. Skille vendorowane z emilkowalski/skills (MIT).",
+      "source": "./plugins/motion-toolkit"
     }
   ]
 }
