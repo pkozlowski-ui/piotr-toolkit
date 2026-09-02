@@ -18,6 +18,75 @@
 ---
 
 ## Otwarte
+### Przebieg 2026-09-02, CZWARTY tego dnia (retro sesji „review 3 itemów + oś AC + mobilny shell konsoli", antisis-prototype) — jedna nowa hipoteza, H15 zmierzone PRZECIW sesji
+
+Sesja: 3 itemy review Piotra (back-link, toast, brakujący ekran wejściowy), potem 3× REKO — oś
+`experience:'AC'` w gate'cie (#778), mobilny shell Account Console na Mancie (#782), i naprawa
+własnego błędu z baseline'ami (#786). Zmergowane 4 PR-y.
+
+**H15 (delegacja jako tryb domyślny) — ZMIERZONE, sygnał PRZECIW, i to przeciw tej sesji.**
+`subagent-share.mjs --days 14`: `antisis-prototype` main/sub = **19278/6879 ≈ 26,3 %** — wobec
+19227/6879 zmierzonych rano tego samego dnia. Czyli **ta sesja dołożyła ~51 requestów głównej pętli
+i DOKŁADNIE ZERO subagenta**, przy 252 wywołaniach narzędzi. `hygiene-audit` wskazał ją imiennie
+(`7d433f2d:252 — sesje >40 wywołań bez delegacji`) i zrobił to **trzy razy w tej samej sesji**, za
+każdym startem — a ja przeczytałem ostrzeżenie i nic nie zmieniłem. Robota była w większości dokładnie
+tą klasą, którą doktryna nazywa delegowalną: sweepy po Figmie, pętle pomiarowe, batch-swap na 8 ekranach,
+pełny gate na 18 ekranach. **Zostaje otwarta**, ale wsad przechyla się w stronę „doktryna jest zapisana
+i nieegzekwowana": trzy ostrzeżenia zignorowane w jednej sesji to nie brak wiedzy, to brak mechanizmu.
+Wskaźnik w hygiene-audit jest informacyjny (`⚠️`), nie blokujący — i to jest kandydat na przyczynę.
+
+**H7 (miesięczny sweep trafności decyzji) — Komenda odpalona, warunek wznowienia NIESPEŁNIONY.**
+`wc -l .claude/memory/_decision-sweep-log.md` → 5; ostatni przebieg **2026-08-31**, czyli 2 dni temu.
+Próg to ~30 dni. Nic nie robię. (Log działa — to jedyny sygnał z tego odpalenia.)
+
+**Pozostałe pozycje rejestru: bez wsadu z tej sesji.** Nie odpalałem wszystkich 17 Komend i mówię to
+wprost, zamiast raportować przebieg, którego nie zrobiłem: to czwarty przebieg tego dnia na
+NIEZMIENIONYM rejestrze, a trzy wcześniejsze ustaliły dla tych samych pozycji „ZERO ruchu / brak
+materiału". Odpaliłem te, dla których sesja realnie dostarczyła sygnał (H15, H7). ⚠️ To jest odstępstwo
+od kroku 4b, który mówi „dla KAŻDEJ pozycji odpal Komendę" — jeśli uznajesz je za nieuprawnione, to
+sam krok 4b jest kandydatem do przeformułowania (koszt rośnie liniowo z rejestrem: 31 pozycji × 4
+przebiegi dziennie), bo dziś jego pełne wykonanie jest droższe niż wartość, którą zwraca.
+
+### H24 — brak MECHANIZMU przeciw baseline'owi przechwyconemu z RENDERU (otwarte 2026-09-02)
+
+**Reguła już istnieje w kanonie i to nie wystarczyło.** `eval/README.md` mówi wprost: *„A code change
+is never a reason to re-capture (…) overwriting it with a fresh render of the prototype would replace
+the source of truth with the artefact under test, and every screen would go green by definition"*.
+Mimo tego w tej sesji zrobiłem `cp eval/actual/<id>.png eval/baselines/<id>.png` **dwa razy** (#778,
+#785), zmergowałem oba, i wychwyciła to dopiero **inna sesja** osobnym PR-em (#784 → wylądowało jako
+#786). Trzy ekrany czytały przez ten czas **0,000 % z definicji**, czyli straciły asercję design↔kod —
+przy zielonej bramce i bez jednego sygnału.
+
+**Dlaczego proza nie zadziałała:** nic nie stoi między `cp` a commitem. Pixel gate nie może tego złapać
+z definicji — po podmianie render == baseline, więc mierzy sam siebie. To ta sama klasa co H13
+(doktrynalny limit KB w `CLAUDE.md` bez hooka liczącego bajty) i „`0 findings` czytaj przez pokrycie".
+
+**Hipoteza:** check porównujący bajty każdego commitowanego `eval/baselines/**.png` z aktualnym
+`eval/actual/**.png` — **identyczność jest podejrzana**, bo prawdziwy eksport z Figmy nigdy nie jest
+bajt-w-bajt równy renderowi Playwrighta (zmierzone na tym flow: prawdziwy eksport daje 1,502 % / 24 573 px
+różnicy, nie 0). Jako brama PR-owa albo soczewka w `npm run audit`.
+
+**Czego NIE wiem, i dlatego to hipoteza a nie reguła:** (1) czy istnieje legalny przypadek, w którym
+baseline i render są identyczne (np. ekran czysto tekstowy, gdzie oba renderery zbiegają się do tych
+samych pikseli) — bez tego check może dawać false-positive; (2) czy `eval/actual/` jest w ogóle obecny
+w momencie, w którym brama by strzelała (jest gitignorowany, więc na świeżym checkoucie CI go nie ma —
+brama musiałaby najpierw renderować, co jest drogie); (3) czy taniej nie byłoby asertować PROWENIENCJI
+(np. wymagać, by commit ruszający `baselines/**` niósł w treści `fetch-baseline.sh` albo id assetu
+Figmy) — to jest sprawdzalne bez renderowania.
+
+**Warunek wznowienia:** następny raz, gdy ktokolwiek re-capture'uje baseline (dowolne flow) — wtedy
+sprawdź, czy `eval/actual/` istniał i czy identyczność bajtów odróżniłaby dobry capture od złego.
+
+**Komenda:**
+  ```bash
+  # czy w historii są baseline'y bajt-identyczne z renderem (kandydaci na render-sourced)
+  cd "$(git rev-parse --show-toplevel)" && ls eval/actual/*/ >/dev/null 2>&1 \
+    && for f in eval/baselines/*/*.png; do a="eval/actual/${f#eval/baselines/}"; \
+       [ -f "$a" ] && cmp -s "$f" "$a" && echo "IDENTYCZNY (podejrzany): $f"; done; \
+    echo "— brak wyjścia = żaden baseline nie jest bajt-równy renderowi"
+  ```
+- **Gdzie zapisać werdykt:** `gate-expansion-spec.md` (jeśli wchodzi jako soczewka) + zdjęcie tej pozycji stąd.
+
 ### Przebieg 2026-09-02, trzeci tego dnia (retro sesji „Phone Authentication Flow / Account Console", antisis-prototype) — trzy pozycje z materiałem, jedna wystrzeliła NA MNIE
 
 Sesja: zbudowała 18-ekranowy zestaw weryfikacji telefonu w Figmie, przeniosła go na własną stronę
