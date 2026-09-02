@@ -18,6 +18,46 @@
 ---
 
 ## Otwarte
+### Przebieg 2026-09-02, trzeci tego dnia (retro sesji „Phone Authentication Flow / Account Console", antisis-prototype) — trzy pozycje z materiałem, jedna wystrzeliła NA MNIE
+
+Sesja: zbudowała 18-ekranowy zestaw weryfikacji telefonu w Figmie, przeniosła go na własną stronę
+`--- [AC] · Account Console`, odpaliła pełny gate (17/18 `pass:true`, break-restore potwierdzony),
+przeniosła toast FP na dół-środek i zmergowała 3 PR-y (#763, #777, #779). Większość pozycji rejestru
+znów bez materiału (ta sama klasa co dwa wcześniejsze przebiegi dziś) — odpalone tylko te trzy,
+dla których sesja realnie dostarczyła sygnał.
+
+**H13 (limit BAJTÓW w `guard-claudemd-bloat.sh`) — NOWY, mocny wsad, hipoteza NADAL otwarta.**
+Rozkład bez zmian jakościowo (1 plik nad 30 KB: ten projekt 40 835 B; drugi 21 264 B; reszta ≤7,8 KB),
+ale sesja dostarczyła to, czego brakowało: **realny przypadek przekroczenia progu w praktyce.**
+Dopisałem ~280 bajtów do `CLAUDE.md`, plik przeszedł 40 251 → 41 028 B, i **nic mnie nie zatrzymało** —
+zauważyłem sam, bo z nawyku odpaliłem `wc -c`. Potem ręcznie przyciąłem do 40 835 (nadal nad 40 KB).
+Czyli doktrynalny limit „≤40 KB" zapisany w samym `CLAUDE.md` **nie jest mechanizmem** — dokładnie ta
+klasa, którą ten rejestr ma łapać. To argument ZA wdrożeniem limitu bajtów w hooku, ale nie zamyka
+hipotezy: brak testu hooka na payloadzie Write z 41 KB (część „Komendy", której nie da się odpalić,
+póki hook nie liczy bajtów). **Zostaje otwarta, z dopisanym wsadem.**
+
+**H15 (delegacja jako tryb domyślny) — zmierzone, bez werdyktu.**
+`subagent-share.mjs --days 14`: dla `antisis-prototype` main/sub = **19227/6879 ≈ 26 % udziału
+subagentów**. Ta sesja delegowała pełny gate do subagenta buildującego (kanał z kontraktu), więc jest
+po stronie „za" — ale hygiene-audit w tej samej sesji zgłosił **11 sesji >40 wywołań bez delegacji**
+w oknie 3 dni. Sygnał nadal mieszany, próg werdyktu nieustalony. **Zostaje otwarta.**
+
+**H23 (rozmiar wpisu pamięci jako RATCHET) — mechanizm ZADZIAŁAŁ, i zadziałał przeciwko mnie.**
+Check `memory-entry-size` wystrzelił na `browser-verification-gotchas.md` **po moim własnym edycie**
+(25,0 → 26,2 KB). Reakcja: NIE dopisałem siebie do ledgera (to byłby fałszywy wyjątek — dokładnie to,
+przed czym ostrzega `gate-exemption-discipline`), tylko zrobiłem to, o co check prosi — **rozbiłem na
+fakty**: nowy wpis `browser-measurement-trust.md` (2,0 KB) z dwoma faktami o wiarygodności pomiaru,
+grab-bag wrócił do 25,1 KB. **Sygnał ZA H23: ratchet realnie wymusił konsolidację zamiast rosnięcia.**
+⚠️ Kontrsygnał w tym samym pomiarze: wpis był **już 25 576 B na `origin/main`, czyli nad progiem,
+PRZED tą sesją** — czyli check strzelał wcześniej i nikt nie zadziałał. Mechanizm strzela, ale sam nie
+wymusza reakcji; wymusiła ją dopiero sesja, która akurat czytała wynik. **Zostaje otwarta** — do werdyktu
+brakuje dowodu, że standing finding jest domykany bez przypadkowego czytelnika.
+
+**Znalezione przy okazji, do sprzątnięcia w rejestrze: KOLIZJA NUMERACJI — dwa różne H20** (linia 22
+„motion-toolkit: adopcja komend" i linia 984 „brama `PreModelSwitch`/`PostModelSwitch`"). Nie ruszam
+numerów w tym retro, żeby nie zepsuć odniesień z poprzednich przebiegów, ale to trzeba rozstrzygnąć,
+bo „werdykt na H20" jest dziś dwuznaczny.
+
 
 ### H20 — motion-toolkit: adopcja komend i wartość tury drugiej (otwarte 2026-09-02)
 
