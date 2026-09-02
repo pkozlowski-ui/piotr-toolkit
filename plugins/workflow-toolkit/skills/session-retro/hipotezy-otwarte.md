@@ -18,6 +18,36 @@
 ---
 
 ## Otwarte
+
+### Przebieg 2026-09-02, PIĄTY tego dnia (retro sesji „agent Manty w sales-demo — drawer zamiast tras/zakładki", antisis-prototype) — ZERO ruchu, jeden confound na check delegacji
+
+Sesja nie dotknęła żadnego mierzonego skilla (bez `ui-polish-loop`, `usage-audit`,
+`obsidian-feedback-sweep`, `linear-ticket-draft`, `design-tweaker`, `web-research`) — cała robota
+to kod prototypu w tierze `sales demo` plus drugie repo (`educator-os-demo`). H2/H3/H7–H14, H16,
+H20, H24: warunek wznowienia niespełniony, nic nie odpalałem.
+
+**H15 — pomiar 2 NIE jest jeszcze należny** (data: 2026-09-15, pomiar 1 zrobiony 2026-09-01).
+Nie odpalałem `subagent-share.mjs`: odpalenie dziś dałoby trzeci pomiar w oknie 2 dni od pierwszego,
+co miesza kadencję, a nie dokłada dowodu.
+
+**Confound do zanotowania na osobnym kanale (`model-delegation-threshold` w `hygiene-audit`, NIE H15):**
+check zgłosił tę sesję (384 wywołania narzędzi, zero `Task`/`Agent`) jako naruszenie — i formalnie
+ma rację, ale sesja **niosła jawną instrukcję systemową zabraniającą użycia narzędzia Agent**
+(„Do not use the Agent tool… unless the user asks for it"). Check widzi tylko liczbę wywołań i brak
+spawnów; nie widzi, że delegacja była w tej sesji zakazana. Skutek: takie sesje będą trafiać do
+raportu higieny jako fałszywe pozytywy, a powtarzalny fałszywy pozytyw uczy ignorowania checku.
+
+To **nie jest nowa hipoteza** (nie wdrożyłem żadnej zmiany) — obserwacja z jednego przypadku,
+odnotowana, żeby nie zginęła i żeby kolejny przebieg miał drugi punkt. Materiał na REKO dopiero
+przy drugim wystąpieniu: wtedy oś wyboru to „check czyta obecność zakazu delegacji z promptu
+sesji" vs „progi zostają, a takie sesje kwitujemy w raporcie jednym zdaniem".
+
+**Warunek wznowienia tej pozycji:** drugie wystąpienie tego samego fałszywego pozytywu (sesja
+zgłoszona przez `model-delegation-threshold`, w której delegacja była zabroniona instrukcją) —
+wtedy przejdź na REKO i gate wg `held-out-gate.md`.
+
+---
+
 ### Przebieg 2026-09-02, CZWARTY tego dnia (retro sesji „review 3 itemów + oś AC + mobilny shell konsoli", antisis-prototype) — jedna nowa hipoteza, H15 zmierzone PRZECIW sesji
 
 Sesja: 3 itemy review Piotra (back-link, toast, brakujący ekran wejściowy), potem 3× REKO — oś
