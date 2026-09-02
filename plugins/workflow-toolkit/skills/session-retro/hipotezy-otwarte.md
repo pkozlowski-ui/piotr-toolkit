@@ -19,6 +19,22 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-02 (retro sesji "FP Home visual polish w sales-demo", antisis-prototype) — ZERO ruchu
+
+Sesja: poprawiła wizualnie ekran Family Portal home w `antisis-sales-demo` (avatary dzieci, greeting
+z IconCircle, akcent na kartach "Action needed"), inspirując się figmowym Lighthouse home ale
+kreatywnie recomponując elementy (nie klon 1:1) — zweryfikowała w Browser pane desktop+mobile,
+zacommitowała i wypchnęła (`e843b8bb`). Zero wywołań `linear-ticket-draft`, `design-tweaker`,
+`code-design-audit`, `ux-copy`, `web-research`, `obsidian-feedback-sweep`, `usage-audit`,
+`hygiene-audit`, edycji CLAUDE.md, nowych pól `related:`/`linear:` na karcie kanban — żadna hipoteza
+z rejestru miała czego mierzyć. Zgodnie z regułą z przebiegów 08-25..09-01 (sesja nie dotykająca
+mierzonego skilla = nie liczy się jako odłożenie) — komendy nieodpalone.
+
+**Nowych hipotez z tej sesji: ZERO.** Jedyna lekcja ("sales-demo ZERO etapu Figmy" z ADR 0009 nie
+zakazuje Figmy jako wizualnej inspiracji, tylko formalnego kroku procesowego) poszła do
+`.claude/memory/` projektu (`feedback-sales-demo-figma-as-inspiration.md`) jako doprecyzowanie
+istniejącej reguły z jednoznacznym potwierdzeniem usera, nie jako hipoteza wymagająca held-out gate'u.
+
 ### Przebieg 2026-09-01, trzeci tego dnia (retro sesji „F12 Phase 4 mini-funnel + Houston content fix", antisis-prototype) — ZERO ruchu na H2/H3/H7–H14, jeden confound na H15
 
 Sesja: zbudowała i zmergowała F12 Family profile MVP Phase 4 (mini-funnel, PR #756 + fix
