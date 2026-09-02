@@ -19,6 +19,22 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-02, SZÓSTY tego dnia (retro sesji „domknięcie 3-punktowego dryfu Figma↔kod w table-staff, roster demo person", antisis-prototype) — ZERO ruchu
+
+Sesja krótka, kontynuacja z handoffu: zweryfikowała i domknęła podmianę 3 zdjęć w masterach
+PhotoAvatar (Figma, `figma-console`) + dopisała closure-notatkę do karty kanban (Obsidian). Zero
+wywołań `linear-ticket-draft`, `design-tweaker`, `code-design-audit`, `ux-copy`, `web-research`,
+`obsidian-feedback-sweep`, `usage-audit`, `hygiene-audit`, edycji CLAUDE.md, zero delegacji do
+subagenta (praca była interaktywna: screenshot→zoom→ocena, ta sama klasa co uzasadnienie w
+przebiegu „F12 Phase 4" niżej — nie liczę jako sygnał H15). Żadna hipoteza z rejestru miała czego
+mierzyć — komendy nieodpalone (ta sama reguła co poprzednie ZERO-ruchu przebiegi tego dnia).
+
+**Nowych hipotez z tej sesji: ZERO.** Jedyna lekcja (`figma_set_image_fill` timeoutuje na pełnym
+512px base64, przechodzi na downsize'owanym ~160px) ma obiektywny, powtarzalny test (rozmiar
+payloadu) i poszła jako dopisana reguła (42) do `.claude/memory/figma-access-capabilities.md` —
+uzupełnienie istniejącej ogólnej reguły figma-console skilla o konkretny próg, nie nowa hipoteza
+wymagająca held-out gate'u.
+
 ### Przebieg 2026-09-02, PIĄTY tego dnia (retro sesji „agent Manty w sales-demo — drawer zamiast tras/zakładki", antisis-prototype) — ZERO ruchu, jeden confound na check delegacji
 
 Sesja nie dotknęła żadnego mierzonego skilla (bez `ui-polish-loop`, `usage-audit`,
