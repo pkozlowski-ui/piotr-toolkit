@@ -431,6 +431,19 @@ otwarte, bez sprawdzenia ich frontmattera) poszła do `.claude/memory/` projektu
   scalone w jeden, poprawny blok, żeby drugi retro nie mierzył już zamkniętego okna.)*
 - **Gdzie zapisać werdykt:** j.w. + zdjęcie tej pozycji stąd.
 
+**Przebieg 2026-09-03 (retro sesji „KIPP take-action page — Slack pomoc + lo-fi Figma sketch", daily-work) — hook zaobserwowany w akcji, jeden clean break-restore, poza formalnym warunkiem wznowienia (nie `linear-ticket-draft`).**
+Sesja nie wołała `linear-ticket-draft` — to był ad-hoc draft odpowiedzi na Slacku (KIPP/Kasel, nie
+Linear), więc **nie liczy się do formalnego warunku wznowienia H3** (wymaga drafta TEGO skilla).
+Ale `guard-send-invitation.sh` jest globalny (patrz notatka wyżej) i **realnie odpalił się w tej
+sesji**: pierwsza wersja odpowiedzi zawierała „czeka na Twoje «wyślij»" (formuła 1a) →
+zablokowana przez hook (`BLOK zaproszenia do wysyłki`, dopasowanie dosłowne) → przepisana wersja
+usunęła frazę CAŁKOWICIE (proza + sekcja decyzji + podpis), bez próby synonimu/obejścia — czysty
+break-restore, zgodny z (b) z pomiaru 2026-09-01. To mierzy dokładnie pytanie (a): **hook żyje i
+łapie realne wystąpienia miesiąc+ po wdrożeniu** (2026-08-26 → 2026-09-03), poza wąską populacją
+`linear-ticket-draft`. Nie zamykam H3 tym przebiegiem (formalny warunek wznowienia wymaga
+konkretnie draftów tego skilla, których tu nie było) — dopisuję jako dodatkowy, pozytywny sygnał
+dla szerszego pytania „czy mechanizm nadal działa", odrębny od licznika populacji w warunku wznowienia.
+
 ---
 
 ### Przebieg 2026-08-25 (retro sesji clever-ellis, TRZECI tego dnia) — wszystkie trzy odpalone, ZERO ruchu
