@@ -19,6 +19,32 @@
 
 ## Otwarte
 
+### Przebieg 2026-09-03 (retro sesji „E7 — ramki urządzeń na wszystkich ekranach sales demo", antisis-prototype) — ZERO ruchu, jeden REALNY sygnał na check delegacji
+
+Sesja code-only w tierze `sales demo`: nowy `DeviceFrame`, migracja `PhoneFrame`, `--screen-h`
+zamiast `100vh` w shellach dema, weryfikacja w Browser pane, PR #843 zmergowany. Zero wywołań
+`linear-ticket-draft`, `design-tweaker`, `code-design-audit`, `ux-copy`, `web-research`,
+`obsidian-feedback-sweep`, `usage-audit`, `ui-polish-loop`, zero edycji CLAUDE.md, zero kontaktu
+z Figmą. Żadna hipoteza z rejestru nie miała czego mierzyć — komendy nieodpalone (ta sama reguła
+co przebiegi ZERO-ruchu z 2026-09-02).
+
+**Sygnał na H15 (delegacja mechaniki do tańszych subagentów) — tym razem BEZ confoundu, liczyć
+jako PRZECIW.** Poprzednie przebiegi usprawiedliwiały brak delegacji interaktywnością pracy
+(screenshot→ocena). Tu było inaczej: pomiar „czy treść wystaje poza krawędź ekranu" przeleciał
+przez **14 tras** jako mechaniczna pętla navigate+probe w głównej sesji — dokładnie klasa roboty,
+którą doktryna każe oddać Haiku. Nie oddałem jej, bo pętla rosła przyrostowo (jedna trasa → dwie
+→ czternaście) i w żadnym pojedynczym kroku nie wyglądała na „sweep". To jest, jak sądzę,
+mechanizm porażki tej reguły: mechanika rzadko przychodzi zapowiedziana jako sweep, tylko narasta
+z weryfikacji. Nie awansuję tego na regułę — nie mam checku, że próg „≥N powtórzeń tej samej
+sondy → deleguj" da się mierzyć bez fałszywek; zapisane tu jako obserwacja karmiąca H15.
+
+**Nowych hipotez z tej sesji: ZERO.** Lekcje techniczne (ramka to przeskalowany div a nie
+viewport, `translateZ(0)` jako containing block dla `fixed`, sprzeczny pomiar o tym, z którego
+drzewa `preview_start` czyta `launch.json`) mają obiektywne, powtarzalne testy albo są wprost
+sprzecznością do rozstrzygnięcia pomiarem — poszły do kodu (komentarze w `DeviceFrame.tsx`) i do
+`.claude/memory/` (`worktree-tooling-gotchas` reguła 22, `git-session-collisions` reguła 38), nie
+do tego rejestru.
+
 ### Przebieg 2026-09-02, SZÓSTY tego dnia (retro sesji „domknięcie 3-punktowego dryfu Figma↔kod w table-staff, roster demo person", antisis-prototype) — ZERO ruchu
 
 Sesja krótka, kontynuacja z handoffu: zweryfikowała i domknęła podmianę 3 zdjęć w masterach
